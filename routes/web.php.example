@@ -1,0 +1,10 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::view('/dashboard', 'templates.dashboard');
+Route::view('/login', 'templates.auth.login');
+Route::view('/resources', 'templates.table-index');
+Route::view('/resources/create', 'templates.form-page');
+Route::view('/resources/show', 'templates.show-page');
+
