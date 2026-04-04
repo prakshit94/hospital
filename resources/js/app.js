@@ -51,6 +51,7 @@ async function performAsyncSearch(form, href = null, pushState = true) {
         }
 
         target.innerHTML = await response.text();
+        window.Alpine.initTree(target);
 
         if (pushState) {
             window.history.replaceState({}, '', url);
@@ -270,6 +271,59 @@ async function submitCrudModalForm(form) {
     }
 }
 
+async function performAsyncAction(form) {
+    const submitButton = form.querySelector('[type="submit"]');
+    submitButton?.setAttribute('disabled', 'disabled');
+    form.classList.add('pointer-events-none', 'opacity-70');
+
+    try {
+        const response = await fetch(form.action, {
+            method: (form.querySelector('input[name="_method"]')?.value || form.method || 'POST').toUpperCase(),
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || `Request failed with status ${response.status}`);
+        }
+
+        window.dispatchEvent(new CustomEvent('toast-notify', {
+            detail: {
+                type: 'success',
+                title: 'Success',
+                message: data.message
+            }
+        }));
+
+        // Refresh the results container if we're in a table
+        const resultsContainer = form.closest('[id$="-results"]');
+        if (resultsContainer) {
+            const searchForm = document.querySelector(`form[data-target="#${resultsContainer.id}"]`);
+            if (searchForm) {
+                performAsyncSearch(searchForm, null, false);
+            }
+        }
+    } catch (error) {
+        console.error('Async action failed', error);
+        window.dispatchEvent(new CustomEvent('toast-notify', {
+            detail: {
+                type: 'error',
+                title: 'Something went wrong',
+                message: error.message
+            }
+        }));
+    } finally {
+        submitButton?.removeAttribute('disabled');
+        form.classList.remove('pointer-events-none', 'opacity-70');
+    }
+}
+
 document.addEventListener('click', (event) => {
     const trigger = event.target.closest('[data-modal-open]');
 
@@ -285,14 +339,18 @@ document.addEventListener('click', (event) => {
 });
 
 document.addEventListener('submit', (event) => {
-    const form = event.target.closest('form[data-modal-form]');
-
-    if (!form) {
+    const modalForm = event.target.closest('form[data-modal-form]');
+    if (modalForm) {
+        event.preventDefault();
+        submitCrudModalForm(modalForm);
         return;
     }
 
-    event.preventDefault();
-    submitCrudModalForm(form);
+    const asyncForm = event.target.closest('form[data-async-form]');
+    if (asyncForm) {
+        event.preventDefault();
+        performAsyncAction(asyncForm);
+    }
 });
 
 document.addEventListener('keydown', (event) => {

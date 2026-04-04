@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $pageTitle = 'Edit User';
@@ -18,7 +18,7 @@
             </div>
         </section>
 
-        <form method="POST" action="{{ route('users.update', $user) }}">
+        <form method="POST" action="{{ route('users.update', $user) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('users._form')

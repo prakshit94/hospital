@@ -20,7 +20,7 @@
         </button>
     </div>
 
-    <form method="POST" action="{{ $formAction }}" data-modal-form class="space-y-6">
+    <form method="POST" action="{{ $formAction }}" enctype="multipart/form-data" data-modal-form class="space-y-6">
         @csrf
         @if($formMethod !== 'POST')
             @method($formMethod)

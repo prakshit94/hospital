@@ -62,14 +62,15 @@ class PermissionController extends Controller
     {
         $permission = Permission::create($request->validated());
 
-        ActivityLogService::log(
+        ActivityLogService::logWithChanges(
             $request->user(),
-            'permission.created',
             $permission,
+            'permission.created',
             "Created permission {$permission->slug}.",
         );
 
         if ($request->ajax()) {
+            session()->flash('status', 'Permission created successfully.');
             return response()->json([
                 'status' => 'success',
                 'message' => 'Permission created successfully.',
@@ -120,14 +121,15 @@ class PermissionController extends Controller
     {
         $permission->update($request->validated());
 
-        ActivityLogService::log(
+        ActivityLogService::logWithChanges(
             $request->user(),
-            'permission.updated',
             $permission,
+            'permission.updated',
             "Updated permission {$permission->slug}.",
         );
 
         if ($request->ajax()) {
+            session()->flash('status', 'Permission updated successfully.');
             return response()->json([
                 'status' => 'success',
                 'message' => 'Permission updated successfully.',
@@ -153,5 +155,28 @@ class PermissionController extends Controller
         return redirect()
             ->route('permissions.index')
             ->with('status', 'Permission deleted successfully.');
+    }
+
+    public function toggleStatus(Permission $permission): JsonResponse
+    {
+        $oldStatus = $permission->status;
+        $newStatus = $oldStatus === 'active' ? 'inactive' : 'active';
+        $permission->update(['status' => $newStatus]);
+
+        ActivityLogService::log(
+            auth()->user(),
+            'permission.status_toggled',
+            $permission,
+            "Changed status for {$permission->slug} from {$oldStatus} to {$newStatus}.",
+            ['old' => $oldStatus, 'new' => $newStatus],
+        );
+
+        session()->flash('status', "Permission {$permission->slug} is now {$newStatus}.");
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Permission {$permission->slug} is now {$newStatus}.",
+            'new_status' => $newStatus,
+        ]);
     }
 }

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $pageTitle = 'Users';
@@ -14,7 +14,13 @@
                     <p class="hero-copy">Manage sign-in access, account status, and role assignments.</p>
                 </div>
                 @if(auth()->user()?->hasPermission('users.create'))
-                    <x-ui.button href="{{ route('users.create') }}" data-modal-open>Create User</x-ui.button>
+                    <x-ui.button href="{{ route('users.create') }}" data-modal-open>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M12 5v14"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                        Create User
+                    </x-ui.button>
                 @endif
             </div>
         </section>
@@ -34,6 +40,7 @@
                     <option value="">All statuses</option>
                     <option value="active" @selected(request('status') === 'active')>Active</option>
                     <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                    <option value="deleted" @selected(request('status') === 'deleted')>Deleted (Archived)</option>
                 </select>
                 <select name="role" class="ui-select">
                     <option value="">All roles</option>
@@ -41,14 +48,11 @@
                         <option value="{{ $role->id }}" @selected((string) request('role') === (string) $role->id)>{{ $role->name }}</option>
                     @endforeach
                 </select>
-                <div class="flex gap-3">
-                    <select name="per_page" class="ui-select">
-                        @foreach([5, 10, 25, 50, 100] as $size)
-                            <option value="{{ $size }}" @selected((int) request('per_page', 5) === $size)>{{ $size }} per page</option>
-                        @endforeach
-                    </select>
-                    <x-ui.button class="justify-center">Apply</x-ui.button>
-                </div>
+                <select name="per_page" class="ui-select">
+                    @foreach([5, 10, 25, 50, 100] as $size)
+                        <option value="{{ $size }}" @selected((int) request('per_page', 5) === $size)>{{ $size }} per page</option>
+                    @endforeach
+                </select>
             </form>
 
             <div id="users-results">

@@ -65,15 +65,16 @@ class RoleController extends Controller
         $role = Role::create($request->safe()->except('permissions'));
         $role->permissions()->sync($request->validated('permissions', []));
 
-        ActivityLogService::log(
+        ActivityLogService::logWithChanges(
             $request->user(),
-            'role.created',
             $role,
+            'role.created',
             "Created role {$role->name}.",
-            ['permissions' => $role->permissions()->pluck('slug')->all()],
+            ['permissions' => $role->permissions()->pluck('name')->all()],
         );
 
         if ($request->ajax()) {
+            session()->flash('status', 'Role created successfully.');
             return response()->json([
                 'status' => 'success',
                 'message' => 'Role created successfully.',
@@ -126,18 +127,32 @@ class RoleController extends Controller
 
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse|JsonResponse
     {
-        $role->update($request->safe()->except('permissions'));
+        $oldPermissions = $role->permissions()->pluck('name')->all();
+        
+        $role->fill($request->safe()->except('permissions'));
+        $modelChanges = ActivityLogService::getModelChanges($role);
+        $role->save();
+        
         $role->permissions()->sync($request->validated('permissions', []));
+        $role->load('permissions');
+        $newPermissions = $role->permissions()->pluck('name')->all();
+
+        $extraProperties = array_merge($modelChanges, []);
+        if ($oldPermissions !== $newPermissions) {
+            $extraProperties['old_permissions'] = $oldPermissions;
+            $extraProperties['new_permissions'] = $newPermissions;
+        }
 
         ActivityLogService::log(
             $request->user(),
             'role.updated',
             $role,
             "Updated role {$role->name}.",
-            ['permissions' => $role->permissions()->pluck('slug')->all()],
+            $extraProperties,
         );
 
         if ($request->ajax()) {
+            session()->flash('status', 'Role updated successfully.');
             return response()->json([
                 'status' => 'success',
                 'message' => 'Role updated successfully.',
@@ -175,5 +190,35 @@ class RoleController extends Controller
         return redirect()
             ->route('roles.index')
             ->with('status', 'Role deleted successfully.');
+    }
+
+    public function toggleStatus(Role $role): JsonResponse
+    {
+        if ($role->is_system) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'System roles cannot be deactivated.',
+            ], 403);
+        }
+
+        $oldStatus = $role->status;
+        $newStatus = $oldStatus === 'active' ? 'inactive' : 'active';
+        $role->update(['status' => $newStatus]);
+
+        ActivityLogService::log(
+            auth()->user(),
+            'role.status_toggled',
+            $role,
+            "Changed status for {$role->name} from {$oldStatus} to {$newStatus}.",
+            ['old' => $oldStatus, 'new' => $newStatus],
+        );
+
+        session()->flash('status', "Role {$role->name} is now {$newStatus}.");
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Role {$role->name} is now {$newStatus}.",
+            'new_status' => $newStatus,
+        ]);
     }
 }

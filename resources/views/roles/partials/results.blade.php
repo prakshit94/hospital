@@ -6,15 +6,6 @@
 
     <div class="flex flex-wrap items-center gap-3">
         <span class="table-toolbar-stat">{{ $roles->total() }} total roles</span>
-        @if(auth()->user()?->hasPermission('roles.create'))
-            <x-ui.button href="{{ route('roles.create') }}" data-modal-open>
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <path d="M12 5v14"/>
-                    <path d="M5 12h14"/>
-                </svg>
-                Add Role
-            </x-ui.button>
-        @endif
     </div>
 </div>
 
@@ -22,27 +13,44 @@
     <table>
         <thead>
             <tr>
+                <th class="w-10">#</th>
                 <th>Role</th>
-                <th>Slug</th>
                 <th>Permissions</th>
                 <th>Users</th>
+                <th>Status</th>
                 <th class="text-right">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse($roles as $role)
                 <tr>
+                    <td class="table-secondary font-mono text-xs">{{ ($roles->currentPage() - 1) * $roles->perPage() + $loop->iteration }}</td>
                     <td data-label="Role">
                         <div>
                             <div class="table-primary">{{ $role->name }}</div>
-                            @if($role->is_system)
-                                <div class="mt-2"><span class="ui-chip">System</span></div>
-                            @endif
+                            <div class="mt-1 text-xs text-muted-foreground">{{ $role->slug }}</div>
                         </div>
                     </td>
-                    <td data-label="Slug" class="table-secondary">{{ $role->slug }}</td>
-                    <td data-label="Permissions" class="table-secondary">{{ $role->permissions_count }}</td>
-                    <td data-label="Users" class="table-secondary">{{ $role->users_count }}</td>
+                    <td data-label="Permissions" class="table-secondary">
+                        <span class="font-semibold text-foreground">{{ $role->permissions_count }}</span>
+                        <span class="text-xs text-muted-foreground">assigned</span>
+                    </td>
+                    <td data-label="Users">
+                        <span class="font-semibold text-foreground">{{ $role->users_count }}</span>
+                        <span class="text-xs text-muted-foreground">active</span>
+                    </td>
+                    <td data-label="Status">
+                        @if(auth()->user()?->hasPermission('roles.update') && !$role->is_system)
+                            <x-ui.toggle
+                                :active="$role->status === 'active'"
+                                :action="route('roles.toggle-status', $role)"
+                            />
+                        @else
+                            <span class="{{ $role->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">
+                                {{ $role->status }}
+                            </span>
+                        @endif
+                    </td>
                     <td data-label="Actions" class="actions-cell">
                         <div class="table-actions">
                             <x-ui.table-action href="{{ route('roles.show', $role) }}" label="View" data-modal-open>
@@ -59,12 +67,23 @@
                                     </svg>
                                 </x-ui.table-action>
                             @endif
+                            @if(auth()->user()?->hasPermission('roles.delete') && !$role->is_system)
+                                <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this role?')" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-ui.table-action type="submit" label="Delete" tone="danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/>
+                                        </svg>
+                                    </x-ui.table-action>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                         <div class="empty-state">No roles matched the current filters.</div>
                     </td>
                 </tr>

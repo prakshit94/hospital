@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $pageTitle = 'User Profile';
@@ -9,9 +9,17 @@
         <section class="hero-panel">
             <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <span class="{{ $user->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">{{ $user->status }} account</span>
-                    <h1 class="hero-title">{{ $user->name }}</h1>
+                    <div class="flex flex-wrap gap-2 items-center mb-1">
+                        <span class="{{ $user->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">{{ $user->status }} account</span>
+                        @if($user->is_online)
+                            <span class="ui-status-success">Online</span>
+                        @else
+                            <span class="ui-status-danger">Offline</span>
+                        @endif
+                    </div>
+                    <h1 class="hero-title">{{ $user->name ?: trim("{$user->first_name} {$user->last_name}") }}</h1>
                     <p class="hero-copy">{{ $user->email }}</p>
+                    <p class="hero-copy mt-1 uppercase tracking-widest text-xs font-bold text-muted-foreground">{{ $user->job_title }} {{ $user->department ? '- ' . $user->department : '' }}</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     @if(auth()->user()?->hasPermission('users.update'))
@@ -42,6 +50,18 @@
                     <div class="detail-tile">
                         <div class="detail-label">Email</div>
                         <div class="detail-value">{{ $user->email }}</div>
+                    </div>
+                    <div class="detail-tile">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">{{ $user->phone ?: 'Not provided' }}</div>
+                    </div>
+                    <div class="detail-tile">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">{{ $user->location ?: 'Not provided' }}</div>
+                    </div>
+                    <div class="detail-tile">
+                        <div class="detail-label">Gender</div>
+                        <div class="detail-value">{{ $user->gender ?: 'Not provided' }}</div>
                     </div>
                     <div class="detail-tile">
                         <div class="detail-label">Last Login</div>

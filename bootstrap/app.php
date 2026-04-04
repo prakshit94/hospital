@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'permission' => \App\Http\Middleware\EnsurePermission::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\UpdateLastActiveAt::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

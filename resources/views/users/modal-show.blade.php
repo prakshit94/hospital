@@ -3,11 +3,17 @@
         <div class="space-y-3">
             <div class="flex flex-wrap items-center gap-2">
                 <span class="{{ $user->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">{{ $user->status }} account</span>
+                @if($user->is_online)
+                    <span class="ui-status-success">Online</span>
+                @else
+                    <span class="ui-status-danger">Offline</span>
+                @endif
                 <span class="ui-chip-muted">User #{{ $user->id }}</span>
             </div>
             <div>
-                <h2 class="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{{ $user->name }}</h2>
+                <h2 class="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{{ $user->name ?: trim("{$user->first_name} {$user->last_name}") }}</h2>
                 <p class="mt-2 text-sm text-muted-foreground">{{ $user->email }}</p>
+                <p class="mt-1 text-xs font-medium text-muted-foreground uppercase tracking-widest">{{ $user->job_title }} {{ $user->department ? '- ' . $user->department : '' }}</p>
             </div>
         </div>
 
@@ -31,6 +37,18 @@
                 <div class="detail-tile">
                     <div class="detail-label">Email</div>
                     <div class="detail-value break-all">{{ $user->email }}</div>
+                </div>
+                <div class="detail-tile">
+                    <div class="detail-label">Phone</div>
+                    <div class="detail-value">{{ $user->phone ?: 'Not provided' }}</div>
+                </div>
+                <div class="detail-tile">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">{{ $user->location ?: 'Not provided' }}</div>
+                </div>
+                <div class="detail-tile">
+                    <div class="detail-label">Gender</div>
+                    <div class="detail-value">{{ $user->gender ?: 'Not provided' }}</div>
                 </div>
                 <div class="detail-tile">
                     <div class="detail-label">Last Login</div>

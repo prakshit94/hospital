@@ -12,6 +12,7 @@ class Role extends Model
         'slug',
         'description',
         'is_system',
+        'status',
     ];
 
     protected function casts(): array

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $pageTitle = 'Create User';
@@ -13,7 +13,7 @@
             <p class="hero-copy">Provision a new account and assign one or more access roles with the upgraded responsive form experience.</p>
         </section>
 
-        <form method="POST" action="{{ route('users.store') }}">
+        <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data">
             @csrf
             @include('users._form')
         </form>

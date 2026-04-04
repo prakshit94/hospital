@@ -8,10 +8,11 @@
 <div
     x-data="{
         open: @js($active),
-        hovering: false
+        hovering: false,
+        dropUp: false
     }"
     class="relative space-y-1"
-    @mouseenter="hovering = true"
+    @mouseenter="hovering = true; dropUp = $el.getBoundingClientRect().top > (window.innerHeight / 2)"
     @mouseleave="hovering = false"
 >
     <button
@@ -73,7 +74,8 @@
         x-transition:leave="transition-all ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-x-0 blur-0 scale-100"
         x-transition:leave-end="opacity-0 translate-x-10 blur-md scale-95"
-        class="pointer-events-none absolute left-full top-0 z-[120] pl-6"
+        class="pointer-events-none absolute left-full z-[120] pl-6"
+        :class="dropUp ? 'bottom-0' : 'top-0'"
     >
         <div class="pointer-events-auto min-w-[240px] space-y-1 rounded-[1.4rem] border border-sidebar-border bg-sidebar p-4 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.28)]">
             <div class="mb-4 border-b border-sidebar-border px-3 py-2 text-sm font-semibold text-foreground">

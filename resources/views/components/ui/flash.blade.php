@@ -18,25 +18,30 @@
     }
 @endphp
 
-@if(count($toasts))
-    <div
-        x-data="{
-            toasts: @js($toasts),
-            remove(index) {
-                this.toasts.splice(index, 1);
-            },
-            init() {
-                this.toasts.forEach((toast, index) => {
-                    setTimeout(() => {
-                        if (this.toasts[index]) {
-                            this.remove(index);
-                        }
-                    }, toast.type === 'error' ? 6500 : 3500);
-                });
-            }
-        }"
-        class="pointer-events-none fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-3"
-    >
+<div
+    x-data="{
+        toasts: @js($toasts),
+        remove(index) {
+            this.toasts.splice(index, 1);
+        },
+        init() {
+            window.addEventListener('toast-notify', (event) => {
+                this.toasts.push(event.detail);
+                const index = this.toasts.length - 1;
+                setTimeout(() => {
+                    this.remove(index);
+                }, event.detail.type === 'error' ? 6500 : 3500);
+            });
+
+            this.toasts.forEach((toast, index) => {
+                setTimeout(() => {
+                    this.remove(index);
+                }, toast.type === 'error' ? 6500 : 3500);
+            });
+        }
+    }"
+    class="pointer-events-none fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-3"
+>
         <template x-for="(toast, index) in toasts" :key="`${toast.type}-${index}`">
             <div
                 x-show="true"
@@ -87,4 +92,3 @@
             </div>
         </template>
     </div>
-@endif

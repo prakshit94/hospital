@@ -6,15 +6,6 @@
 
     <div class="flex flex-wrap items-center gap-3">
         <span class="table-toolbar-stat">{{ $permissions->total() }} total permissions</span>
-        @if(auth()->user()?->hasPermission('permissions.create'))
-            <x-ui.button href="{{ route('permissions.create') }}" data-modal-open>
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                    <path d="M12 5v14"/>
-                    <path d="M5 12h14"/>
-                </svg>
-                Add Permission
-            </x-ui.button>
-        @endif
     </div>
 </div>
 
@@ -22,20 +13,35 @@
     <table>
         <thead>
             <tr>
+                <th class="w-10">#</th>
                 <th>Permission</th>
                 <th>Slug</th>
                 <th>Group</th>
                 <th>Roles</th>
+                <th>Status</th>
                 <th class="text-right">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse($permissions as $permission)
                 <tr>
+                    <td class="table-secondary font-mono text-xs">{{ ($permissions->currentPage() - 1) * $permissions->perPage() + $loop->iteration }}</td>
                     <td data-label="Permission" class="table-primary">{{ $permission->name }}</td>
                     <td data-label="Slug" class="table-secondary">{{ $permission->slug }}</td>
                     <td data-label="Group"><span class="ui-chip-muted">{{ $permission->group_name }}</span></td>
                     <td data-label="Roles" class="table-secondary">{{ $permission->roles_count }}</td>
+                    <td data-label="Status">
+                        @if(auth()->user()?->hasPermission('permissions.update'))
+                            <x-ui.toggle
+                                :active="$permission->status === 'active'"
+                                :action="route('permissions.toggle-status', $permission)"
+                            />
+                        @else
+                            <span class="{{ $permission->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">
+                                {{ $permission->status }}
+                            </span>
+                        @endif
+                    </td>
                     <td data-label="Actions" class="actions-cell">
                         <div class="table-actions">
                             <x-ui.table-action href="{{ route('permissions.show', $permission) }}" label="View" data-modal-open>
@@ -52,12 +58,23 @@
                                     </svg>
                                 </x-ui.table-action>
                             @endif
+                            @if(auth()->user()?->hasPermission('permissions.delete'))
+                                <form action="{{ route('permissions.destroy', $permission) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this permission?')" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-ui.table-action type="submit" label="Delete" tone="danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/>
+                                        </svg>
+                                    </x-ui.table-action>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">
+                    <td colspan="7">
                         <div class="empty-state">No permissions matched the current filters.</div>
                     </td>
                 </tr>

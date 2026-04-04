@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -12,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -21,10 +22,21 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'gender',
+        'phone',
+        'location',
+        'department',
+        'job_title',
+        'profile_image',
         'email',
         'password',
         'status',
         'last_login_at',
+        'last_active_at',
+        'notifications_read_at',
     ];
 
     /**
@@ -47,6 +59,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'last_active_at' => 'datetime',
+            'notifications_read_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -104,5 +118,21 @@ class User extends Authenticatable
     public function primaryRole(): ?Role
     {
         return $this->roles->sortBy('name')->first();
+    }
+
+    public function getIsOnlineAttribute(): bool
+    {
+        return $this->last_active_at && $this->last_active_at->diffInMinutes(now()) <= 5;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($user) {
+            if ($user->first_name && $user->last_name && empty($user->name)) {
+                $user->name = trim("{$user->first_name} {$user->last_name}");
+            }
+        });
     }
 }

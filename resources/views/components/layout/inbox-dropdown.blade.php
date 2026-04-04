@@ -10,7 +10,7 @@
     <button
         type="button"
         @click="open = !open"
-        class="relative flex h-11 w-11 items-center justify-center rounded-[1rem] border border-border bg-card text-muted-foreground shadow-[0_14px_32px_-26px_rgba(15,23,42,0.18)] transition duration-300 hover:bg-secondary hover:text-primary"
+        class="group relative flex h-11 w-11 items-center justify-center rounded-[1rem] border border-border bg-card text-muted-foreground shadow-[0_14px_32px_-26px_rgba(15,23,42,0.18)] transition duration-300 hover:bg-secondary hover:text-primary"
         aria-label="Open inbox"
     >
         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -18,7 +18,9 @@
             <path d="M2 12.5h5l2 3h6l2-3h5"/>
             <path d="M5 18h14"/>
         </svg>
-        <span class="absolute right-2 top-2 flex h-2.5 w-2.5 rounded-full bg-primary"></span>
+        <span class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white shadow-[0_4px_12px_-4px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-transform duration-300 group-hover:scale-110">
+            {{ count($messages) }}
+        </span>
     </button>
 
     <div
