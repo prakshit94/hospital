@@ -1,35 +1,46 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Roles';
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h1 class="font-heading text-3xl font-black tracking-tight">Roles</h1>
-                <p class="mt-2 text-sm text-muted-foreground">Create and maintain reusable access profiles for your team.</p>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <span class="hero-kicker">Roles</span>
+                    <h1 class="hero-title">Roles</h1>
+                    <p class="hero-copy">Create and maintain reusable access profiles.</p>
+                </div>
+                @if(auth()->user()?->hasPermission('roles.create'))
+                    <x-ui.button href="{{ route('roles.create') }}" data-modal-open>Create Role</x-ui.button>
+                @endif
             </div>
-            @if(auth()->user()?->hasPermission('roles.create'))
-                <x-ui.button href="{{ route('roles.create') }}">Create Role</x-ui.button>
-            @endif
-        </div>
+        </section>
 
-        <x-ui.card>
-            <form method="GET" class="mb-5 grid gap-3 lg:grid-cols-[1fr_auto_auto]" data-async-search data-target="#roles-results" action="{{ route('roles.index') }}">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search roles..." class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
-                <select name="per_page" class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
+        <section class="data-shell">
+            <div class="section-header">
+                <div>
+                    <div class="section-kicker">Filters</div>
+                    <h2 class="section-title">Inspect role coverage</h2>
+                    <p class="section-copy">Search roles and review coverage.</p>
+                </div>
+            </div>
+
+            <form method="GET" class="data-toolbar lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_auto]" data-async-search data-target="#roles-results" action="{{ route('roles.index') }}">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search roles or slugs..." class="ui-input">
+                <select name="per_page" class="ui-select">
                     @foreach([5, 10, 25, 50, 100] as $size)
                         <option value="{{ $size }}" @selected((int) request('per_page', 5) === $size)>{{ $size }} per page</option>
                     @endforeach
                 </select>
-                <x-ui.button class="justify-center">Filter</x-ui.button>
+                <x-ui.button class="justify-center">Apply</x-ui.button>
             </form>
 
             <div id="roles-results">
                 @include('roles.partials.results')
             </div>
-        </x-ui.card>
+        </section>
     </div>
 @endsection

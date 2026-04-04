@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Edit Permission';
@@ -6,14 +6,17 @@
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h1 class="font-heading text-3xl font-black tracking-tight">Edit Permission</h1>
-                <p class="mt-2 text-sm text-muted-foreground">Adjust labels and grouping for {{ $permission->slug }}.</p>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <span class="hero-kicker">Granular Access</span>
+                    <h1 class="hero-title">Edit permission</h1>
+                    <p class="hero-copy">Adjust labels and grouping for {{ $permission->slug }}.</p>
+                </div>
+                <x-ui.button variant="ghost" href="{{ route('permissions.show', $permission) }}" data-modal-open>View Permission</x-ui.button>
             </div>
-            <x-ui.button variant="ghost" href="{{ route('permissions.show', $permission) }}">View Permission</x-ui.button>
-        </div>
+        </section>
 
         <form method="POST" action="{{ route('permissions.update', $permission) }}">
             @csrf

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Edit Role';
@@ -6,14 +6,17 @@
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h1 class="font-heading text-3xl font-black tracking-tight">Edit Role</h1>
-                <p class="mt-2 text-sm text-muted-foreground">Adjust permissions and metadata for {{ $role->name }}.</p>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <span class="hero-kicker">Access Profiles</span>
+                    <h1 class="hero-title">Edit role</h1>
+                    <p class="hero-copy">Adjust permissions and metadata for {{ $role->name }}.</p>
+                </div>
+                <x-ui.button variant="ghost" href="{{ route('roles.show', $role) }}" data-modal-open>View Role</x-ui.button>
             </div>
-            <x-ui.button variant="ghost" href="{{ route('roles.show', $role) }}">View Role</x-ui.button>
-        </div>
+        </section>
 
         <form method="POST" action="{{ route('roles.update', $role) }}">
             @csrf

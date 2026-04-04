@@ -1,46 +1,59 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Users';
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h1 class="font-heading text-3xl font-black tracking-tight">Users</h1>
-                <p class="mt-2 text-sm text-muted-foreground">Manage sign-in access, account state, and role assignments.</p>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <span class="hero-kicker">Users</span>
+                    <h1 class="hero-title">Users</h1>
+                    <p class="hero-copy">Manage sign-in access, account status, and role assignments.</p>
+                </div>
+                @if(auth()->user()?->hasPermission('users.create'))
+                    <x-ui.button href="{{ route('users.create') }}" data-modal-open>Create User</x-ui.button>
+                @endif
             </div>
-            @if(auth()->user()?->hasPermission('users.create'))
-                <x-ui.button href="{{ route('users.create') }}">Create User</x-ui.button>
-            @endif
-        </div>
+        </section>
 
-        <x-ui.card>
-            <form method="GET" class="mb-5 grid gap-3 lg:grid-cols-[1fr_auto_auto_auto_auto]" data-async-search data-target="#users-results" action="{{ route('users.index') }}">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search users..." class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
-                <select name="status" class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
+        <section class="data-shell">
+            <div class="section-header">
+                <div>
+                    <div class="section-kicker">Filters</div>
+                    <h2 class="section-title">Browse and refine user records</h2>
+                    <p class="section-copy">Search by name, status, or role.</p>
+                </div>
+            </div>
+
+            <form method="GET" class="data-toolbar lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))]" data-async-search data-target="#users-results" action="{{ route('users.index') }}">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..." class="ui-input">
+                <select name="status" class="ui-select">
                     <option value="">All statuses</option>
                     <option value="active" @selected(request('status') === 'active')>Active</option>
                     <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
                 </select>
-                <select name="role" class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
+                <select name="role" class="ui-select">
                     <option value="">All roles</option>
                     @foreach($roles as $role)
                         <option value="{{ $role->id }}" @selected((string) request('role') === (string) $role->id)>{{ $role->name }}</option>
                     @endforeach
                 </select>
-                <select name="per_page" class="rounded-2xl border border-border/70 bg-secondary/35 px-4 py-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20">
-                    @foreach([5, 10, 25, 50, 100] as $size)
-                        <option value="{{ $size }}" @selected((int) request('per_page', 5) === $size)>{{ $size }} per page</option>
-                    @endforeach
-                </select>
-                <x-ui.button class="justify-center">Filter</x-ui.button>
+                <div class="flex gap-3">
+                    <select name="per_page" class="ui-select">
+                        @foreach([5, 10, 25, 50, 100] as $size)
+                            <option value="{{ $size }}" @selected((int) request('per_page', 5) === $size)>{{ $size }} per page</option>
+                        @endforeach
+                    </select>
+                    <x-ui.button class="justify-center">Apply</x-ui.button>
+                </div>
             </form>
 
             <div id="users-results">
                 @include('users.partials.results')
             </div>
-        </x-ui.card>
+        </section>
     </div>
 @endsection

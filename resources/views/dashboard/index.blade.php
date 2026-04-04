@@ -1,95 +1,128 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Dashboard';
 @endphp
 
 @section('content')
-    <div class="space-y-8 p-6 lg:p-8">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h1 class="font-heading text-3xl font-black tracking-tight">Security Operations Dashboard</h1>
-                <p class="mt-2 max-w-2xl text-sm text-muted-foreground">Monitor account access, RBAC coverage, and the latest system activity from one place.</p>
-            </div>
-            <div class="flex items-center gap-3">
-                @if(auth()->user()?->hasPermission('users.create'))
-                    <x-ui.button variant="secondary" href="{{ route('users.create') }}">Create User</x-ui.button>
-                @endif
-                @if(auth()->user()?->hasPermission('roles.create'))
-                    <x-ui.button href="{{ route('roles.create') }}">Create Role</x-ui.button>
-                @endif
-            </div>
-        </div>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <div class="grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] xl:items-center">
+                <div>
+                    <span class="hero-kicker">Dashboard</span>
+                    <h1 class="hero-title">Security operations overview</h1>
+                    <p class="hero-copy">Monitor access, recent activity, and account changes from one place.</p>
 
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <div class="hero-actions">
+                        @if(auth()->user()?->hasPermission('users.create'))
+                            <x-ui.button variant="secondary" href="{{ route('users.create') }}" data-modal-open>Create User</x-ui.button>
+                        @endif
+                        @if(auth()->user()?->hasPermission('roles.create'))
+                            <x-ui.button href="{{ route('roles.create') }}" data-modal-open>Create Role</x-ui.button>
+                        @endif
+                        <x-ui.button variant="ghost" href="{{ route('reports.index') }}">Open Reports</x-ui.button>
+                    </div>
+
+                    <div class="hero-inline-metrics">
+                        @foreach($stats as $stat)
+                            <div class="hero-inline-metric">
+                                <div class="hero-inline-metric-label">{{ $stat['label'] }}</div>
+                                <div class="hero-inline-metric-value">{{ $stat['value'] }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                    <div class="metric-card">
+                        <div class="metric-label">Recent Activity</div>
+                        <div class="mt-3 space-y-3">
+                            @forelse($activities->take(2) as $activity)
+                                <div class="list-card">
+                                    <div class="text-sm font-semibold text-foreground">{{ $activity->description ?: $activity->action }}</div>
+                                    <div class="mt-1 text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">{{ $activity->created_at?->diffForHumans() }}</div>
+                                </div>
+                            @empty
+                                <div class="empty-state">No recent activity yet.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="metric-grid">
             @foreach($stats as $stat)
-                <x-ui.card class="relative overflow-hidden">
-                    <div class="absolute inset-x-0 top-0 h-1 bg-emerald-500"></div>
-                    <div class="space-y-3">
-                        <div class="text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">{{ $stat['label'] }}</div>
-                        <div class="font-heading text-3xl font-black tracking-tight">{{ $stat['value'] }}</div>
-                        <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ $stat['change'] }}</div>
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19h16"/>
+                            <path d="M4 15 8 9l4 3 6-8"/>
+                        </svg>
                     </div>
-                </x-ui.card>
+                    <div class="metric-label">{{ $stat['label'] }}</div>
+                    <div class="metric-value">{{ $stat['value'] }}</div>
+                    <div class="metric-meta">{{ $stat['change'] }}</div>
+                </div>
             @endforeach
-        </div>
+        </section>
 
-        <div class="grid gap-6 xl:grid-cols-3">
-            <x-ui.card class="xl:col-span-2">
-                <div class="mb-6 flex items-center justify-between">
+        <section class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.8fr)]">
+            <x-ui.card>
+                <div class="section-header">
                     <div>
-                        <h2 class="font-heading text-xl font-bold">Recent User Activity</h2>
-                        <p class="text-sm text-muted-foreground">Latest logins and administrative changes captured in the audit trail.</p>
+                        <div class="section-kicker">Activity</div>
+                        <h2 class="section-title">Recent user activity</h2>
+                        <p class="section-copy">Latest sign-ins and administrative changes.</p>
                     </div>
-                    <x-ui.button variant="ghost" href="{{ route('activity-logs.index') }}">Open log</x-ui.button>
+                    <x-ui.button variant="ghost" href="{{ route('activity-logs.index') }}">Open Log</x-ui.button>
                 </div>
 
                 <div class="space-y-3">
                     @forelse($activities as $activity)
-                        <div class="rounded-2xl border border-border/60 bg-secondary/35 p-4">
-                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="list-card">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                                 <div>
                                     <div class="text-sm font-semibold text-foreground">{{ $activity->description ?: $activity->action }}</div>
-                                    <div class="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                                        {{ $activity->action }} · {{ $activity->causer?->name ?? 'System' }}
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        <span class="ui-chip">{{ $activity->action }}</span>
+                                        <span class="ui-chip-muted">{{ $activity->causer?->name ?? 'System' }}</span>
                                     </div>
                                 </div>
-                                <div class="text-xs font-semibold text-muted-foreground">{{ $activity->created_at?->diffForHumans() }}</div>
+                                <div class="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">{{ $activity->created_at?->diffForHumans() }}</div>
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-2xl border border-dashed border-border/70 p-6 text-sm text-muted-foreground">
-                            Activity will appear here once users start signing in or changing records.
-                        </div>
+                        <div class="empty-state">Activity will appear here once users start signing in or changing records.</div>
                     @endforelse
                 </div>
             </x-ui.card>
 
             <x-ui.card>
-                <div class="mb-5">
-                    <h2 class="font-heading text-xl font-bold">Newest Accounts</h2>
-                    <p class="text-sm text-muted-foreground">Quick view of recently added users and their current role.</p>
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">Users</div>
+                        <h2 class="section-title">Newest team members</h2>
+                        <p class="section-copy">Recently added users and their current role.</p>
+                    </div>
                 </div>
+
                 <div class="space-y-3">
                     @forelse($users as $user)
-                        <div class="rounded-2xl border border-border/60 bg-secondary/35 p-4">
-                            <div class="flex items-center justify-between gap-4">
+                        <div class="list-card">
+                            <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <div class="text-sm font-semibold text-foreground">{{ $user->name }}</div>
                                     <div class="mt-1 text-xs text-muted-foreground">{{ $user->email }}</div>
                                 </div>
-                                <span class="rounded-xl bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-primary">
-                                    {{ $user->primaryRole()?->name ?? 'No role' }}
-                                </span>
+                                <span class="ui-chip">{{ $user->primaryRole()?->name ?? 'No role' }}</span>
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-2xl border border-dashed border-border/70 p-6 text-sm text-muted-foreground">
-                            No users found yet.
-                        </div>
+                        <div class="empty-state">No users found yet.</div>
                     @endforelse
                 </div>
             </x-ui.card>
-        </div>
+        </section>
     </div>
 @endsection

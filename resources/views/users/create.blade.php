@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Create User';
@@ -6,11 +6,12 @@
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div>
-            <h1 class="font-heading text-3xl font-black tracking-tight">Create User</h1>
-            <p class="mt-2 text-sm text-muted-foreground">Provision a new account and assign one or more access roles.</p>
-        </div>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <span class="hero-kicker">Provision Access</span>
+            <h1 class="hero-title">Create a new user</h1>
+            <p class="hero-copy">Provision a new account and assign one or more access roles with the upgraded responsive form experience.</p>
+        </section>
 
         <form method="POST" action="{{ route('users.store') }}">
             @csrf

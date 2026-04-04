@@ -7,6 +7,7 @@ use App\Http\Requests\UpdatePermissionRequest;
 use App\Models\ActivityLog;
 use App\Models\Permission;
 use App\Services\ActivityLogService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,14 +39,26 @@ class PermissionController extends Controller
         return view('permissions.index', compact('permissions'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('permissions.create', [
+        $payload = [
             'permission' => new Permission(['group_name' => 'dashboard']),
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return view('permissions.modal-form', $payload + [
+                'pageTitle' => 'Create Permission',
+                'pageDescription' => 'Add a reusable capability that roles can inherit.',
+                'formAction' => route('permissions.store'),
+                'formMethod' => 'POST',
+                'submitLabel' => 'Save Permission',
+            ]);
+        }
+
+        return view('permissions.create', $payload);
     }
 
-    public function store(StorePermissionRequest $request): RedirectResponse
+    public function store(StorePermissionRequest $request): RedirectResponse|JsonResponse
     {
         $permission = Permission::create($request->validated());
 
@@ -56,12 +69,19 @@ class PermissionController extends Controller
             "Created permission {$permission->slug}.",
         );
 
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Permission created successfully.',
+            ]);
+        }
+
         return redirect()
             ->route('permissions.index')
             ->with('status', 'Permission created successfully.');
     }
 
-    public function show(Permission $permission): View
+    public function show(Request $request, Permission $permission): View
     {
         $permission->load('roles');
 
@@ -73,15 +93,30 @@ class PermissionController extends Controller
             ->take(10)
             ->get();
 
+        if ($request->ajax()) {
+            return view('permissions.modal-show', compact('permission', 'activities'));
+        }
+
         return view('permissions.show', compact('permission', 'activities'));
     }
 
-    public function edit(Permission $permission): View
+    public function edit(Request $request, Permission $permission): View
     {
+        if ($request->ajax()) {
+            return view('permissions.modal-form', [
+                'permission' => $permission,
+                'pageTitle' => 'Edit Permission',
+                'pageDescription' => "Update labels and grouping for {$permission->slug}.",
+                'formAction' => route('permissions.update', $permission),
+                'formMethod' => 'PUT',
+                'submitLabel' => 'Update Permission',
+            ]);
+        }
+
         return view('permissions.edit', compact('permission'));
     }
 
-    public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
+    public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse|JsonResponse
     {
         $permission->update($request->validated());
 
@@ -91,6 +126,13 @@ class PermissionController extends Controller
             $permission,
             "Updated permission {$permission->slug}.",
         );
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Permission updated successfully.',
+            ]);
+        }
 
         return redirect()
             ->route('permissions.show', $permission)

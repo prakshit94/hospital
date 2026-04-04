@@ -1,27 +1,29 @@
-<div class="flex items-center gap-1 rounded-2xl border border-border/60 bg-secondary/35 p-1">
+<div class="flex items-center gap-1 rounded-[1rem] border border-border bg-secondary p-1">
     <button
         type="button"
         @click="setTheme('light')"
-        class="rounded-xl px-3 py-2 text-xs font-bold transition"
-        :class="theme === 'light' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        class="rounded-[1rem] px-2 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition sm:px-3 sm:tracking-[0.18em]"
+        :class="theme === 'light' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
     >
-        Light
+        <span class="sm:hidden">D</span>
+        <span class="hidden sm:inline">Day</span>
     </button>
     <button
         type="button"
         @click="setTheme('dark')"
-        class="rounded-xl px-3 py-2 text-xs font-bold transition"
-        :class="theme === 'dark' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        class="rounded-[1rem] px-2 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition sm:px-3 sm:tracking-[0.18em]"
+        :class="theme === 'dark' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
     >
-        Dark
+        <span class="sm:hidden">N</span>
+        <span class="hidden sm:inline">Night</span>
     </button>
     <button
         type="button"
         @click="setTheme('system')"
-        class="rounded-xl px-3 py-2 text-xs font-bold transition"
-        :class="theme === 'system' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        class="rounded-[1rem] px-2 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition sm:px-3 sm:tracking-[0.18em]"
+        :class="theme === 'system' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
     >
-        Auto
+        <span class="sm:hidden">A</span>
+        <span class="hidden sm:inline">Auto</span>
     </button>
 </div>
-

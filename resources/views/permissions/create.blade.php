@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $pageTitle = 'Create Permission';
@@ -6,11 +6,12 @@
 @endphp
 
 @section('content')
-    <div class="space-y-6 p-6 lg:p-8">
-        <div>
-            <h1 class="font-heading text-3xl font-black tracking-tight">Create Permission</h1>
-            <p class="mt-2 text-sm text-muted-foreground">Add a new granular capability that roles can inherit.</p>
-        </div>
+    <div class="page-stack">
+        <section class="hero-panel">
+            <span class="hero-kicker">Granular Access</span>
+            <h1 class="hero-title">Create permission</h1>
+            <p class="hero-copy">Add a new granular capability that roles can inherit across the platform.</p>
+        </section>
 
         <form method="POST" action="{{ route('permissions.store') }}">
             @csrf

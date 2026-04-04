@@ -1,45 +1,84 @@
+<div class="table-toolbar">
+    <div class="table-toolbar-copy">
+        <div class="table-toolbar-title">User Directory</div>
+        <p>Review account access, status, and role assignments in one place.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+        <span class="table-toolbar-stat">{{ $users->total() }} total users</span>
+        @if(auth()->user()?->hasPermission('users.create'))
+            <x-ui.button href="{{ route('users.create') }}" data-modal-open>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 5v14"/>
+                    <path d="M5 12h14"/>
+                </svg>
+                Add User
+            </x-ui.button>
+        @endif
+    </div>
+</div>
+
 <div class="overflow-x-auto">
-    <table class="min-w-full text-left">
-        <thead class="border-b border-border/60 text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+    <table>
+        <thead>
             <tr>
-                <th class="px-4 py-3">Name</th>
-                <th class="px-4 py-3">Email</th>
-                <th class="px-4 py-3">Roles</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Last Login</th>
-                <th class="px-4 py-3 text-right">Actions</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th class="text-right">Actions</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-border/60">
+        <tbody>
             @forelse($users as $user)
-                <tr class="transition hover:bg-secondary/25">
-                    <td class="px-4 py-4 font-semibold text-foreground">{{ $user->name }}</td>
-                    <td class="px-4 py-4 text-sm text-muted-foreground">{{ $user->email }}</td>
-                    <td class="px-4 py-4">
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($user->roles as $role)
-                                <span class="rounded-xl bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-primary">{{ $role->name }}</span>
-                            @endforeach
+                <tr>
+                    <td data-label="Name">
+                        <div>
+                            <div class="table-primary">{{ $user->name }}</div>
+                            <div class="mt-1 text-xs text-muted-foreground">User #{{ $user->id }}</div>
                         </div>
                     </td>
-                    <td class="px-4 py-4">
-                        <span class="rounded-xl px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] {{ $user->status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'bg-rose-500/10 text-rose-600 dark:text-rose-300' }}">
+                    <td data-label="Email" class="table-secondary">{{ $user->email }}</td>
+                    <td data-label="Roles">
+                        <div class="flex flex-wrap gap-2 md:justify-end lg:justify-start">
+                            @forelse($user->roles as $role)
+                                <span class="ui-chip">{{ $role->name }}</span>
+                            @empty
+                                <span class="ui-chip-muted">No role</span>
+                            @endforelse
+                        </div>
+                    </td>
+                    <td data-label="Status">
+                        <span class="{{ $user->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">
                             {{ $user->status }}
                         </span>
                     </td>
-                    <td class="px-4 py-4 text-sm text-muted-foreground">{{ $user->last_login_at?->diffForHumans() ?? 'Never' }}</td>
-                    <td class="px-4 py-4 text-right">
-                        <div class="inline-flex items-center gap-2">
-                            <x-ui.button variant="ghost" href="{{ route('users.show', $user) }}">View</x-ui.button>
+                    <td data-label="Last Login" class="table-secondary">{{ $user->last_login_at?->diffForHumans() ?? 'Never' }}</td>
+                    <td data-label="Actions" class="actions-cell">
+                        <div class="table-actions">
+                            <x-ui.table-action href="{{ route('users.show', $user) }}" label="View" data-modal-open>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M2.06 12.35a1 1 0 0 1 0-.7C3.42 8.6 6.47 6 12 6s8.58 2.6 9.94 5.65a1 1 0 0 1 0 .7C20.58 15.4 17.53 18 12 18s-8.58-2.6-9.94-5.65Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </x-ui.table-action>
                             @if(auth()->user()?->hasPermission('users.update'))
-                                <x-ui.button variant="secondary" href="{{ route('users.edit', $user) }}">Edit</x-ui.button>
+                                <x-ui.table-action href="{{ route('users.edit', $user) }}" label="Edit" tone="primary" data-modal-open>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 20h9"/>
+                                        <path d="m16.5 3.5 4 4L7 21H3v-4z"/>
+                                    </svg>
+                                </x-ui.table-action>
                             @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-sm text-muted-foreground">No users matched the current filters.</td>
+                    <td colspan="6">
+                        <div class="empty-state">No users matched the current filters.</div>
+                    </td>
                 </tr>
             @endforelse
         </tbody>

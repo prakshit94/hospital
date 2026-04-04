@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\ActivityLogService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,17 +38,29 @@ class RoleController extends Controller
         return view('roles.index', compact('roles'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $permissionGroups = Permission::orderBy('group_name')->orderBy('name')->get()->groupBy('group_name');
 
-        return view('roles.create', [
+        $payload = [
             'role' => new Role(),
             'permissionGroups' => $permissionGroups,
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return view('roles.modal-form', $payload + [
+                'pageTitle' => 'Create Role',
+                'pageDescription' => 'Bundle permissions into a reusable access profile.',
+                'formAction' => route('roles.store'),
+                'formMethod' => 'POST',
+                'submitLabel' => 'Save Role',
+            ]);
+        }
+
+        return view('roles.create', $payload);
     }
 
-    public function store(StoreRoleRequest $request): RedirectResponse
+    public function store(StoreRoleRequest $request): RedirectResponse|JsonResponse
     {
         $role = Role::create($request->safe()->except('permissions'));
         $role->permissions()->sync($request->validated('permissions', []));
@@ -60,12 +73,19 @@ class RoleController extends Controller
             ['permissions' => $role->permissions()->pluck('slug')->all()],
         );
 
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Role created successfully.',
+            ]);
+        }
+
         return redirect()
             ->route('roles.index')
             ->with('status', 'Role created successfully.');
     }
 
-    public function show(Role $role): View
+    public function show(Request $request, Role $role): View
     {
         $role->load(['permissions', 'users']);
 
@@ -77,18 +97,34 @@ class RoleController extends Controller
             ->take(10)
             ->get();
 
+        if ($request->ajax()) {
+            return view('roles.modal-show', compact('role', 'activities'));
+        }
+
         return view('roles.show', compact('role', 'activities'));
     }
 
-    public function edit(Role $role): View
+    public function edit(Request $request, Role $role): View
     {
         $role->load('permissions');
         $permissionGroups = Permission::orderBy('group_name')->orderBy('name')->get()->groupBy('group_name');
 
+        if ($request->ajax()) {
+            return view('roles.modal-form', [
+                'role' => $role,
+                'permissionGroups' => $permissionGroups,
+                'pageTitle' => 'Edit Role',
+                'pageDescription' => "Update permissions and metadata for {$role->name}.",
+                'formAction' => route('roles.update', $role),
+                'formMethod' => 'PUT',
+                'submitLabel' => 'Update Role',
+            ]);
+        }
+
         return view('roles.edit', compact('role', 'permissionGroups'));
     }
 
-    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
+    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse|JsonResponse
     {
         $role->update($request->safe()->except('permissions'));
         $role->permissions()->sync($request->validated('permissions', []));
@@ -100,6 +136,13 @@ class RoleController extends Controller
             "Updated role {$role->name}.",
             ['permissions' => $role->permissions()->pluck('slug')->all()],
         );
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Role updated successfully.',
+            ]);
+        }
 
         return redirect()
             ->route('roles.show', $role)

@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,17 +42,29 @@ class UserController extends Controller
         return view('users.index', compact('users', 'roles'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $roles = Role::query()->with('permissions')->orderBy('name')->get();
 
-        return view('users.create', [
+        $payload = [
             'user' => new User(['status' => 'active']),
             'roles' => $roles,
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return view('users.modal-form', $payload + [
+                'pageTitle' => 'Create User',
+                'pageDescription' => 'Add a new account and assign one or more roles.',
+                'formAction' => route('users.store'),
+                'formMethod' => 'POST',
+                'submitLabel' => 'Save User',
+            ]);
+        }
+
+        return view('users.create', $payload);
     }
 
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request): RedirectResponse|JsonResponse
     {
         $user = User::create($request->safe()->except('roles'));
         $user->roles()->sync($request->validated('roles'));
@@ -64,12 +77,19 @@ class UserController extends Controller
             ['roles' => $user->roles()->pluck('slug')->all()],
         );
 
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User created successfully.',
+            ]);
+        }
+
         return redirect()
             ->route('users.index')
             ->with('status', 'User created successfully.');
     }
 
-    public function show(User $user): View
+    public function show(Request $request, User $user): View
     {
         $user->load('roles.permissions');
 
@@ -84,18 +104,34 @@ class UserController extends Controller
             ->take(10)
             ->get();
 
+        if ($request->ajax()) {
+            return view('users.modal-show', compact('user', 'activities'));
+        }
+
         return view('users.show', compact('user', 'activities'));
     }
 
-    public function edit(User $user): View
+    public function edit(Request $request, User $user): View
     {
         $user->load('roles');
         $roles = Role::query()->with('permissions')->orderBy('name')->get();
 
+        if ($request->ajax()) {
+            return view('users.modal-form', [
+                'user' => $user,
+                'roles' => $roles,
+                'pageTitle' => 'Edit User',
+                'pageDescription' => "Update account details, status, and assigned roles for {$user->email}.",
+                'formAction' => route('users.update', $user),
+                'formMethod' => 'PUT',
+                'submitLabel' => 'Update User',
+            ]);
+        }
+
         return view('users.edit', compact('user', 'roles'));
     }
 
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse|JsonResponse
     {
         $data = $request->safe()->except(['roles', 'password']);
 
@@ -113,6 +149,13 @@ class UserController extends Controller
             "Updated user {$user->email}.",
             ['roles' => $user->roles()->pluck('slug')->all()],
         );
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User updated successfully.',
+            ]);
+        }
 
         return redirect()
             ->route('users.show', $user)
