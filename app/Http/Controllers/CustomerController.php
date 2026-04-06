@@ -74,6 +74,10 @@ class CustomerController extends Controller
                 $validated['crops'] = array_map('trim', explode(',', $request->crops_input));
             }
 
+            if ($request->filled('irrigation_types_input')) {
+                $validated['irrigation_type'] = array_map('trim', explode(',', $request->irrigation_types_input));
+            }
+
             $customer = Customer::create($validated);
 
             ActivityLogService::logWithChanges(
@@ -84,6 +88,7 @@ class CustomerController extends Controller
             );
 
             $msg = "New customer '{$customer->display_name}' has been successfully registered.";
+            session()->flash('status', $msg);
 
             if ($request->ajax()) {
                 return response()->json([
@@ -161,6 +166,7 @@ class CustomerController extends Controller
             );
 
             $msg = "Profile details for '{$customer->display_name}' have been updated.";
+            session()->flash('status', $msg);
 
             if ($request->ajax()) {
                 return response()->json([

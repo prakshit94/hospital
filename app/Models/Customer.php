@@ -76,6 +76,7 @@ class Customer extends Model
 
     protected $casts = [
         'crops' => 'array',
+        'irrigation_type' => 'array',
         'tags' => 'array',
         'meta' => 'array',
         'credit_limit' => 'decimal:2',

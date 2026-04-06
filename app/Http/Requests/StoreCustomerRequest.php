@@ -38,6 +38,9 @@ class StoreCustomerRequest extends FormRequest
             'payment_terms_days' => ['nullable', 'integer', 'min:0'],
             'aadhaar_last4' => ['nullable', 'string', 'size:4'],
             'lead_status' => ['nullable', 'in:lead,converted,inactive'],
+            'crops' => ['nullable', 'array'],
+            'crops.*' => ['string', 'max:255'],
+            'crops_input' => ['nullable', 'string'],
             'internal_notes' => ['nullable', 'string'],
         ];
     }
