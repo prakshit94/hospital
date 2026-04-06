@@ -46,10 +46,13 @@ class ActivityLogService
     ): ActivityLog {
         $properties = $extraProperties;
 
-        if ($action === 'user.updated' || $action === 'role.updated' || $action === 'permission.updated') {
+        $isUpdate = str_ends_with($action, '.updated');
+        $isCreate = str_ends_with($action, '.created');
+
+        if ($isUpdate) {
             $changes = self::getModelChanges($model);
             $properties = array_merge($properties, $changes);
-        } elseif ($action === 'user.created' || $action === 'role.created' || $action === 'permission.created') {
+        } elseif ($isCreate) {
             $properties['new'] = self::filterSensitiveFields($model->toArray());
         }
 

@@ -5,9 +5,9 @@ window.Alpine = Alpine;
 Alpine.start();
 
 const debounceTimers = new WeakMap();
-const modalRoot = document.querySelector('#app-modal-root');
-const modalContent = modalRoot?.querySelector('[data-modal-content]') ?? null;
-const modalBackdrop = modalRoot?.querySelector('[data-modal-backdrop]') ?? null;
+const getModalRoot = () => document.querySelector('#app-modal-root');
+const getModalContent = () => document.querySelector('#app-modal-root [data-modal-content]');
+const getModalBackdrop = () => document.querySelector('#app-modal-root [data-modal-backdrop]');
 
 function buildAsyncSearchUrl(form, href = null) {
     const url = new URL(href || form.action || window.location.href, window.location.origin);
@@ -135,31 +135,37 @@ document.addEventListener('keydown', (event) => {
 });
 
 function openModalShell() {
-    if (!modalRoot) {
+    const root = getModalRoot();
+    if (!root) {
         return;
     }
 
-    modalRoot.classList.remove('hidden');
+    root.classList.remove('hidden');
     document.body.classList.add('overflow-hidden');
 }
 
 function closeModalShell() {
-    if (!modalRoot || !modalContent) {
+    const root = getModalRoot();
+    const content = getModalContent();
+
+    if (!root || !content) {
         return;
     }
 
-    modalRoot.classList.add('hidden');
-    modalContent.innerHTML = '';
+    root.classList.add('hidden');
+    content.innerHTML = '';
     document.body.classList.remove('overflow-hidden');
 }
 
 async function openCrudModal(url) {
-    if (!modalContent) {
+    const content = getModalContent();
+
+    if (!content) {
         return;
     }
 
     openModalShell();
-    modalContent.innerHTML = `
+    content.innerHTML = `
         <div class="p-6 text-sm text-muted-foreground">
             Loading...
         </div>
@@ -178,11 +184,11 @@ async function openCrudModal(url) {
             throw new Error(`Request failed with status ${response.status}`);
         }
 
-        modalContent.innerHTML = await response.text();
-        modalContent.querySelector('input, select, textarea, button')?.focus();
+        content.innerHTML = await response.text();
+        content.querySelector('input, select, textarea, button')?.focus();
     } catch (error) {
         console.error('Modal load failed', error);
-        modalContent.innerHTML = `
+        content.innerHTML = `
             <div class="p-6">
                 <div class="modal-error-summary">
                     We could not load this form right now. Please try again.
@@ -333,7 +339,7 @@ document.addEventListener('click', (event) => {
         return;
     }
 
-    if (event.target.closest('[data-modal-close]') || (modalBackdrop && event.target === modalBackdrop)) {
+    if (event.target.closest('[data-modal-close]') || (getModalBackdrop() && event.target === getModalBackdrop())) {
         closeModalShell();
     }
 });
@@ -354,7 +360,7 @@ document.addEventListener('submit', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modalRoot && !modalRoot.classList.contains('hidden')) {
+    if (event.key === 'Escape' && getModalRoot() && !getModalRoot().classList.contains('hidden')) {
         closeModalShell();
     }
 });

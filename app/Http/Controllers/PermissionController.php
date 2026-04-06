@@ -141,10 +141,10 @@ class PermissionController extends Controller
             ->with('status', 'Permission updated successfully.');
     }
 
-    public function destroy(Permission $permission): RedirectResponse
+    public function destroy(Request $request, Permission $permission): RedirectResponse
     {
         ActivityLogService::log(
-            auth()->user(),
+            $request->user(), // ✅ FIXED
             'permission.deleted',
             $permission,
             "Deleted permission {$permission->slug}.",
@@ -157,14 +157,17 @@ class PermissionController extends Controller
             ->with('status', 'Permission deleted successfully.');
     }
 
-    public function toggleStatus(Permission $permission): JsonResponse
+    public function toggleStatus(Request $request, Permission $permission): JsonResponse
     {
         $oldStatus = $permission->status;
+
+        // ✅ safer toggle
         $newStatus = $oldStatus === 'active' ? 'inactive' : 'active';
+
         $permission->update(['status' => $newStatus]);
 
         ActivityLogService::log(
-            auth()->user(),
+            $request->user(), // ✅ FIXED
             'permission.status_toggled',
             $permission,
             "Changed status for {$permission->slug} from {$oldStatus} to {$newStatus}.",

@@ -10,6 +10,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerAddressController;
+use App\Http\Controllers\VillageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check()
@@ -68,4 +71,24 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:permissions.update')->match(['put', 'patch'], '/permissions/{permission}', [PermissionController::class, 'update'])->name('permissions.update');
     Route::middleware('permission:permissions.update')->post('/permissions/{permission}/toggle-status', [PermissionController::class, 'toggleStatus'])->name('permissions.toggle-status');
     Route::middleware('permission:permissions.delete')->delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
+
+    // CRM - Customers
+    Route::middleware('permission:customers.view')->group(function () {
+        Route::resource('customers', CustomerController::class);
+        Route::post('customers/{customer}/addresses', [CustomerAddressController::class, 'store'])->name('customers.addresses.store');
+        Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
+        Route::post('customers/bulk-action', [CustomerController::class, 'bulkAction'])->name('customers.bulk-action');
+        Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
+    });
+    Route::middleware('permission:customers.update')->group(function () {
+        Route::put('customer-addresses/{address}', [CustomerAddressController::class, 'update'])->name('customers.addresses.update');
+        Route::delete('customer-addresses/{address}', [CustomerAddressController::class, 'destroy'])->name('customers.addresses.destroy');
+    });
+
+    // CRM - Villages
+    Route::middleware('permission:villages.view')->group(function () {
+        Route::resource('villages', VillageController::class);
+        Route::post('villages/{village}/toggle-status', [VillageController::class, 'toggleStatus'])->name('villages.toggle-status');
+        Route::post('villages/bulk-action', [VillageController::class, 'bulkAction'])->name('villages.bulk-action');
+    });
 });

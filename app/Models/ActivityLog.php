@@ -19,13 +19,21 @@ class ActivityLog extends Model
         'user_agent',
     ];
 
+    /**
+     * Cast attributes
+     */
     protected function casts(): array
     {
         return [
-            'properties' => 'array',
+            'properties' => 'array', // ✅ always array
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
+    /**
+     * Relationships
+     */
     public function causer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'causer_id');
@@ -34,5 +42,53 @@ class ActivityLog extends Model
     public function subject(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * ✅ Helper: safely get old values
+     */
+    public function getOldAttributes(): array
+    {
+        $old = data_get($this->properties, 'old', []);
+        return is_array($old) ? $old : [];
+    }
+
+    /**
+     * ✅ Helper: safely get new values
+     */
+    public function getNewAttributes(): array
+    {
+        $new = data_get($this->properties, 'attributes', []);
+        return is_array($new) ? $new : [];
+    }
+
+    /**
+     * ✅ Helper: count changed fields safely
+     */
+    public function getChangedCount(): int
+    {
+        return count($this->getOldAttributes());
+    }
+
+    /**
+     * ✅ Optional: readable action label
+     */
+    public function getActionLabel(): string
+    {
+        return ucwords(str_replace(['.', '_'], ' ', $this->action));
+    }
+
+    /**
+     * ✅ Optional: tone helper (UI friendly)
+     */
+    public function getTone(): string
+    {
+        return match (true) {
+            str_contains($this->action, 'created') => 'success',
+            str_contains($this->action, 'updated') => 'primary',
+            str_contains($this->action, 'deleted') => 'danger',
+            str_contains($this->action, 'status') => 'primary',
+            default => 'muted',
+        };
     }
 }

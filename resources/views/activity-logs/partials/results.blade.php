@@ -123,15 +123,23 @@
                                     </div>
                                 </div>
 
-                                {{-- Raw JSON Data --}}
                                 <div class="mt-6">
-                                    <div class="rounded-xl border border-border bg-[#0f172a] shadow-inner overflow-hidden">
+                                    <div class="rounded-xl border border-border bg-[#0f172a] shadow-inner overflow-hidden flex flex-col h-full">
                                         <div class="flex items-center justify-between border-b border-white/5 bg-white/5 px-4 py-2">
-                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Raw JSON Payload</span>
-                                            <span class="text-[9px] font-medium text-slate-500 uppercase tracking-tight">Structured Data View</span>
+                                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Complete JSON Activity Data</span>
+                                            <button 
+                                                type="button"
+                                                @click="
+                                                    navigator.clipboard.writeText($el.parentElement.nextElementSibling.innerText.trim());
+                                                    window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'success', title: 'Copied', description: 'Activity JSON copied to clipboard' }}));
+                                                "
+                                                class="text-[9px] font-bold text-primary hover:text-primary-foreground/90 bg-primary/20 hover:bg-primary px-2 py-1 rounded transition-all uppercase tracking-tight"
+                                            >
+                                                Copy Full JSON
+                                            </button>
                                         </div>
-                                        <div class="max-h-[300px] overflow-auto custom-scrollbar p-4">
-                                            <pre class="text-[11px] leading-relaxed text-emerald-400 font-mono italic"><code>{{ json_encode($activity->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</code></pre>
+                                        <div class="flex-1 max-h-[400px] overflow-auto custom-scrollbar p-4">
+                                            <pre class="text-[11px] leading-relaxed text-emerald-400 font-mono italic whitespace-pre-wrap"><code>{{ json_encode($activity->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</code></pre>
                                         </div>
                                     </div>
                                 </div>

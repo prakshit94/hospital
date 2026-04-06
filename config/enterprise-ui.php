@@ -44,8 +44,8 @@ return [
                     'title' => 'Customers',
                     'icon' => 'users',
                     'children' => [
-                        ['title' => 'All Customers', 'url' => '#', 'pattern' => 'customers*', 'icon' => 'users', 'permission' => 'customers.view'],
-                        ['title' => 'Customer Groups', 'url' => '#', 'pattern' => 'customer-groups*', 'icon' => 'users', 'permission' => 'customer_groups.view'],
+                        ['title' => 'All Customers', 'route' => 'customers.index', 'pattern' => 'customers*', 'icon' => 'users', 'permission' => 'customers.view'],
+                        ['title' => 'Villages/Locations', 'route' => 'villages.index', 'pattern' => 'villages*', 'icon' => 'layers', 'permission' => 'villages.view'],
                     ],
                 ],
                 [
