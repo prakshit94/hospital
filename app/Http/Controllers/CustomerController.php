@@ -37,6 +37,12 @@ class CustomerController extends Controller
                     ? $query->onlyTrashed()
                     : $query->where('status', $status);
             })
+            ->when($request->filled('type'), function ($query) use ($request) {
+                $query->where('type', $request->string('type')->toString());
+            })
+            ->when($request->filled('lead_status'), function ($query) use ($request) {
+                $query->where('lead_status', $request->string('lead_status')->toString());
+            })
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
