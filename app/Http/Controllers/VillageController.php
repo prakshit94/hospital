@@ -174,6 +174,30 @@ class VillageController extends Controller
         }
     }
 
+    public function search(Request $request): JsonResponse
+    {
+        $search = $request->query('q');
+        
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $villages = Village::query()
+            ->active()
+            ->where(function ($q) use ($search) {
+                $q->where('village_name', 'like', "%{$search}%")
+                  ->orWhere('pincode', 'like', "{$search}%")
+                  ->orWhere('taluka_name', 'like', "%{$search}%")
+                  ->orWhere('district_name', 'like', "%{$search}%")
+                  ->orWhere('post_so_name', 'like', "%{$search}%");
+            })
+            ->select(['id', 'village_name', 'pincode', 'taluka_name', 'district_name', 'state_name', 'post_so_name'])
+            ->limit(10)
+            ->get();
+
+        return response()->json($villages);
+    }
+
     private function logBulkAction(string $event, array $ids, string $description, array $extra = []): void
     {
         ActivityLogService::log(

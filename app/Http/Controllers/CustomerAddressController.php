@@ -27,6 +27,7 @@ class CustomerAddressController extends Controller
             'country' => 'nullable|string|max:100',
             'pincode' => 'nullable|string|max:20',
             'post_office' => 'nullable|string|max:255',
+            'village_id' => 'nullable|exists:villages,id',
             'is_default' => 'nullable|boolean',
         ]);
 
@@ -92,6 +93,7 @@ class CustomerAddressController extends Controller
             'country' => 'nullable|string|max:100',
             'pincode' => 'nullable|string|max:20',
             'post_office' => 'nullable|string|max:255',
+            'village_id' => 'nullable|exists:villages,id',
             'is_default' => 'nullable|boolean',
         ]);
 

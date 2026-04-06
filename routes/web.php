@@ -79,6 +79,7 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/addresses', [CustomerAddressController::class, 'store'])->name('customers.addresses.store');
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
         Route::post('customers/bulk-action', [CustomerController::class, 'bulkAction'])->name('customers.bulk-action');
+        Route::post('customers/{customer}/interactions', [CustomerController::class, 'storeInteraction'])->name('customers.interactions.store');
         Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
     });
     Route::middleware('permission:customers.update')->group(function () {
@@ -89,7 +90,11 @@ Route::middleware('auth')->group(function () {
     // CRM - Villages
     Route::middleware('permission:villages.view')->group(function () {
         Route::resource('villages', VillageController::class);
+        Route::get('villages-search', [VillageController::class, 'search'])->name('villages.search');
         Route::post('villages/{village}/toggle-status', [VillageController::class, 'toggleStatus'])->name('villages.toggle-status');
         Route::post('villages/bulk-action', [VillageController::class, 'bulkAction'])->name('villages.bulk-action');
     });
+
+    // CRM - Products Hub
+    Route::get('products-search', [\App\Http\Controllers\ProductController::class, 'search'])->name('products.search');
 });

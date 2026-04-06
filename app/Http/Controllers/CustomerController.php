@@ -78,14 +78,12 @@ class CustomerController extends Controller
 
     public function create(Request $request): View
     {
-        $villages = Village::active()->orderBy('village_name')->get();
         // prefill mobile if provided
         $customer = new Customer(['mobile' => $request->mobile]);
 
         if ($request->ajax()) {
             return view('customers.modal-form', [
                 'customer' => $customer,
-                'villages' => $villages,
                 'pageTitle' => 'Quick Register',
                 'pageDescription' => "Enrolling new profile for: {$request->mobile}",
                 'formAction' => route('customers.store'),
@@ -93,7 +91,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return view('customers.create', compact('villages', 'customer'));
+        return view('customers.create', compact('customer'));
     }
 
     public function store(StoreCustomerRequest $request): RedirectResponse|JsonResponse
@@ -149,27 +147,59 @@ class CustomerController extends Controller
     {
         $customer->load(['addresses.village', 'primaryAddress.village', 'assignedTo']);
 
-        $activities = ActivityLog::query()
+        $activitiesQuery = ActivityLog::query()
             ->with('causer')
             ->where('subject_type', $customer->getMorphClass())
             ->where('subject_id', $customer->getKey())
-            ->latest()
-            ->take(10)
-            ->get();
+            ->latest();
+
+        $activities = $activitiesQuery->take(10)->get();
+        
+        $lastInteraction = $activitiesQuery->clone()
+            ->where('action', 'customer.interaction')
+            ->first();
 
         return $request->ajax()
-            ? view('customers.modal-show', compact('customer', 'activities'))
-            : view('customers.show', compact('customer', 'activities'));
+            ? view('customers.modal-show', compact('customer', 'activities', 'lastInteraction'))
+            : view('customers.show', compact('customer', 'activities', 'lastInteraction'));
+    }
+
+    public function storeInteraction(Request $request, Customer $customer): RedirectResponse|JsonResponse
+    {
+        $request->validate([
+            'interaction_type' => 'required|string',
+            'notes' => 'nullable|string',
+            'next_follow_up' => 'nullable|date',
+        ]);
+
+        \App\Services\ActivityLogService::log(
+            auth()->user(),
+            'customer.interaction',
+            $customer,
+            "Customer Interacted: {$request->interaction_type}",
+            [
+                'interaction_type' => $request->interaction_type,
+                'notes' => $request->notes,
+                'next_follow_up' => $request->next_follow_up,
+            ]
+        );
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Interaction logged. Performance session closed.',
+                'redirect' => route('dashboard')
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Interaction logged and profile closed.');
     }
 
     public function edit(Request $request, Customer $customer): View
     {
-        $villages = Village::active()->orderBy('village_name')->get();
-
         if ($request->ajax()) {
             return view('customers.modal-form', [
                 'customer' => $customer,
-                'villages' => $villages,
                 'pageTitle' => 'Edit Customer',
                 'pageDescription' => "Updating profile for {$customer->display_name}",
                 'formAction' => route('customers.update', $customer->uuid),
@@ -178,7 +208,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return view('customers.edit', compact('customer', 'villages'));
+        return view('customers.edit', compact('customer'));
     }
 
     public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse|JsonResponse
