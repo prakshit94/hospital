@@ -52,21 +52,48 @@ class CustomerController extends Controller
             : view('customers.index', compact('customers'));
     }
 
+    public function searchByMobile(Request $request): JsonResponse
+    {
+        $mobile = $request->query('mobile');
+        
+        if (empty($mobile)) {
+            return response()->json(['status' => 'error', 'message' => 'Mobile number is required'], 422);
+        }
+
+        $customer = Customer::where('mobile', $mobile)->first();
+
+        if ($customer) {
+            return response()->json([
+                'status' => 'found',
+                'redirect' => route('customers.show', $customer->uuid)
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'not_found',
+            'create_url' => route('customers.create', ['mobile' => $mobile]),
+            'message' => 'Customer not found. Opening registration form.'
+        ]);
+    }
+
     public function create(Request $request): View
     {
         $villages = Village::active()->orderBy('village_name')->get();
+        // prefill mobile if provided
+        $customer = new Customer(['mobile' => $request->mobile]);
 
         if ($request->ajax()) {
             return view('customers.modal-form', [
+                'customer' => $customer,
                 'villages' => $villages,
-                'pageTitle' => 'New Customer',
-                'pageDescription' => 'Register a new customer profile in the ecosystem.',
+                'pageTitle' => 'Quick Register',
+                'pageDescription' => "Enrolling new profile for: {$request->mobile}",
                 'formAction' => route('customers.store'),
                 'submitLabel' => 'Create Profile'
             ]);
         }
 
-        return view('customers.create', compact('villages'));
+        return view('customers.create', compact('villages', 'customer'));
     }
 
     public function store(StoreCustomerRequest $request): RedirectResponse|JsonResponse
@@ -82,6 +109,15 @@ class CustomerController extends Controller
 
             if ($request->filled('irrigation_types_input')) {
                 $validated['irrigation_type'] = array_map('trim', explode(',', $request->irrigation_types_input));
+            }
+
+            // ✅ Generate default display name if not provided
+            if (empty($validated['display_name'])) {
+                $validated['display_name'] = collect([
+                    $request->first_name, 
+                    $request->middle_name, 
+                    $request->last_name
+                ])->filter()->implode(' ');
             }
 
             $customer = Customer::create($validated);
@@ -104,7 +140,7 @@ class CustomerController extends Controller
                 ]);
             }
 
-            return redirect()->route('customers.index')
+            return redirect()->route('customers.show', $customer->uuid)
                 ->with('success', $msg);
         });
     }
@@ -158,12 +194,24 @@ class CustomerController extends Controller
                     : null;
             }
 
-            $customer->fill($validated);
+            if ($request->has('irrigation_types_input')) {
+                $validated['irrigation_type'] = $request->filled('irrigation_types_input')
+                    ? array_map('trim', explode(',', $request->irrigation_types_input))
+                    : null;
+            }
 
-            // ✅ FIX: save first
+            // ✅ Generate default display name if not provided (fixes profile refresh issue)
+            if (empty($validated['display_name'])) {
+                $validated['display_name'] = collect([
+                    $request->first_name, 
+                    $request->middle_name, 
+                    $request->last_name
+                ])->filter()->implode(' ');
+            }
+
+            $customer->fill($validated);
             $customer->save();
 
-            // ✅ FIX: log after save
             ActivityLogService::logWithChanges(
                 auth()->user(),
                 $customer,
@@ -177,7 +225,8 @@ class CustomerController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => $msg
+                    'message' => $msg,
+                    'redirect' => route('customers.show', $customer->uuid)
                 ]);
             }
 

@@ -95,21 +95,68 @@
             </nav>
         </div>
 
-        <div class="order-3 w-full lg:order-2 lg:max-w-xl lg:flex-1">
+        <div class="order-3 w-full lg:order-2 lg:flex-1" x-data="{
+            query: '',
+            searching: false,
+            async searchIntent() {
+                // Precise 10-digit mobile detection
+                const isMobile = /^\d+$/.test(this.query);
+                
+                if (isMobile) {
+                    if (this.query.length !== 10) {
+                        window.dispatchEvent(new CustomEvent('toast-notify', {
+                            detail: { type: 'error', title: 'Invalid Search', message: 'Mobile number must be exactly 10 digits.' }
+                        }));
+                        return;
+                    }
+
+                    this.searching = true;
+                    try {
+                        const response = await fetch(`{{ route('customers.search-mobile') }}?mobile=${this.query}`, {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const data = await response.json();
+                        if (data.status === 'found') {
+                            window.location.href = data.redirect;
+                        } else if (data.status === 'not_found') {
+                            if (typeof window.openCrudModal === 'function') window.openCrudModal(data.create_url);
+                            else window.location.href = data.create_url;
+                        }
+                    } catch (e) { console.error(e); }
+                    finally { this.searching = false; }
+                } else {
+                    // Regular command search
+                    console.log('Regular command search:', this.query);
+                }
+            }
+        }">
             <div class="group relative w-full">
-                <div class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted-foreground/40 transition-colors duration-300 group-focus-within:text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-                    </svg>
+                <div class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted-foreground/40 transition-colors duration-300 group-focus-within:text-emerald-500">
+                    <template x-if="searching">
+                         <svg class="animate-spin size-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </template>
+                    <template x-if="!searching">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                        </svg>
+                    </template>
                 </div>
                 <input
                     type="text"
+                    x-model="query"
+                    @input="if (/^\d+$/.test(query)) query = query.slice(0, 10)"
+                    @keydown.enter="searchIntent()"
                     data-command-search
-                    placeholder="Search users, roles, permissions, reports..."
-                    class="command-input py-3"
+                    placeholder="Search apps or enter 10-digit Mobile..."
+                    class="command-input py-3 pl-11 focus:ring-emerald-500/20"
+                    :class="searching ? 'opacity-50 pointer-events-none' : ''"
                 >
-                <div class="command-kbd">
+                <div class="command-kbd" x-show="!query">
                     Ctrl K
+                </div>
+                <div class="absolute right-4 inset-y-0 flex items-center gap-2" x-show="query.length === 10 && /^\d+$/.test(query)">
+                     <span class="text-[9px] font-black uppercase tracking-widest text-emerald-500 italic">Quick Find ready</span>
+                     <button @click="searchIntent()" class="size-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:scale-110 active:scale-95 transition-all animate-in zoom-in-50"><svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7v14"/></svg></button>
                 </div>
             </div>
         </div>

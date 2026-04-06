@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
 
     // CRM - Customers
     Route::middleware('permission:customers.view')->group(function () {
+        Route::get('customers/search-mobile', [CustomerController::class, 'searchByMobile'])->name('customers.search-mobile');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/addresses', [CustomerAddressController::class, 'store'])->name('customers.addresses.store');
         Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');

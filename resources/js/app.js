@@ -157,6 +157,7 @@ function closeModalShell() {
     document.body.classList.remove('overflow-hidden');
 }
 
+window.openCrudModal = openCrudModal;
 async function openCrudModal(url) {
     const content = getModalContent();
 
@@ -255,8 +256,14 @@ async function submitCrudModalForm(form) {
         });
 
         if (response.ok) {
+            const data = await response.json();
             closeModalShell();
-            window.location.reload();
+
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                window.location.reload();
+            }
             return;
         }
 
