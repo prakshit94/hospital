@@ -383,7 +383,6 @@
             </div>
         </div>
     </div>
-</div>
 
 @if($modalMode)
     <div class="flex items-center justify-end gap-3 pt-6 mt-8 border-t border-border/40">

@@ -11,8 +11,10 @@
         isEditingAddress: false,
         currentAddress: null,
         addressForm: {
-            address_line1: '', address_line2: '', type: 'shipping', 
-            village_id: '', contact_name: '', contact_phone: '', is_default: false
+            address_line1: '', address_line2: '', label: '',
+            type: 'shipping', contact_name: '', contact_phone: '',
+            village: '', taluka: '', district: '', state: '', 
+            country: 'India', pincode: '', post_office: '', is_default: false
         },
         openAddressModal(address = null) {
             if (address) {
@@ -23,12 +25,63 @@
                 this.isEditingAddress = false;
                 this.currentAddress = null;
                 this.addressForm = {
-                    address_line1: '', address_line2: '', type: 'shipping', village_id: '',
+                    address_line1: '', address_line2: '', label: 'Farm',
+                    type: 'shipping', 
+                    village: '', taluka: '', district: '', state: '',
+                    country: 'India', pincode: '', post_office: '',
                     contact_name: '{{ $customer->display_name }}', contact_phone: '{{ $customer->mobile }}',
                     is_default: false
                 };
             }
             this.showAddressModal = true;
+        },
+        async submitAddress() {
+            const url = this.isEditingAddress 
+                ? `{{ url('customer-addresses') }}/${this.currentAddress.id}`
+                : `{{ route('customers.addresses.store', $customer->uuid) }}`;
+            
+            const method = this.isEditingAddress ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        ...this.addressForm,
+                        _method: method
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error saving address');
+                }
+            } catch (e) { console.error(e); }
+        },
+        async deleteAddress(addressId) {
+            if (!confirm('Are you sure you want to delete this logistical point?')) return;
+
+            try {
+                const response = await fetch(`{{ url('customer-addresses') }}/${addressId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                }
+            } catch (e) { console.error(e); }
         }
     }">
         {{-- 🔷 HERO (Elite Header) --}}
@@ -55,6 +108,10 @@
                     <x-ui.button variant="secondary" href="{{ route('customers.edit', $customer->uuid) }}" data-modal-open class="bg-white/5 border-white/10 text-white hover:bg-white/10 h-14 px-8 rounded-2xl tracking-widest uppercase font-black italic text-xs">
                          <svg class="size-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                          Refine Profile
+                    </x-ui.button>
+                    <x-ui.button variant="secondary" @click="openAddressModal()" class="bg-white/5 border-white/10 text-white hover:bg-white/10 h-14 px-8 rounded-2xl tracking-widest uppercase font-black italic text-xs">
+                         <svg class="size-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                         Quick Logistics
                     </x-ui.button>
                      <x-ui.button class="h-14 px-10 rounded-2xl bg-emerald-500 shadow-2xl shadow-emerald-500/20 tracking-[0.2em] uppercase font-black italic text-xs">
                          Create Order
@@ -179,7 +236,10 @@
                                     <div class="flex justify-between items-start mb-4">
                                          <div class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{{ $address->type }} Location</div>
                                          <div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                             <button @click="openAddressModal({{ json_encode($address) }})" class="p-1.5 rounded-lg bg-background shadow-sm hover:text-emerald-500 transition-colors"><svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                                             <button @click="openAddressModal({{ json_encode($address) }})" class="p-1.5 rounded-lg bg-background shadow-sm hover:text-emerald-500 transition-colors" title="Edit Logistical Details"><svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                                             @if(!$address->is_default)
+                                                 <button @click="deleteAddress({{ $address->id }})" class="p-1.5 rounded-lg bg-background shadow-sm hover:text-rose-500 transition-colors" title="Delete Point"><svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                             @endif
                                          </div>
                                     </div>
                                     <h4 class="text-lg font-black italic text-foreground mb-1">{{ $address->address_line1 }}</h4>
@@ -333,60 +393,123 @@
 
         {{-- 🔷 Address Modal --}}
         <div x-show="showAddressModal" class="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-sm" x-cloak x-transition.opacity>
-            <div @click.away="showAddressModal = false" class="relative w-full max-w-lg bg-popover rounded-[2.5rem] border border-border shadow-2xl animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
-                <div class="px-10 py-8 border-b border-border bg-muted/20 flex items-center justify-between">
+            <div @click.away="showAddressModal = false" class="relative w-full max-w-5xl overflow-hidden rounded-[1.5rem] border border-border bg-popover shadow-[0_30px_90px_-40px_rgba(15,23,42,0.4)] animate-in fade-in zoom-in-95 duration-300">
+                
+                {{-- 📍 MODAL HEADER: Normal & Clear Language --}}
+                <div class="px-8 py-6 border-b border-border bg-muted/20 flex items-center justify-between">
                     <div>
-                        <h3 class="text-2xl font-black italic tracking-tighter" x-text="isEditingAddress ? 'Update Logistics' : 'New Logistical Point'"></h3>
-                        <p class="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1">Village & Distribution Alignment</p>
+                        <h3 class="text-xl font-black italic tracking-tighter text-foreground uppercase" x-text="isEditingAddress ? 'Update Logistical Address' : 'Register New Address' "></h3>
+                        <p class="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 italic flex items-center gap-2">
+                             <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                             Customer 360 Logistical Hub
+                        </p>
                     </div>
-                    <button @click="showAddressModal = false" class="ui-icon-button-ghost bg-secondary h-10 w-10"><svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                    <button @click="showAddressModal = false" class="text-muted-foreground hover:text-foreground transition-all p-2 bg-secondary/50 rounded-xl"><svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" stroke-width="2.5"/></svg></button>
                 </div>
-                <div class="p-10 space-y-6">
-                    <div class="grid grid-cols-2 gap-8">
-                        <div class="space-y-2">
-                            <label class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Logistics Type</label>
-                            <select x-model="addressForm.type" class="ui-select py-3 px-4 font-bold italic h-12">
-                                <option value="shipping">Shipping</option>
-                                <option value="billing">Billing</option>
-                                <option value="both">Both (Master)</option>
-                            </select>
+
+                {{-- 📍 MODAL CONTENT: High-Fidelity & Clean Words --}}
+                <div class="p-8 space-y-8 bg-background/50 backdrop-blur-xl max-h-[80vh] overflow-y-auto premium-scrollbar">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {{-- ⬅️ LEFT COLUMN: Basic Details --}}
+                        <div class="space-y-6">
+                            <div class="p-6 rounded-2xl bg-secondary/20 border border-border/40 backdrop-blur-sm space-y-6">
+                                <div class="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-3 italic">
+                                    Address Classification <span class="h-px flex-1 bg-border/40"></span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-5">
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Address Type *</label>
+                                        <select x-model="addressForm.type" class="ui-select h-11 py-1 font-bold italic text-xs bg-background/50 border-border/60">
+                                            <option value="shipping">Shipping Address</option>
+                                            <option value="billing">Billing Address</option>
+                                            <option value="both">Both (Shipping & Billing)</option>
+                                        </select>
+                                    </div>
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Address Label</label>
+                                        <select x-model="addressForm.label" class="ui-select h-11 py-1 font-bold italic text-xs bg-background/50 border-border/60">
+                                            <option value="Farm">Farm</option>
+                                            <option value="Warehouse">Warehouse</option>
+                                            <option value="Home">Home</option>
+                                            <option value="Office">Office Address</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 rounded-2xl border border-border/50 bg-secondary/10 space-y-6">
+                                <div class="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-3 italic">
+                                    Spatial Address Details <span class="h-px flex-1 bg-border/40"></span>
+                                </div>
+                                <div class="space-y-6">
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Street / Block / Road *</label>
+                                        <input type="text" x-model="addressForm.address_line1" class="ui-input h-11 px-4 font-bold italic text-sm border-border/60 focus:bg-primary/5 transition-all" placeholder="House no, Shop no, Landmark">
+                                    </div>
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1 italic">Nearby Landmark / Area Name</label>
+                                        <input type="text" x-model="addressForm.address_line2" class="ui-input h-11 px-4 font-semibold italic text-sm bg-background/30 border-border/30">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Village Master</label>
-                            <select x-model="addressForm.village_id" class="ui-select py-3 px-4 font-bold italic h-12">
-                                <option value="">Select Territory</option>
-                                @foreach(\App\Models\Village::orderBy('village_name')->get() as $village)
-                                    <option value="{{ $village->id }}">{{ strtoupper($village->village_name) }} ({{ $village->pincode }})</option>
-                                @endforeach
-                            </select>
+
+                        {{-- ➡️ RIGHT COLUMN: Geographical Details --}}
+                        <div class="space-y-6">
+                            <div class="p-6 rounded-2xl border border-border/50 bg-secondary/10 space-y-6 flex-1">
+                                <div class="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-2 italic">
+                                    City & Regional Details <span class="h-px flex-1 bg-border/40"></span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-5">
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Village / Locality</label>
+                                        <input type="text" x-model="addressForm.village" class="ui-input h-11 px-4 font-bold italic tracking-tighter text-xs bg-background/50 border-border/60">
+                                    </div>
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Pincode / Zip *</label>
+                                        <input type="text" x-model="addressForm.pincode" class="ui-input h-11 px-4 font-bold italic tracking-widest text-xs bg-background/50 border-border/60">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-5">
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">Taluka / Block</label>
+                                        <input type="text" x-model="addressForm.taluka" class="ui-input h-11 px-4 font-bold italic tracking-tighter text-xs bg-background/50 border-border/60">
+                                    </div>
+                                    <div class="ui-field">
+                                        <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">District Name</label>
+                                        <input type="text" x-model="addressForm.district" class="ui-input h-11 px-4 font-bold italic tracking-tighter text-xs bg-background/50 border-border/60">
+                                    </div>
+                                </div>
+                                <div class="ui-field">
+                                    <label class="ui-label text-[10px] font-black tracking-widest text-muted-foreground uppercase mb-1">State / Province</label>
+                                    <input type="text" x-model="addressForm.state" class="ui-input h-11 px-4 font-bold italic tracking-tighter text-xs bg-background/50 border-border/60">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/20 shadow-inner group hover:bg-emerald-500/10 transition-all">
+                                <div class="flex items-center gap-4">
+                                     <div class="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-500/20"><svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                     <div>
+                                         <h5 class="text-[11px] font-black italic text-foreground uppercase tracking-tight">Set as Primary Address</h5>
+                                         <p class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest italic">Default location for all transactions</p>
+                                     </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="addressForm.is_default" class="sr-only peer">
+                                    <div class="w-12 h-6 bg-muted rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-sm"></div>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Address Blueprint</label>
-                        <input type="text" x-model="addressForm.address_line1" class="ui-input py-4 px-5 font-black italic h-14" placeholder="House/Shop no, Landmark">
-                    </div>
-                    <div class="grid grid-cols-2 gap-8 pt-2">
-                        <div class="space-y-2">
-                            <label class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Recipient Name</label>
-                            <input type="text" x-model="addressForm.contact_name" class="ui-input py-4 px-5 h-14 font-black italic">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Primary Mobile</label>
-                            <input type="text" x-model="addressForm.contact_phone" class="ui-input py-4 px-5 h-14 font-black italic">
-                        </div>
-                    </div>
-                    <label class="flex items-center gap-4 cursor-pointer group pt-4">
-                        <div class="relative size-6">
-                            <input type="checkbox" x-model="addressForm.is_default" class="sr-only">
-                            <div class="size-6 rounded-lg bg-secondary border-2 border-border transition-all" :class="addressForm.is_default ? 'bg-emerald-500 border-emerald-500' : 'group-hover:border-primary'"></div>
-                            <svg x-show="addressForm.is_default" class="absolute top-1 left-1 size-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/></svg>
-                        </div>
-                        <span class="text-xs font-black uppercase italic tracking-widest text-foreground">Link as Primary Logistical Node</span>
-                    </label>
                 </div>
-                <div class="px-10 py-8 bg-muted/20 border-t border-border flex justify-end gap-3">
-                    <button @click="showAddressModal = false" class="h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest italic hover:bg-black/5">Dismiss</button>
-                    <button @click="submitAddress()" class="h-14 px-12 rounded-2xl bg-primary text-white text-[10px] font-black uppercase tracking-widest italic shadow-2xl shadow-primary/20" x-text="isEditingAddress ? 'Update Blueprint' : 'Commit Address'"></button>
+
+                {{-- 📍 MODAL FOOTER: Perfectly Synchronized Actions --}}
+                <div class="px-8 py-6 bg-secondary/10 border-t border-border flex items-center justify-end gap-3">
+                    <button @click="showAddressModal = false" class="px-6 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all italic underline underline-offset-8 decoration-border/40">Cancel</button>
+                    <x-ui.button @click="submitAddress()" class="px-10 py-2.5 text-xs shadow-2xl shadow-emerald-500/30 bg-emerald-500 hover:bg-emerald-600">
+                         <span x-text="isEditingAddress ? 'Update Address' : 'Register Address' "></span>
+                    </x-ui.button>
                 </div>
             </div>
         </div>

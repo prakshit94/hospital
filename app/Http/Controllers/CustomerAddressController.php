@@ -17,9 +17,16 @@ class CustomerAddressController extends Controller
             'address_line1' => 'required|string|max:255',
             'address_line2' => 'nullable|string|max:255',
             'type' => 'required|in:billing,shipping,both',
-            'village_id' => 'required|exists:villages,id',
+            'label' => 'nullable|string|max:100',
             'contact_name' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:255',
+            'taluka' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:100',
+            'pincode' => 'nullable|string|max:20',
+            'post_office' => 'nullable|string|max:255',
             'is_default' => 'nullable|boolean',
         ]);
 
@@ -38,6 +45,7 @@ class CustomerAddressController extends Controller
             $address = CustomerAddress::create([
                 ...$validated,
                 'customer_id' => $customer->id,
+                'country' => $validated['country'] ?? 'India',
                 'created_by' => auth()->id(),
             ]);
 
@@ -74,9 +82,16 @@ class CustomerAddressController extends Controller
             'address_line1' => 'required|string|max:255',
             'address_line2' => 'nullable|string|max:255',
             'type' => 'required|in:billing,shipping,both',
-            'village_id' => 'required|exists:villages,id',
+            'label' => 'nullable|string|max:100', // Home, Office, Farm, Warehouse
             'contact_name' => 'nullable|string|max:255',
             'contact_phone' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:255',
+            'taluka' => 'nullable|string|max:255',
+            'district' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:100',
+            'pincode' => 'nullable|string|max:20',
+            'post_office' => 'nullable|string|max:255',
             'is_default' => 'nullable|boolean',
         ]);
 
