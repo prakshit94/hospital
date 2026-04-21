@@ -16,6 +16,7 @@ class EmployeeHealthRecordController extends Controller
 {
     public function index(Request $request): View
     {
+        $perPage = max(5, min(100, (int) $request->integer('per_page', 10)));
         $query = EmployeeHealthRecord::query()->with('creator');
 
         if ($request->filled('search')) {
@@ -36,8 +37,12 @@ class EmployeeHealthRecordController extends Controller
             $query->where('status', $request->status);
         }
 
-        $records = $query->latest()->paginate(10)->withQueryString();
+        $records = $query->latest()->paginate($perPage)->withQueryString();
         $companies = EmployeeHealthRecord::distinct()->pluck('company_name');
+
+        if ($request->ajax()) {
+            return view('health-records.partials.results', compact('records', 'companies'));
+        }
 
         return view('health-records.index', compact('records', 'companies'));
     }
@@ -210,6 +215,8 @@ class EmployeeHealthRecordController extends Controller
             if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
                 $heightInMeters = $validated['height'] / 100;
                 $validated['bmi'] = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            } else {
+                $validated['bmi'] = null;
             }
 
             $record = EmployeeHealthRecord::create($validated);
@@ -267,6 +274,8 @@ class EmployeeHealthRecordController extends Controller
             if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
                 $heightInMeters = $validated['height'] / 100;
                 $validated['bmi'] = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            } else {
+                $validated['bmi'] = null;
             }
 
             $healthRecord->update($validated);
@@ -337,5 +346,59 @@ class EmployeeHealthRecordController extends Controller
         return $pdf->setPaper('a4', 'portrait')
                    ->setOption(['isRemoteEnabled' => true])
                    ->download("Form_33_{$healthRecord->employee_id}.pdf");
+    }
+
+    public function bulkAction(Request $request): JsonResponse|RedirectResponse|\Illuminate\Http\Response
+    {
+        $request->validate([
+            'action' => 'required|string|in:delete,print',
+            'form_type' => 'nullable|string|in:medical_report,form32,form33',
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+        $formType = $request->input('form_type', 'medical_report');
+
+        if ($action === 'delete') {
+            $count = EmployeeHealthRecord::whereIn('id', $ids)->delete();
+            
+            ActivityLogService::log(
+                auth()->user(),
+                'health_record.bulk_deleted',
+                null,
+                "Bulk deleted {$count} health records."
+            );
+
+            $msg = "Successfully deleted {$count} records.";
+            return $request->ajax() 
+                ? response()->json(['status' => 'success', 'message' => $msg])
+                : redirect()->back()->with('success', $msg);
+        }
+
+        if ($action === 'print') {
+            $records = EmployeeHealthRecord::whereIn('id', $ids)->get();
+            
+            $view = 'health-records.bulk_print';
+            $filename = "Bulk_Medical_Reports.pdf";
+            $orientation = 'portrait';
+
+            if ($formType === 'form32') {
+                $view = 'health-records.bulk_print_form32';
+                $filename = "Bulk_Form_32.pdf";
+                $orientation = 'landscape';
+            } elseif ($formType === 'form33') {
+                $view = 'health-records.bulk_print_form33';
+                $filename = "Bulk_Form_33.pdf";
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, ['records' => $records]);
+            return $pdf->setPaper('a4', $orientation)
+                       ->setOption(['isRemoteEnabled' => true])
+                       ->download($filename);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'Invalid action.'], 422);
     }
 }

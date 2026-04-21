@@ -35,6 +35,18 @@ return [
             ],
         ],
         [
+            'label' => 'Occupational Health',
+            'items' => [
+                [
+                    'title' => 'Health Records',
+                    'icon' => 'file-medical',
+                    'route' => 'health-records.index',
+                    'pattern' => 'health-records*',
+                    'permission' => 'health_records.view'
+                ],
+            ],
+        ],
+        [
             'label' => 'Medical Services',
             'items' => [
                 [
@@ -69,18 +81,6 @@ return [
                         ['title' => 'Laboratory', 'url' => '#', 'pattern' => 'lab*', 'icon' => 'microscope'],
                         ['title' => 'Radiology', 'url' => '#', 'pattern' => 'radiology*', 'icon' => 'activity'],
                     ],
-                ],
-            ],
-        ],
-        [
-            'label' => 'Occupational Health',
-            'items' => [
-                [
-                    'title' => 'Health Records',
-                    'icon' => 'file-medical',
-                    'route' => 'health-records.index',
-                    'pattern' => 'health-records*',
-                    'permission' => 'health_records.view'
                 ],
             ],
         ],

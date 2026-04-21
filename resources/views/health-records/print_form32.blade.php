@@ -159,12 +159,12 @@
         <tr>
             <td><span class="label">1. Serial No.:</span> {{ $record->employee_id }}</td>
             <td><span class="label">2. Name:</span> {{ $record->full_name }}</td>
-            <td><span class="label">3. Sex:</span> {{ $record->sex ?? '-' }}</td>
+            <td><span class="label">3. Sex:</span> {{ $record->gender ?? '-' }}</td>
             <td>
                 <span class="label">4. DOB:</span>
                 {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
                 @if($record->dob)
-                    (Age: {{ $record->dob->diffInYears(now()) }} yrs)
+                    (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
                 @endif
             </td>
         </tr>

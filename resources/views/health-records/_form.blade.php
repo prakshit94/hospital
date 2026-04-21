@@ -630,7 +630,9 @@
     const weightInput = document.getElementById('Weight');
     const bmiInput = document.getElementById('BMI');
 
-    function calculateBMI() {
+    window.calculateBMI = function() {
+      if (!heightInput || !weightInput || !bmiInput) return;
+      
       const height = parseFloat(heightInput.value);
       const weight = parseFloat(weightInput.value);
 
@@ -641,11 +643,11 @@
       } else {
         bmiInput.value = '';
       }
-    }
+    };
 
     if(heightInput && weightInput) {
-        heightInput.addEventListener('input', calculateBMI);
-        weightInput.addEventListener('input', calculateBMI);
+        heightInput.addEventListener('input', window.calculateBMI);
+        weightInput.addEventListener('input', window.calculateBMI);
     }
   })();
 </script>

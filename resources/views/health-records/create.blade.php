@@ -34,7 +34,9 @@
             @include('health-records._form')
 
             <div class="mt-10 flex items-center justify-end gap-3 border-t border-border pt-10">
-                <button type="reset" class="inline-flex h-12 items-center justify-center rounded-2xl border border-border bg-card px-8 text-sm font-bold text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                <button type="button" 
+                        onclick="const form = this.closest('form'); form.querySelectorAll('input:not([name=\'_token\']), textarea').forEach(i => i.value = ''); form.querySelectorAll('select').forEach(s => s.selectedIndex = 0); if(window.calculateBMI) window.calculateBMI();"
+                        class="inline-flex h-12 items-center justify-center rounded-2xl border border-border bg-card px-8 text-sm font-bold text-muted-foreground transition hover:bg-secondary hover:text-foreground">
                     Clear All
                 </button>
                 <button type="submit" class="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-10 text-sm font-bold text-white shadow-[0_15px_30px_-10px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-all hover:scale-[1.02] active:scale-[0.98]">

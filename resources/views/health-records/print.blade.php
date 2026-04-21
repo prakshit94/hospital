@@ -46,7 +46,7 @@
         };
         $getAge = function($date) {
             if (!$date) return 'N/A';
-            try { return \Carbon\Carbon::parse($date)->age; } catch (\Exception $e) { return 'N/A'; }
+            try { return (int) \Carbon\Carbon::parse($date)->age; } catch (\Exception $e) { return 'N/A'; }
         };
     @endphp
     <div class="watermark">MEDICAL CERTIFICATE</div>
