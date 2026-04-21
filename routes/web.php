@@ -13,6 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\VillageController;
+use App\Http\Controllers\EmployeeHealthRecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check()
@@ -97,4 +98,12 @@ Route::middleware('auth')->group(function () {
 
     // CRM - Products Hub
     Route::get('products-search', [\App\Http\Controllers\ProductController::class, 'search'])->name('products.search');
+
+    // Health Records Module
+    Route::middleware('permission:health_records.view')->group(function () {
+        Route::get('health-records/{health_record}/print', [EmployeeHealthRecordController::class, 'print'])->name('health-records.print');
+        Route::get('health-records/{health_record}/print-form32', [EmployeeHealthRecordController::class, 'printForm32'])->name('health-records.print-form32');
+        Route::get('health-records/{health_record}/print-form33', [EmployeeHealthRecordController::class, 'printForm33'])->name('health-records.print-form33');
+        Route::resource('health-records', EmployeeHealthRecordController::class);
+    });
 });

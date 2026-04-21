@@ -49,6 +49,12 @@ class AccessControlSeeder extends Seeder
             ['name' => 'View reports', 'slug' => 'reports.view', 'group_name' => 'reports'],
             ['name' => 'Export reports', 'slug' => 'reports.export', 'group_name' => 'reports'],
 
+            // Health Records
+            ['name' => 'View health records', 'slug' => 'health_records.view', 'group_name' => 'health_records'],
+            ['name' => 'Create health records', 'slug' => 'health_records.create', 'group_name' => 'health_records'],
+            ['name' => 'Update health records', 'slug' => 'health_records.update', 'group_name' => 'health_records'],
+            ['name' => 'Delete health records', 'slug' => 'health_records.delete', 'group_name' => 'health_records'],
+
         ])->map(fn ($permission) =>
             Permission::updateOrCreate(
                 ['slug' => $permission['slug']],

@@ -13,8 +13,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AccessControlSeeder::class,
-            VillageSeeder::class,
-            CustomerSeeder::class,
+            //VillageSeeder::class,
+            //CustomerSeeder::class,
+            EmployeeHealthRecordSeeder::class,
         ]);
     }
 }

@@ -2,68 +2,85 @@
 
 return [
     'app_name' => env('APP_NAME', 'AccessHub'),
-    'workspace_name' => env('ENTERPRISE_UI_WORKSPACE', 'Security Console'),
+    'workspace_name' => env('ENTERPRISE_UI_WORKSPACE', 'LifeCare Hospital'),
     'sidebar' => [
         [
-            'label' => 'General',
+            'label' => 'Main',
             'items' => [
                 [
-                    'title' => 'Overview',
+                    'title' => 'Dashboard',
                     'icon' => 'layout-dashboard',
+                    'route' => 'dashboard',
+                    'pattern' => 'dashboard*',
+                    'permission' => 'dashboard.view'
+                ],
+                [
+                    'title' => 'Appointments',
+                    'icon' => 'calendar',
                     'children' => [
-                        ['title' => 'Dashboard', 'route' => 'dashboard', 'pattern' => 'dashboard*', 'icon' => 'layout-dashboard', 'permission' => 'dashboard.view'],
-                        ['title' => 'Reports', 'route' => 'reports.index', 'pattern' => 'reports*', 'icon' => 'file-text', 'permission' => 'reports.view'],
-                        ['title' => 'Activity Logs', 'route' => 'activity-logs.index', 'pattern' => 'activity-logs*', 'icon' => 'file-text', 'permission' => 'activities.view'],
+                        ['title' => 'Book Appointment', 'url' => '#', 'pattern' => 'appointments/create*', 'icon' => 'calendar'],
+                        ['title' => 'All Appointments', 'url' => '#', 'pattern' => 'appointments', 'icon' => 'clipboard-list'],
+                        ['title' => 'Doctor Schedule', 'url' => '#', 'pattern' => 'schedule*', 'icon' => 'activity'],
+                    ],
+                ],
+                [
+                    'title' => 'Patients',
+                    'icon' => 'users',
+                    'children' => [
+                        ['title' => 'Patient Registry', 'route' => 'customers.index', 'pattern' => 'customers*', 'icon' => 'users', 'permission' => 'customers.view'],
+                        ['title' => 'Locations/Villages', 'route' => 'villages.index', 'pattern' => 'villages*', 'icon' => 'layers', 'permission' => 'villages.view'],
+                        ['title' => 'Medical Records', 'url' => '#', 'pattern' => 'records*', 'icon' => 'file-medical'],
                     ],
                 ],
             ],
         ],
         [
-            'label' => 'E-Commerce',
+            'label' => 'Medical Services',
             'items' => [
                 [
-                    'title' => 'Sales',
-                    'icon' => 'shopping-cart',
+                    'title' => 'Specialists',
+                    'icon' => 'user-md',
                     'children' => [
-                        ['title' => 'Orders', 'url' => '#', 'pattern' => 'orders*', 'icon' => 'shopping-cart', 'permission' => 'orders.view'],
-                        ['title' => 'Invoices', 'url' => '#', 'pattern' => 'invoices*', 'icon' => 'file-text', 'permission' => 'invoices.view'],
-                        ['title' => 'Shipments', 'url' => '#', 'pattern' => 'shipments*', 'icon' => 'truck', 'permission' => 'shipments.view'],
-                        ['title' => 'Returns', 'url' => '#', 'pattern' => 'returns*', 'icon' => 'shopping-cart', 'permission' => 'returns.view'],
+                        ['title' => 'Doctors List', 'url' => '#', 'pattern' => 'doctors*', 'icon' => 'user-md'],
+                        ['title' => 'Departments', 'url' => '#', 'pattern' => 'departments*', 'icon' => 'layers'],
                     ],
                 ],
                 [
-                    'title' => 'Catalog',
-                    'icon' => 'package',
+                    'title' => 'OPD/IPD',
+                    'icon' => 'stethoscope',
                     'children' => [
-                        ['title' => 'Products', 'url' => '#', 'pattern' => 'products*', 'icon' => 'package', 'permission' => 'products.view'],
-                        ['title' => 'Categories', 'url' => '#', 'pattern' => 'categories*', 'icon' => 'layers', 'permission' => 'categories.view'],
-                        ['title' => 'Attributes', 'url' => '#', 'pattern' => 'attributes*', 'icon' => 'tool', 'permission' => 'attributes.view'],
+                        ['title' => 'Outpatient (OPD)', 'url' => '#', 'pattern' => 'opd*', 'icon' => 'stethoscope'],
+                        ['title' => 'Inpatient (IPD)', 'url' => '#', 'pattern' => 'ipd*', 'icon' => 'bed'],
+                        ['title' => 'Operation Theater', 'url' => '#', 'pattern' => 'ot*', 'icon' => 'activity'],
                     ],
                 ],
                 [
-                    'title' => 'Customers',
-                    'icon' => 'users',
+                    'title' => 'Pharmacy',
+                    'icon' => 'pills',
                     'children' => [
-                        ['title' => 'All Customers', 'route' => 'customers.index', 'pattern' => 'customers*', 'icon' => 'users', 'permission' => 'customers.view'],
-                        ['title' => 'Villages/Locations', 'route' => 'villages.index', 'pattern' => 'villages*', 'icon' => 'layers', 'permission' => 'villages.view'],
+                        ['title' => 'Medicines', 'url' => '#', 'pattern' => 'medicines*', 'icon' => 'pills'],
+                        ['title' => 'Pharmacy Billing', 'url' => '#', 'pattern' => 'pharmacy/billing*', 'icon' => 'credit-card'],
                     ],
                 ],
                 [
-                    'title' => 'Marketing',
-                    'icon' => 'tag',
+                    'title' => 'Diagnostics',
+                    'icon' => 'microscope',
                     'children' => [
-                        ['title' => 'Promotions', 'url' => '#', 'pattern' => 'promotions*', 'icon' => 'tag', 'permission' => 'promotions.view'],
-                        ['title' => 'Coupons', 'url' => '#', 'pattern' => 'coupons*', 'icon' => 'tag', 'permission' => 'coupons.view'],
+                        ['title' => 'Laboratory', 'url' => '#', 'pattern' => 'lab*', 'icon' => 'microscope'],
+                        ['title' => 'Radiology', 'url' => '#', 'pattern' => 'radiology*', 'icon' => 'activity'],
                     ],
                 ],
+            ],
+        ],
+        [
+            'label' => 'Occupational Health',
+            'items' => [
                 [
-                    'title' => 'Inventory',
-                    'icon' => 'box',
-                    'children' => [
-                        ['title' => 'Stock Levels', 'url' => '#', 'pattern' => 'inventory*', 'icon' => 'box', 'permission' => 'inventory.view'],
-                        ['title' => 'Warehouses', 'url' => '#', 'pattern' => 'warehouses*', 'icon' => 'layers', 'permission' => 'warehouses.view'],
-                        ['title' => 'Suppliers', 'url' => '#', 'pattern' => 'suppliers*', 'icon' => 'users', 'permission' => 'suppliers.view'],
-                    ],
+                    'title' => 'Health Records',
+                    'icon' => 'file-medical',
+                    'route' => 'health-records.index',
+                    'pattern' => 'health-records*',
+                    'permission' => 'health_records.view'
                 ],
             ],
         ],
@@ -71,30 +88,37 @@ return [
             'label' => 'Administration',
             'items' => [
                 [
-                    'title' => 'Content',
-                    'icon' => 'layers',
+                    'title' => 'Accounts',
+                    'icon' => 'credit-card',
                     'children' => [
-                        ['title' => 'Pages', 'url' => '#', 'pattern' => 'pages*', 'icon' => 'file-text', 'permission' => 'pages.view'],
-                        ['title' => 'Media Library', 'url' => '#', 'pattern' => 'media*', 'icon' => 'monitor', 'permission' => 'media.view'],
+                        ['title' => 'Patient Billing', 'url' => '#', 'pattern' => 'billing*', 'icon' => 'credit-card'],
+                        ['title' => 'Expenses', 'url' => '#', 'pattern' => 'expenses*', 'icon' => 'file-text'],
                     ],
                 ],
                 [
-                    'title' => 'System',
-                    'icon' => 'tool',
+                    'title' => 'Inventory',
+                    'icon' => 'box',
                     'children' => [
-                        ['title' => 'Store Settings', 'url' => '#', 'pattern' => 'settings*', 'icon' => 'tool', 'permission' => 'settings.view'],
-                        ['title' => 'Payments', 'url' => '#', 'pattern' => 'payments*', 'icon' => 'credit-card', 'permission' => 'payments.view'],
-                        ['title' => 'Shipping', 'url' => '#', 'pattern' => 'shipping*', 'icon' => 'truck', 'permission' => 'shipping.view'],
-                        ['title' => 'Taxes', 'url' => '#', 'pattern' => 'taxes*', 'icon' => 'percent', 'permission' => 'taxes.view'],
+                        ['title' => 'Stock Levels', 'url' => '#', 'pattern' => 'inventory*', 'icon' => 'box'],
+                        ['title' => 'Suppliers', 'url' => '#', 'pattern' => 'suppliers*', 'icon' => 'users'],
                     ],
                 ],
                 [
                     'title' => 'Access Control',
                     'icon' => 'shield',
                     'children' => [
-                        ['title' => 'Users', 'route' => 'users.index', 'pattern' => 'users*', 'icon' => 'users', 'permission' => 'users.view'],
+                        ['title' => 'Staff/Users', 'route' => 'users.index', 'pattern' => 'users*', 'icon' => 'users', 'permission' => 'users.view'],
                         ['title' => 'Roles', 'route' => 'roles.index', 'pattern' => 'roles*', 'icon' => 'shield', 'permission' => 'roles.view'],
                         ['title' => 'Permissions', 'route' => 'permissions.index', 'pattern' => 'permissions*', 'icon' => 'tool', 'permission' => 'permissions.view'],
+                    ],
+                ],
+                [
+                    'title' => 'System',
+                    'icon' => 'settings',
+                    'children' => [
+                        ['title' => 'Hospital Settings', 'url' => '#', 'pattern' => 'settings*', 'icon' => 'settings'],
+                        ['title' => 'Activity Logs', 'route' => 'activity-logs.index', 'pattern' => 'activity-logs*', 'icon' => 'file-text', 'permission' => 'activities.view'],
+                        ['title' => 'Reports', 'route' => 'reports.index', 'pattern' => 'reports*', 'icon' => 'file-text', 'permission' => 'reports.view'],
                     ],
                 ],
             ],
