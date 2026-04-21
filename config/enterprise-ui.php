@@ -27,8 +27,6 @@ return [
                     'title' => 'Patients',
                     'icon' => 'users',
                     'children' => [
-                        ['title' => 'Patient Registry', 'route' => 'customers.index', 'pattern' => 'customers*', 'icon' => 'users', 'permission' => 'customers.view'],
-                        ['title' => 'Locations/Villages', 'route' => 'villages.index', 'pattern' => 'villages*', 'icon' => 'layers', 'permission' => 'villages.view'],
                         ['title' => 'Medical Records', 'url' => '#', 'pattern' => 'records*', 'icon' => 'file-medical'],
                     ],
                 ],
@@ -42,6 +40,13 @@ return [
                     'icon' => 'file-medical',
                     'route' => 'health-records.index',
                     'pattern' => 'health-records*',
+                    'permission' => 'health_records.view'
+                ],
+                [
+                    'title' => 'Companies',
+                    'icon' => 'building',
+                    'route' => 'companies.index',
+                    'pattern' => 'companies*',
                     'permission' => 'health_records.view'
                 ],
             ],

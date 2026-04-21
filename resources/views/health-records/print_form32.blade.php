@@ -142,13 +142,11 @@
             .footer-section {
                 margin-top: 20px;
             }
-
-            
         }
     </style>
 </head>
 <body>
-
+    @php $num = 1; @endphp
     <div class="header">
         <h1>Form No. 32 — Health Register</h1>
         <p>(Prescribed under Rule 68-T and 102)</p>
@@ -157,11 +155,11 @@
 
     <table class="info-table">
         <tr>
-            <td><span class="label">1. Serial No.:</span> {{ $record->employee_id }}</td>
-            <td><span class="label">2. Name:</span> {{ $record->full_name }}</td>
-            <td><span class="label">3. Sex:</span> {{ $record->gender ?? '-' }}</td>
+            <td><span class="label">{{ $num++ }}. Serial No.:</span> {{ $record->employee_id }}</td>
+            <td><span class="label">{{ $num++ }}. Name:</span> {{ $record->full_name }}</td>
+            <td><span class="label">{{ $num++ }}. Sex:</span> {{ $record->gender ?? '-' }}</td>
             <td>
-                <span class="label">4. DOB:</span>
+                <span class="label">{{ $num++ }}. DOB:</span>
                 {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
                 @if($record->dob)
                     (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
@@ -169,8 +167,8 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2"><span class="label">5. Company:</span> {{ $record->company_name }}</td>
-            <td colspan="2"><span class="label">6. Address:</span> {{ $record->address ?? '-' }}</td>
+            <td colspan="2"><span class="label">{{ $num++ }}. Company:</span> {{ $record->company_name }}</td>
+            <td colspan="2"><span class="label">{{ $num++ }}. Address:</span> {{ $record->address ?? '-' }}</td>
         </tr>
     </table>
 
@@ -222,10 +220,10 @@
                     <div style="margin-top: 5px; border-top: 0.5px solid #000; padding-top: 2px;">
                         <span class="label">Height:</span> {{ $record->height ?? '-' }} cm | 
                         <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg<br>
-                        <span class="label">Chest B/A:</span> {{ $record->chest_before_breathing ?? '-' }} / {{ $record->chest_after_breathing ?? '-' }}<br>
-                        <span class="label">Temp:</span> {{ $record->temperature ?? '-' }}°C | 
-                        <span class="label">Pulse:</span> {{ $record->heart_rate ?? $record->pulse ?? '-' }} bpm<br>
-                        <span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : ($record->bp ?? '-') }}
+                        <span class="label">Chest B/A:</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }}<br>
+                        <span class="label">Temp:</span> {{ $record->temperature ?? '-' }}°F | 
+                        <span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm<br>
+                        <span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}
                     </div>
 
                     <table class="vision-table">
@@ -264,7 +262,7 @@
 
                 <td class="text-center">
                     <div style="margin-top: 20px; font-weight: bold;">{{ $examDate }}</div>
-                    <div style="font-size: 8pt;">{{ $record->doctor_name ?? $record->name_of_doctor ?? '-' }}</div>
+                    <div style="font-size: 8pt;">{{ $record->doctor_name ?? '-' }}</div>
                 </td>
             </tr>
         </tbody>

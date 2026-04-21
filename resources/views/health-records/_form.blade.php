@@ -104,8 +104,18 @@
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Company Name <span class="text-red-500">*</span></label>
-                <input type="text" name="company_name" value="{{ old('company_name', $record->company_name) }}" required
-                       class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
+                <select name="company_id" required id="company_id"
+                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('company_id') border-red-500 @enderror">
+                    <option value="">Select Company</option>
+                    @foreach($globalCompanies as $company)
+                        <option value="{{ $company->id }}" 
+                                {{ old('company_id', $record->company_id ?? session('current_company_id')) == $company->id ? 'selected' : '' }}>
+                            {{ $company->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('company_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                <input type="hidden" name="company_name" id="company_name" value="{{ old('company_name', $record->company_name ?? session('current_company_name')) }}">
             </div>
 
             <div class="space-y-2">
@@ -648,6 +658,14 @@
     if(heightInput && weightInput) {
         heightInput.addEventListener('input', window.calculateBMI);
         weightInput.addEventListener('input', window.calculateBMI);
+    }
+
+    const companySelect = document.getElementById('company_id');
+    const companyNameInput = document.getElementById('company_name');
+    if(companySelect && companyNameInput) {
+        companySelect.addEventListener('change', function() {
+            companyNameInput.value = this.options[this.selectedIndex].text;
+        });
     }
   })();
 </script>

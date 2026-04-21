@@ -99,35 +99,8 @@
             query: '',
             searching: false,
             async searchIntent() {
-                // Precise 10-digit mobile detection
-                const isMobile = /^\d+$/.test(this.query);
-                
-                if (isMobile) {
-                    if (this.query.length !== 10) {
-                        window.dispatchEvent(new CustomEvent('toast-notify', {
-                            detail: { type: 'error', title: 'Invalid Search', message: 'Mobile number must be exactly 10 digits.' }
-                        }));
-                        return;
-                    }
-
-                    this.searching = true;
-                    try {
-                        const response = await fetch(`{{ route('customers.search-mobile') }}?mobile=${this.query}`, {
-                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-                        const data = await response.json();
-                        if (data.status === 'found') {
-                            window.location.href = data.redirect;
-                        } else if (data.status === 'not_found') {
-                            if (typeof window.openCrudModal === 'function') window.openCrudModal(data.create_url);
-                            else window.location.href = data.create_url;
-                        }
-                    } catch (e) { console.error(e); }
-                    finally { this.searching = false; }
-                } else {
-                    // Regular command search
-                    console.log('Regular command search:', this.query);
-                }
+                // Regular command search
+                console.log('Regular command search:', this.query);
             }
         }">
             <div class="group relative w-full">
@@ -147,21 +120,72 @@
                     @input="if (/^\d+$/.test(query)) query = query.slice(0, 10)"
                     @keydown.enter="searchIntent()"
                     data-command-search
-                    placeholder="Search apps or enter 10-digit Mobile..."
+                    placeholder="Search apps..."
                     class="command-input py-3 pl-11 focus:ring-emerald-500/20"
                     :class="searching ? 'opacity-50 pointer-events-none' : ''"
                 >
                 <div class="command-kbd" x-show="!query">
                     Ctrl K
                 </div>
-                <div class="absolute right-4 inset-y-0 flex items-center gap-2" x-show="query.length === 10 && /^\d+$/.test(query)">
-                     <span class="text-[9px] font-black uppercase tracking-widest text-emerald-500 italic">Quick Find ready</span>
-                     <button @click="searchIntent()" class="size-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:scale-110 active:scale-95 transition-all animate-in zoom-in-50"><svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7-7v14"/></svg></button>
-                </div>
             </div>
         </div>
 
         <div class="order-2 flex items-center gap-2 sm:gap-3 lg:order-3">
+            <!-- Company Switcher -->
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" 
+                        class="flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-3 py-2 text-xs font-bold text-foreground transition hover:bg-secondary">
+                    <div class="flex h-5 w-5 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <path d="M3 21h18"/><path d="M3 7v1a3 3 0 0 0 6 0V7"/><path d="M9 7v1a3 3 0 0 0 6 0V7"/><path d="M15 7v1a3 3 0 0 0 6 0V7"/><path d="M19 21V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14"/>
+                        </svg>
+                    </div>
+                    <span class="max-w-[120px] truncate">{{ session('current_company_name', 'All Companies') }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 text-muted-foreground transition-transform" :class="open ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                </button>
+
+                <div x-show="open" @click.away="open = false" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl border border-border bg-card p-2 shadow-2xl z-50">
+                    <div class="mb-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Switch Context</div>
+                    
+                    <form action="{{ route('companies.switch') }}" method="POST">
+                        @csrf
+                        <button type="submit" name="company_id" value="all" 
+                                class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition hover:bg-secondary {{ !session('current_company_id') ? 'bg-secondary text-primary font-bold' : 'text-foreground' }}">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M3 21h18"/><path d="M3 7v1a3 3 0 0 0 6 0V7"/><path d="M19 21V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14"/>
+                                </svg>
+                            </div>
+                            All Companies
+                        </button>
+
+                        @foreach($globalCompanies as $company)
+                            <button type="submit" name="company_id" value="{{ $company->id }}" 
+                                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition hover:bg-secondary {{ session('current_company_id') == $company->id ? 'bg-secondary text-primary font-bold' : 'text-foreground' }}">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                                    <span class="text-[10px] font-black">{{ $company->code ?: substr($company->name, 0, 2) }}</span>
+                                </div>
+                                <span class="truncate">{{ $company->name }}</span>
+                            </button>
+                        @endforeach
+                    </form>
+                    
+                    <div class="mt-2 border-t border-border pt-2">
+                        <a href="{{ route('companies.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            </svg>
+                            Manage Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
 
             <x-layout.notifications-dropdown />
 

@@ -24,11 +24,11 @@ class AccessControlSeeder extends Seeder
             ['name' => 'Update users', 'slug' => 'users.update', 'group_name' => 'users'],
             ['name' => 'Delete users', 'slug' => 'users.delete', 'group_name' => 'users'],
 
-            // ✅ Customers (FIXED)
-            ['name' => 'View customers', 'slug' => 'customers.view', 'group_name' => 'customers'],
-            ['name' => 'Create customers', 'slug' => 'customers.create', 'group_name' => 'customers'],
-            ['name' => 'Update customers', 'slug' => 'customers.update', 'group_name' => 'customers'],
-            ['name' => 'Delete customers', 'slug' => 'customers.delete', 'group_name' => 'customers'],
+            // Companies
+            ['name' => 'View companies', 'slug' => 'companies.view', 'group_name' => 'companies'],
+            ['name' => 'Create companies', 'slug' => 'companies.create', 'group_name' => 'companies'],
+            ['name' => 'Update companies', 'slug' => 'companies.update', 'group_name' => 'companies'],
+            ['name' => 'Delete companies', 'slug' => 'companies.delete', 'group_name' => 'companies'],
 
             // Roles
             ['name' => 'View roles', 'slug' => 'roles.view', 'group_name' => 'roles'],
@@ -82,9 +82,9 @@ class AccessControlSeeder extends Seeder
                     'users.create',
                     'users.update',
 
-                    'customers.view',
-                    'customers.create',
-                    'customers.update',
+                    'companies.view',
+                    'companies.create',
+                    'companies.update',
 
                     'roles.view',
                     'roles.create',
@@ -105,7 +105,7 @@ class AccessControlSeeder extends Seeder
                 'permissions' => $permissions->whereIn('slug', [
                     'dashboard.view',
                     'users.view',
-                    'customers.view',
+                    'companies.view',
                     'roles.view',
                     'permissions.view',
                     'activities.view',

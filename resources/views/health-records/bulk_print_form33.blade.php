@@ -37,6 +37,7 @@
             $examDate = $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A'; 
             $extensionDate = $record->examination_date ? $record->examination_date->copy()->addMonths(6)->format('d/m/Y') : 'N/A'; 
             $isFit = strtoupper($record->health_status ?? '') === 'FIT';
+            $num = 1;
         @endphp
         <div class="page">
             <div class="header">
@@ -47,35 +48,35 @@
             </div>
             <table>
                 <tr>
-                    <td class="lbl">1. Serial number in the register of adult workers:</td>
+                    <td class="lbl">{{ $num++ }}. Serial number in the register of adult workers:</td>
                     <td class="val">{{ $record->employee_id }}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">2. Name of the person examined:</td>
+                    <td class="lbl">{{ $num++ }}. Name of the person examined:</td>
                     <td class="val"><strong>{{ strtoupper($record->full_name) }}</strong></td>
                 </tr>
                 <tr>
-                    <td class="lbl">3. Father's Name:</td>
+                    <td class="lbl">{{ $num++ }}. Father's Name:</td>
                     <td class="val">{{ $record->father_name ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">4. Sex:</td>
+                    <td class="lbl">{{ $num++ }}. Sex:</td>
                     <td class="val">{{ ucfirst($record->sex ?? $record->gender ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">5. Date of Birth / Age:</td>
+                    <td class="lbl">{{ $num++ }}. Date of Birth / Age:</td>
                     <td class="val">{{ $dob }} / {{ $age }} Years</td>
                 </tr>
                 <tr>
-                    <td class="lbl">6. Residence:</td>
+                    <td class="lbl">{{ $num++ }}. Residence:</td>
                     <td class="val">{{ $record->address ?? '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">7. Name & address of the factory:</td>
+                    <td class="lbl">{{ $num++ }}. Name & address of the factory:</td>
                     <td class="val">{{ $record->company_name }}</td>
                 </tr>
                 <tr>
-                    <td class="lbl">8. The worker is employed / proposed to be employed in:</td>
+                    <td class="lbl">{{ $num++ }}. The worker is employed / proposed to be employed in:</td>
                     <td class="val">{{ $record->department ?? $record->designation ?? '-' }}</td>
                 </tr>
                 <tr>

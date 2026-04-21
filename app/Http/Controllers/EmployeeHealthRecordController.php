@@ -19,6 +19,10 @@ class EmployeeHealthRecordController extends Controller
         $perPage = max(5, min(100, (int) $request->integer('per_page', 10)));
         $query = EmployeeHealthRecord::query()->with('creator');
 
+        if (session()->has('current_company_id')) {
+            $query->where('company_id', session('current_company_id'));
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -30,7 +34,11 @@ class EmployeeHealthRecordController extends Controller
         }
 
         if ($request->filled('company')) {
-            $query->where('company_name', $request->company);
+            if (is_numeric($request->company)) {
+                $query->where('company_id', $request->company);
+            } else {
+                $query->where('company_name', $request->company);
+            }
         }
 
         if ($request->filled('status')) {
@@ -38,7 +46,10 @@ class EmployeeHealthRecordController extends Controller
         }
 
         $records = $query->latest()->paginate($perPage)->withQueryString();
-        $companies = EmployeeHealthRecord::distinct()->pluck('company_name');
+        
+        $companies = session()->has('current_company_id') 
+            ? \App\Models\Company::where('id', session('current_company_id'))->get()
+            : \App\Models\Company::where('is_active', true)->orderBy('name')->get();
 
         if ($request->ajax()) {
             return view('health-records.partials.results', compact('records', 'companies'));
@@ -57,6 +68,7 @@ class EmployeeHealthRecordController extends Controller
     private function getValidationRules(): array
     {
         return [
+            'company_id' => 'nullable|exists:companies,id',
             'company_name' => 'required|string|max:255',
             'employee_id' => 'required|string|max:255',
             'full_name' => 'required|string|max:255',
@@ -211,6 +223,13 @@ class EmployeeHealthRecordController extends Controller
         return DB::transaction(function () use ($validated, $request) {
             $validated['created_by'] = auth()->id();
             
+            if (session()->has('current_company_id') && !isset($validated['company_id'])) {
+                $validated['company_id'] = session('current_company_id');
+                $validated['company_name'] = session('current_company_name');
+            } elseif (isset($validated['company_id'])) {
+                $company = \App\Models\Company::find($validated['company_id']);
+                if ($company) $validated['company_name'] = $company->name;
+            }
             // Calculate BMI if height and weight are provided
             if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
                 $heightInMeters = $validated['height'] / 100;
@@ -231,6 +250,7 @@ class EmployeeHealthRecordController extends Controller
             $msg = "Health record for '{$record->full_name}' has been successfully stored.";
             
             if ($request->ajax()) {
+                session()->flash('status', $msg);
                 return response()->json([
                     'status' => 'success',
                     'message' => $msg,
@@ -238,7 +258,7 @@ class EmployeeHealthRecordController extends Controller
                 ]);
             }
 
-            return redirect()->route('health-records.show', $record->uuid)->with('success', $msg);
+            return redirect()->route('health-records.show', $record->uuid)->with('status', $msg);
         });
     }
 
@@ -269,7 +289,11 @@ class EmployeeHealthRecordController extends Controller
 
         return DB::transaction(function () use ($validated, $request, $healthRecord) {
             $validated['updated_by'] = auth()->id();
-            
+
+            if (isset($validated['company_id'])) {
+                $company = \App\Models\Company::find($validated['company_id']);
+                if ($company) $validated['company_name'] = $company->name;
+            }
             // Calculate BMI
             if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
                 $heightInMeters = $validated['height'] / 100;
@@ -278,7 +302,7 @@ class EmployeeHealthRecordController extends Controller
                 $validated['bmi'] = null;
             }
 
-            $healthRecord->update($validated);
+            $healthRecord->fill($validated);
 
             ActivityLogService::logWithChanges(
                 auth()->user(),
@@ -287,9 +311,12 @@ class EmployeeHealthRecordController extends Controller
                 "Updated health record for: {$healthRecord->full_name} ({$healthRecord->company_name})"
             );
 
+            $healthRecord->save();
+
             $msg = "Health record for '{$healthRecord->full_name}' has been updated.";
             
             if ($request->ajax()) {
+                session()->flash('status', $msg);
                 return response()->json([
                     'status' => 'success',
                     'message' => $msg,
@@ -297,7 +324,7 @@ class EmployeeHealthRecordController extends Controller
                 ]);
             }
 
-            return redirect()->route('health-records.show', $healthRecord->uuid)->with('success', $msg);
+            return redirect()->route('health-records.show', $healthRecord->uuid)->with('status', $msg);
         });
     }
 
@@ -316,9 +343,12 @@ class EmployeeHealthRecordController extends Controller
 
         $msg = "Health record for '{$name}' has been deleted.";
 
-        return request()->ajax()
-            ? response()->json(['status' => 'success', 'message' => $msg])
-            : redirect()->route('health-records.index')->with('success', $msg);
+        if (request()->ajax()) {
+            session()->flash('status', $msg);
+            return response()->json(['status' => 'success', 'message' => $msg]);
+        }
+        
+        return redirect()->route('health-records.index')->with('status', $msg);
     }
 
     public function print(EmployeeHealthRecord $healthRecord)
@@ -361,6 +391,22 @@ class EmployeeHealthRecordController extends Controller
         $ids = $request->input('ids');
         $formType = $request->input('form_type', 'medical_report');
 
+        // Action-specific permission checks
+        $user = auth()->user();
+        if ($action === 'delete' && !$user->hasPermission('health_records.delete')) {
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized for this destructive action.'], 403);
+            }
+            return redirect()->back()->withErrors(['error' => 'Unauthorized for this destructive action.']);
+        }
+        
+        if ($action === 'print' && !$user->hasPermission('health_records.view')) {
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized to view/print records.'], 403);
+            }
+            return redirect()->back()->withErrors(['error' => 'Unauthorized to view/print records.']);
+        }
+
         if ($action === 'delete') {
             $count = EmployeeHealthRecord::whereIn('id', $ids)->delete();
             
@@ -372,9 +418,12 @@ class EmployeeHealthRecordController extends Controller
             );
 
             $msg = "Successfully deleted {$count} records.";
-            return $request->ajax() 
-                ? response()->json(['status' => 'success', 'message' => $msg])
-                : redirect()->back()->with('success', $msg);
+            if ($request->ajax()) {
+                session()->flash('status', $msg);
+                return response()->json(['status' => 'success', 'message' => $msg]);
+            }
+            
+            return redirect()->back()->with('status', $msg);
         }
 
         if ($action === 'print') {
@@ -400,5 +449,22 @@ class EmployeeHealthRecordController extends Controller
         }
 
         return response()->json(['status' => 'error', 'message' => 'Invalid action.'], 422);
+    }
+
+    public function restore($uuid): RedirectResponse
+    {
+        $record = EmployeeHealthRecord::withTrashed()->where('uuid', $uuid)->firstOrFail();
+        $record->restore();
+
+        ActivityLogService::log(
+            auth()->user(),
+            'health_record.restored',
+            $record,
+            "Restored health record for: {$record->full_name}."
+        );
+
+        return redirect()
+            ->route('health-records.index')
+            ->with('status', 'Health record restored successfully.');
     }
 }

@@ -13,6 +13,7 @@ class EmployeeHealthRecord extends Model
 
     protected $fillable = [
         'uuid',
+        'company_id',
         'company_name',
         'employee_id',
         'full_name',
@@ -173,5 +174,10 @@ class EmployeeHealthRecord extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

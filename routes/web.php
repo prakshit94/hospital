@@ -10,10 +10,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\CustomerAddressController;
-use App\Http\Controllers\VillageController;
 use App\Http\Controllers\EmployeeHealthRecordController;
+use App\Http\Controllers\CompanyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check()
@@ -73,38 +71,54 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:permissions.update')->post('/permissions/{permission}/toggle-status', [PermissionController::class, 'toggleStatus'])->name('permissions.toggle-status');
     Route::middleware('permission:permissions.delete')->delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 
-    // CRM - Customers
-    Route::middleware('permission:customers.view')->group(function () {
-        Route::get('customers/search-mobile', [CustomerController::class, 'searchByMobile'])->name('customers.search-mobile');
-        Route::resource('customers', CustomerController::class);
-        Route::post('customers/{customer}/addresses', [CustomerAddressController::class, 'store'])->name('customers.addresses.store');
-        Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
-        Route::post('customers/bulk-action', [CustomerController::class, 'bulkAction'])->name('customers.bulk-action');
-        Route::post('customers/{customer}/interactions', [CustomerController::class, 'storeInteraction'])->name('customers.interactions.store');
-        Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
-    });
-    Route::middleware('permission:customers.update')->group(function () {
-        Route::put('customer-addresses/{address}', [CustomerAddressController::class, 'update'])->name('customers.addresses.update');
-        Route::delete('customer-addresses/{address}', [CustomerAddressController::class, 'destroy'])->name('customers.addresses.destroy');
-    });
-
-    // CRM - Villages
-    Route::middleware('permission:villages.view')->group(function () {
-        Route::resource('villages', VillageController::class);
-        Route::get('villages-search', [VillageController::class, 'search'])->name('villages.search');
-        Route::post('villages/{village}/toggle-status', [VillageController::class, 'toggleStatus'])->name('villages.toggle-status');
-        Route::post('villages/bulk-action', [VillageController::class, 'bulkAction'])->name('villages.bulk-action');
-    });
-
-    // CRM - Products Hub
-    Route::get('products-search', [\App\Http\Controllers\ProductController::class, 'search'])->name('products.search');
 
     // Health Records Module
+    Route::middleware('permission:health_records.create')->group(function () {
+        Route::get('health-records/create', [EmployeeHealthRecordController::class, 'create'])->name('health-records.create');
+        Route::post('health-records', [EmployeeHealthRecordController::class, 'store'])->name('health-records.store');
+    });
+
     Route::middleware('permission:health_records.view')->group(function () {
         Route::get('health-records/{health_record}/print', [EmployeeHealthRecordController::class, 'print'])->name('health-records.print');
         Route::get('health-records/{health_record}/print-form32', [EmployeeHealthRecordController::class, 'printForm32'])->name('health-records.print-form32');
         Route::get('health-records/{health_record}/print-form33', [EmployeeHealthRecordController::class, 'printForm33'])->name('health-records.print-form33');
+        Route::get('health-records', [EmployeeHealthRecordController::class, 'index'])->name('health-records.index');
+        Route::get('health-records/{health_record}', [EmployeeHealthRecordController::class, 'show'])->name('health-records.show');
+    });
+
+    Route::middleware('permission:health_records.update')->group(function () {
+        Route::get('health-records/{health_record}/edit', [EmployeeHealthRecordController::class, 'edit'])->name('health-records.edit');
+        Route::match(['put', 'patch'], 'health-records/{health_record}', [EmployeeHealthRecordController::class, 'update'])->name('health-records.update');
         Route::post('health-records/bulk-action', [EmployeeHealthRecordController::class, 'bulkAction'])->name('health-records.bulk-action');
-        Route::resource('health-records', EmployeeHealthRecordController::class);
+    });
+
+    Route::middleware('permission:health_records.delete')->group(function () {
+        Route::delete('health-records/{health_record}', [EmployeeHealthRecordController::class, 'destroy'])->name('health-records.destroy');
+        Route::post('health-records/{uuid}/restore', [EmployeeHealthRecordController::class, 'restore'])->name('health-records.restore');
+    });
+
+    // Company Management
+    Route::middleware('permission:companies.create')->group(function () {
+        Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
+        Route::post('companies', [CompanyController::class, 'store'])->name('companies.store');
+    });
+
+    Route::middleware('permission:companies.view')->group(function () {
+        Route::post('companies/switch', [CompanyController::class, 'switch'])->name('companies.switch');
+        Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+    });
+
+    Route::middleware('permission:companies.update')->group(function () {
+        Route::get('companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
+        Route::match(['put', 'patch'], 'companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+        Route::post('companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus'])->name('companies.toggle-status');
+        Route::post('companies/bulk-action', [CompanyController::class, 'bulkAction'])->name('companies.bulk-action');
+    });
+
+    Route::middleware('permission:companies.delete')->group(function () {
+        Route::delete('companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+        Route::post('companies/{id}/restore', [CompanyController::class, 'restore'])->name('companies.restore');
     });
 });
+

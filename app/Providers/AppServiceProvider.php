@@ -41,5 +41,9 @@ class AppServiceProvider extends ServiceProvider
                 $user->timestamps = true;
             }
         });
+
+        \Illuminate\Support\Facades\View::composer(['components.layout.header', 'health-records._form'], function ($view) {
+            $view->with('globalCompanies', \App\Models\Company::where('is_active', true)->orderBy('name')->get());
+        });
     }
 }

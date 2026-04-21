@@ -45,9 +45,11 @@
                 </div>
                 
                 <select name="company" class="ui-select">
-                    <option value="">All Companies</option>
+                    @if(!session()->has('current_company_id'))
+                        <option value="">All Companies</option>
+                    @endif
                     @foreach($companies as $company)
-                        <option value="{{ $company }}" @selected(request('company') == $company)>{{ $company }}</option>
+                        <option value="{{ $company->id }}" @selected(request('company') == $company->id)>{{ $company->name }}</option>
                     @endforeach
                 </select>
 
