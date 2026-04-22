@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('browser')->nullable();
             $table->string('platform')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['subject_type', 'subject_id']);
             $table->index('action');

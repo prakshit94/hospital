@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('is_system')->default(false);
             $table->string('status')->default('active');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('role_user', function (Blueprint $table) {

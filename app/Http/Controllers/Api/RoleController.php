@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Services\ActivityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
@@ -109,5 +110,107 @@ class RoleController extends Controller
             'status' => 'success',
             'message' => 'Role deleted successfully.',
         ]);
+    }
+
+    public function restore($id): JsonResponse
+    {
+        $role = Role::withTrashed()->findOrFail($id);
+        $role->restore();
+
+        ActivityLogService::log(auth()->user(), 'role.restored.api', $role, "API: Restored role {$role->name}.");
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role restored successfully.',
+            'data' => $role,
+        ]);
+    }
+
+    public function forceDelete($id): JsonResponse
+    {
+        $role = Role::withTrashed()->findOrFail($id);
+
+        if ($role->is_system) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'System roles cannot be permanently deleted.',
+            ], 422);
+        }
+
+        ActivityLogService::log(auth()->user(), 'role.permanently_deleted.api', $role, "API: Permanently deleted role {$role->name}.");
+        $role->forceDelete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Role permanently deleted successfully.',
+        ]);
+    }
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'action' => ['required', 'string', 'in:delete,restore,force-delete'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $user = auth()->user();
+        if (in_array($action, ['delete', 'restore', 'force-delete']) && !$user->hasPermission('roles.delete')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized for this destructive action.',
+            ], 403);
+        }
+
+        try {
+            $affectedRoles = Role::withTrashed()->whereIn('id', $ids)->pluck('name')->all();
+
+            DB::transaction(function () use ($action, $ids, $affectedRoles) {
+                $query = Role::withTrashed()->whereIn('id', $ids);
+
+                switch ($action) {
+                    case 'delete':
+                        $query->get()->each(function($role) {
+                            if (!$role->is_system) $role->delete();
+                        });
+                        $this->logBulkAction('role.bulk_deleted.api', $ids, "API: Soft-deleted " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                    case 'restore':
+                        $query->restore();
+                        $this->logBulkAction('role.bulk_restored.api', $ids, "API: Restored " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                    case 'force-delete':
+                        $query->get()->each(function($role) {
+                            if (!$role->is_system) $role->forceDelete();
+                        });
+                        $this->logBulkAction('role.bulk_permanently_deleted.api', $ids, "API: Permanently deleted " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => count($ids) . ' roles processed successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred during bulk operation: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function logBulkAction(string $event, array $ids, string $description, array $extra = []): void
+    {
+        ActivityLogService::log(
+            auth()->user(),
+            $event,
+            null,
+            $description,
+            array_merge(['affected_ids' => $ids], $extra)
+        );
     }
 }

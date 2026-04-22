@@ -1,9 +1,18 @@
-<div x-data="{
+<div data-record-data="{{ $records->mapWithKeys(fn($r) => [$r->id => $r->trashed()])->toJson() }}" x-data="{
     selected: [],
     selectAll: false,
-    allIds: {{ $records->pluck('id')->toJson() }},
+    recordData: {},
+    init() {
+        this.recordData = JSON.parse(this.$el.dataset.recordData || '{}');
+    },
+    allIds() {
+        return Object.keys(this.recordData);
+    },
     toggleAll() {
-        this.selected = this.selectAll ? [...this.allIds] : [];
+        this.selected = this.selectAll ? this.allIds() : [];
+    },
+    isAnyDeleted() {
+        return this.selected.some(id => this.recordData[id]);
     },
     bulkAction(action, formType = 'medical_report') {
         if (this.selected.length === 0) return;
@@ -46,27 +55,36 @@
             return;
         }
 
-        if (action === 'delete') {
-            if (!confirm('Are you sure you want to delete selected records?')) return;
-            
-            fetch('{{ route('health-records.bulk-action') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ action: 'delete', ids: this.selected })
-            }).then(res => res.json()).then(data => {
-                if (data.status === 'success') {
-                    window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'success', title: 'Success', description: data.message }}));
-                    const searchForm = document.querySelector('form[data-async-search]');
-                    if (searchForm) searchForm.dispatchEvent(new Event('submit'));
-                    else window.location.reload();
+        let confirmMsg = 'Are you sure?';
+        if (action === 'delete') confirmMsg = 'Move selected records to trash?';
+        if (action === 'force-delete') confirmMsg = 'CRITICAL: PERMANENTLY delete selected records?';
+        if (action === 'restore') confirmMsg = 'Restore selected records?';
+        
+        if (['delete', 'force-delete', 'restore'].includes(action) && !confirm(confirmMsg)) return;
+
+        fetch('{{ route('health-records.bulk-action') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ action: action, ids: this.selected })
+        }).then(res => res.json()).then(data => {
+            if (data.status === 'success') {
+                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'success', title: 'Success', message: data.message }}));
+                const searchForm = document.querySelector('form[data-async-search]');
+                if (searchForm) {
+                    searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                } else {
+                    window.location.reload();
                 }
-                this.selected = [];
-                this.selectAll = false;
-            });
-        }
+            } else {
+                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'error', title: 'Error', message: data.message }}));
+            }
+            this.selected = [];
+            this.selectAll = false;
+        });
     }
 }">
 <div class="table-toolbar">
@@ -76,33 +94,42 @@
     </div>
 
     <!-- Bulk actions ribbon -->
-    <div class="flex items-center gap-4 bg-primary/5 py-2 px-4 rounded-lg border border-primary/20 w-full" style="display: none;" x-show="selected.length > 0">
-        <span class="text-sm font-semibold text-primary"><span x-text="selected.length"></span> selected</span>
-        <div class="h-4 w-px bg-border"></div>
-        <div class="flex gap-2">
+    <div class="flex items-center gap-4 bg-primary/10 backdrop-blur-md py-2.5 px-5 rounded-2xl border border-primary/20 w-full shadow-lg shadow-primary/5" style="display: none;" x-show="selected.length > 0" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+        <div class="flex items-center gap-2">
+            <span class="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white shadow-sm" x-text="selected.length"></span>
+            <span class="text-xs font-bold uppercase tracking-widest text-primary">Selected</span>
+        </div>
+        <div class="h-6 w-px bg-primary/20"></div>
+        <div class="flex flex-1 items-center gap-2">
             <div class="relative flex" x-data="{ openPrint: false }">
-                <x-ui.button variant="secondary" size="sm" @click="openPrint = !openPrint" @click.away="openPrint = false" class="gap-2">
+                <button type="button" @click="openPrint = !openPrint" @click.away="openPrint = false" class="inline-flex items-center gap-2 rounded-xl bg-card px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-foreground shadow-sm border border-border hover:bg-secondary transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-                    Bulk Print
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                </x-ui.button>
-                <div x-show="openPrint" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-1 min-w-[200px] overflow-hidden rounded-[1.2rem] border border-border bg-popover p-1.5 shadow-[0_12px_24px_-10px_rgba(15,23,42,0.2)]">
-                    <button type="button" @click="bulkAction('print', 'medical_report'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                        Medical Report
-                    </button>
-                    <button type="button" @click="bulkAction('print', 'form32'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                        Form 32 (Health Register)
-                    </button>
-                    <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                        Form 33 (Fitness Cert)
-                    </button>
+                    Print
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </button>
+                <div x-show="openPrint" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-2 min-w-[220px] overflow-hidden rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
+                    <button type="button" @click="bulkAction('print', 'medical_report'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Medical Report</button>
+                    <button type="button" @click="bulkAction('print', 'form32'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 32 (Register)</button>
+                    <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 33 (Fitness)</button>
                 </div>
             </div>
             
-            <x-ui.button variant="secondary" size="sm" @click="bulkAction('delete')" class="gap-2 !text-danger">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/></svg>
-                Delete Selected
-            </x-ui.button>
+            <div class="h-6 w-px bg-primary/20"></div>
+
+            @if(auth()->user()?->hasPermission('health_records.delete'))
+                <button type="button" x-show="isAnyDeleted()" @click="bulkAction('restore')" class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    Restore
+                </button>
+                <button type="button" x-show="!isAnyDeleted()" @click="bulkAction('delete')" class="inline-flex items-center gap-2 rounded-xl bg-destructive/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-destructive border border-destructive/20 hover:bg-destructive/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/></svg>
+                    Delete
+                </button>
+                <button type="button" x-show="isAnyDeleted()" @click="bulkAction('force-delete')" class="inline-flex items-center gap-2 rounded-xl bg-destructive/20 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-destructive border border-destructive/30 hover:bg-destructive/30 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
+                    Purge
+                </button>
+            @endif
         </div>
     </div>
 
@@ -129,9 +156,9 @@
         </thead>
         <tbody>
             @forelse($records as $record)
-                <tr class="group transition hover:bg-secondary/20">
+                <tr class="group transition hover:bg-secondary/20 {{ $record->trashed() ? 'opacity-70 grayscale-[0.3]' : '' }}">
                     <td>
-                        <input type="checkbox" class="ui-checkbox row-checkbox" value="{{ $record->id }}" x-model="selected" @change="selectAll = selected.length === allIds.length">
+                        <input type="checkbox" class="ui-checkbox row-checkbox" value="{{ $record->id }}" x-model="selected" @change="selectAll = selected.length === allIds().length">
                     </td>
                     <td class="table-secondary font-mono text-xs">{{ ($records->currentPage() - 1) * $records->perPage() + $loop->iteration }}</td>
                     <td data-label="Employee Info">
@@ -171,9 +198,13 @@
                         @endif
                     </td>
                     <td data-label="Status">
-                        <span class="ui-chip !bg-primary/5 !text-primary uppercase text-[10px] tracking-wider font-bold">
-                            {{ $record->status }}
-                        </span>
+                        @if($record->trashed())
+                            <span class="ui-status-danger px-2 py-1 uppercase text-[10px] tracking-wide font-bold">Deleted</span>
+                        @else
+                            <span class="ui-chip !bg-primary/5 !text-primary uppercase text-[10px] tracking-wider font-bold">
+                                {{ $record->status }}
+                            </span>
+                        @endif
                     </td>
                     <td data-label="Actions" class="actions-cell">
                         <div class="relative flex justify-end" x-data="{ open: false }">
@@ -190,32 +221,70 @@
                                     </svg>
                                     View Details
                                 </a>
-                                <div class="my-1 border-t border-border/50"></div>
-                                <a href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
-                                    </svg>
-                                    Medical Report
-                                </a>
-                                <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
-                                    </svg>
-                                    Print Form 32
-                                </a>
-                                <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-500/10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-                                    </svg>
-                                    Print Form 33
-                                </a>
-                                <div class="my-1 border-t border-border/50"></div>
-                                <a href="{{ route('health-records.edit', $record->uuid) }}" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                        <path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4z"/>
-                                    </svg>
-                                    Edit Record
-                                </a>
+
+                                @if(!$record->trashed())
+                                    <div class="my-1 border-t border-border/50"></div>
+                                    <a href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                                        </svg>
+                                        Medical Report
+                                    </a>
+                                    <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+                                        </svg>
+                                        Print Form 32
+                                    </a>
+                                    <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-500/10">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                                        </svg>
+                                        Print Form 33
+                                    </a>
+                                    <div class="my-1 border-t border-border/50"></div>
+                                    <a href="{{ route('health-records.edit', $record->uuid) }}" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4z"/>
+                                        </svg>
+                                        Edit Record
+                                    </a>
+                                    @if(auth()->user()?->hasPermission('health_records.delete'))
+                                        <form action="{{ route('health-records.destroy', $record->uuid) }}" method="POST" onsubmit="return confirm('Delete this record?')" class="block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-danger transition hover:bg-danger/10">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/>
+                                                </svg>
+                                                Delete Record
+                                            </button>
+                                        </form>
+                                    @endif
+                                @else
+                                    @if(auth()->user()?->hasPermission('health_records.delete'))
+                                        <div class="my-1 border-t border-border/50"></div>
+                                        <form action="{{ route('health-records.restore', $record->uuid) }}" method="POST" onsubmit="return confirm('Restore this record?')" class="block">
+                                            @csrf
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                                </svg>
+                                                Restore Record
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('health-records.force-delete', $record->uuid) }}" method="POST" onsubmit="return confirm('CRITICAL: Permanently delete this record?')" class="block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-danger transition hover:bg-danger/10">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/>
+                                                </svg>
+                                                Permanent Delete
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </td>
@@ -261,5 +330,4 @@
             </span>
         @endif
     </nav>
-</div>
 </div>

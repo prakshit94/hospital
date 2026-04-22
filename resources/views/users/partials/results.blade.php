@@ -20,10 +20,10 @@
     bulkAction(action) {
         if (this.selected.length === 0) return;
         
-        let confirmMsg = 'Are you sure you want to perform this action?';
-        if (action === 'delete') confirmMsg = 'Are you sure you want to move selected users to trash?';
-        if (action === 'force-delete') confirmMsg = 'CRITICAL: This will PERMANENTLY delete selected records from the database. This cannot be undone. Continue?';
-        if (action === 'restore') confirmMsg = 'Restore selected users to active status?';
+        let confirmMsg = 'Are you sure?';
+        if (action === 'delete') confirmMsg = 'Move selected users to trash?';
+        if (action === 'force-delete') confirmMsg = 'CRITICAL: PERMANENTLY delete selected records?';
+        if (action === 'restore') confirmMsg = 'Restore selected users?';
         
         if (['delete', 'force-delete', 'restore'].includes(action) && !confirm(confirmMsg)) return;
         
@@ -31,17 +31,21 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ action: action, ids: this.selected })
         }).then(res => res.json()).then(data => {
             if (data.status === 'success') {
-                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'success', title: 'Success', description: data.message }}));
+                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'success', title: 'Success', message: data.message }}));
                 const searchForm = document.querySelector('form[data-async-search]');
-                if (searchForm) searchForm.dispatchEvent(new Event('submit'));
-                else window.location.reload();
+                if (searchForm) {
+                    searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                } else {
+                    window.location.reload();
+                }
             } else {
-                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'error', title: 'Error', description: data.message }}));
+                window.dispatchEvent(new CustomEvent('toast-notify', { detail: { type: 'error', title: 'Error', message: data.message }}));
             }
             this.selected = [];
             this.selectAll = false;
@@ -55,38 +59,35 @@
     </div>
 
     <!-- Bulk actions ribbon -->
-    <div class="flex items-center gap-4 bg-primary/5 py-2 px-4 rounded-lg border border-primary/20 w-full" style="display: none;" x-show="selected.length > 0">
-        <span class="text-sm font-semibold text-primary"><span x-text="selected.length"></span> selected</span>
-        <div class="h-4 w-px bg-border"></div>
-        <div class="relative flex" x-data="{ openBulk: false }">
-            <x-ui.button variant="secondary" size="sm" @click="openBulk = !openBulk" @click.away="openBulk = false" class="gap-2">
-                Actions
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
-            </x-ui.button>
-            <div x-show="openBulk" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-1 min-w-[180px] overflow-hidden rounded-[1.2rem] border border-border bg-popover p-1.5 shadow-[0_12px_24px_-10px_rgba(15,23,42,0.2)]">
-                @if(auth()->user()?->hasPermission('users.update'))
-                    <button type="button" x-show="isAnyActive()" @click="bulkAction('active'); openBulk = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                        <span class="size-2 rounded-full bg-emerald-500"></span> Mark Active
-                    </button>
-                    <button type="button" x-show="isAnyActive()" @click="bulkAction('inactive'); openBulk = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                        <span class="size-2 rounded-full bg-slate-400"></span> Mark Inactive
-                    </button>
-                @endif
-                @if(auth()->user()?->hasPermission('users.delete'))
-                    <div class="my-1 border-t border-border/50"></div>
-                    <button type="button" x-show="isAnyDeleted()" @click="bulkAction('restore'); openBulk = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Restore Selected
-                    </button>
-                    <button type="button" x-show="!isAnyDeleted()" @click="bulkAction('delete'); openBulk = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-danger transition hover:bg-danger/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/></svg> Delete Selected
-                    </button>
-                    <button type="button" x-show="isAnyDeleted()" @click="bulkAction('force-delete'); openBulk = false" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-danger transition hover:bg-danger/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg> Permanent Delete
-                    </button>
-                @endif
-            </div>
+    <div class="flex items-center gap-4 bg-primary/10 backdrop-blur-md py-2.5 px-5 rounded-2xl border border-primary/20 w-full shadow-lg shadow-primary/5" style="display: none;" x-show="selected.length > 0" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+        <div class="flex items-center gap-2">
+            <span class="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white shadow-sm" x-text="selected.length"></span>
+            <span class="text-xs font-bold uppercase tracking-widest text-primary">Selected</span>
+        </div>
+        <div class="h-6 w-px bg-primary/20"></div>
+        <div class="flex flex-1 items-center gap-2">
+            @if(auth()->user()?->hasPermission('users.update'))
+                <button type="button" x-show="isAnyActive()" @click="bulkAction('active')" class="inline-flex items-center gap-2 rounded-xl bg-card px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-foreground shadow-sm border border-border hover:bg-secondary transition-all">
+                    <span class="size-2 rounded-full bg-emerald-500"></span> Activate
+                </button>
+                <button type="button" x-show="isAnyActive()" @click="bulkAction('inactive')" class="inline-flex items-center gap-2 rounded-xl bg-card px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-foreground shadow-sm border border-border hover:bg-secondary transition-all">
+                    <span class="size-2 rounded-full bg-slate-400"></span> Deactivate
+                </button>
+            @endif
+
+            <div class="h-6 w-px bg-primary/20"></div>
+
+            @if(auth()->user()?->hasPermission('users.delete'))
+                <button type="button" x-show="isAnyDeleted()" @click="bulkAction('restore')" class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Restore
+                </button>
+                <button type="button" x-show="!isAnyDeleted()" @click="bulkAction('delete')" class="inline-flex items-center gap-2 rounded-xl bg-destructive/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-destructive border border-destructive/20 hover:bg-destructive/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"/></svg> Delete
+                </button>
+                <button type="button" x-show="isAnyDeleted()" @click="bulkAction('force-delete')" class="inline-flex items-center gap-2 rounded-xl bg-destructive/20 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-destructive border border-destructive/30 hover:bg-destructive/30 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg> Purge
+                </button>
+            @endif
         </div>
     </div>
 
@@ -113,7 +114,7 @@
         </thead>
         <tbody>
             @forelse($users as $user)
-                <tr>
+                <tr class="transition hover:bg-secondary/20 {{ $user->trashed() ? 'opacity-70 grayscale-[0.3]' : '' }}">
                     <td>
                         <input type="checkbox" class="ui-checkbox row-checkbox" value="{{ $user->id }}" x-model="selected" @change="selectAll = selected.length === allIds().length">
                     </td>
@@ -187,13 +188,23 @@
                                 @if(auth()->user()?->hasPermission('users.delete') && auth()->id() !== $user->id)
                                     <div class="my-1 border-t border-border/50"></div>
                                     @if($user->trashed())
-                                        <form action="{{ route('users.restore', $user) }}" method="POST" onsubmit="return confirm('Are you sure you want to restore this user?')" class="block">
+                                        <form action="{{ route('users.restore', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to restore this user?')" class="block">
                                             @csrf
                                             <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                                                 </svg>
                                                 Restore User
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('users.force-delete', $user->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Are you sure you want to PERMANENTLY delete this user? This cannot be undone.')" class="block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-danger transition hover:bg-danger/10">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/>
+                                                </svg>
+                                                Permanent Delete
                                             </button>
                                         </form>
                                     @else

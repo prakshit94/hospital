@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamp('last_active_at')->useCurrent();
             $table->boolean('is_trusted')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

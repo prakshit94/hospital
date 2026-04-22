@@ -141,7 +141,7 @@ class CompanyController extends Controller
     public function bulkAction(Request $request): JsonResponse
     {
         $request->validate([
-            'action' => 'required|string|in:active,inactive,delete,restore',
+            'action' => 'required|string|in:active,inactive,delete,restore,force-delete',
             'ids' => 'required|array',
             'ids.*' => 'integer',
         ]);
@@ -151,7 +151,7 @@ class CompanyController extends Controller
 
         // Action-specific permission checks
         $user = auth()->user();
-        if ($action === 'delete' && !$user->hasPermission('companies.delete')) {
+        if (in_array($action, ['delete', 'force-delete']) && !$user->hasPermission('companies.delete')) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized for this destructive action.',
@@ -178,6 +178,10 @@ class CompanyController extends Controller
                     case 'restore':
                         $query->restore();
                         $this->logBulkAction('company.bulk_restored.api', $ids, "API: Restored " . count($ids) . " companies.", ['names' => $names]);
+                        break;
+                    case 'force-delete':
+                        $query->forceDelete();
+                        $this->logBulkAction('company.bulk_permanently_deleted.api', $ids, "API: Permanently deleted " . count($ids) . " companies.", ['names' => $names]);
                         break;
                     case 'active':
                     case 'inactive':
@@ -226,6 +230,26 @@ class CompanyController extends Controller
             'status' => 'success',
             'message' => "Company '{$company->name}' restored successfully.",
             'data' => $company,
+        ]);
+    }
+
+    public function forceDelete($id): JsonResponse
+    {
+        $company = Company::withTrashed()->findOrFail($id);
+        $name = $company->name;
+
+        ActivityLogService::log(
+            auth()->user(),
+            'company.permanently_deleted.api',
+            $company,
+            "API: Permanently deleted company: {$name}"
+        );
+
+        $company->forceDelete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Company '{$name}' permanently deleted successfully.",
         ]);
     }
 }

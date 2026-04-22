@@ -184,7 +184,7 @@ class HealthRecordController extends Controller
     public function bulkAction(Request $request): JsonResponse
     {
         $request->validate([
-            'action' => 'required|string|in:delete,restore',
+            'action' => 'required|string|in:delete,restore,force-delete',
             'ids' => 'required|array',
             'ids.*' => 'required', // Could be UUID or ID
         ]);
@@ -193,7 +193,7 @@ class HealthRecordController extends Controller
         $ids = $request->input('ids');
 
         $user = auth()->user();
-        if ($action === 'delete' && !$user->hasPermission('health_records.delete')) {
+        if (in_array($action, ['delete', 'force-delete']) && !$user->hasPermission('health_records.delete')) {
             return response()->json(['message' => 'Unauthorized for deletion.'], 403);
         }
         if ($action === 'restore' && !$user->hasPermission('health_records.update')) {
@@ -215,6 +215,10 @@ class HealthRecordController extends Controller
                     case 'restore':
                         $query->restore();
                         ActivityLogService::log(auth()->user(), 'health_record.bulk_restored.api', null, "API: Bulk restored " . count($ids) . " health records.");
+                        break;
+                    case 'force-delete':
+                        $query->forceDelete();
+                        ActivityLogService::log(auth()->user(), 'health_record.bulk_permanently_deleted.api', null, "API: Bulk permanently deleted " . count($ids) . " health records.");
                         break;
                 }
             });
@@ -253,6 +257,30 @@ class HealthRecordController extends Controller
             'status' => 'success',
             'message' => 'Health record restored successfully.',
             'data' => $record
+        ]);
+    }
+
+    public function forceDelete(string $id): JsonResponse
+    {
+        $this->authorizePermission('health_records.delete');
+
+        $record = EmployeeHealthRecord::withTrashed()
+            ->where('id', $id)
+            ->orWhere('uuid', $id)
+            ->firstOrFail();
+
+        ActivityLogService::log(
+            auth()->user(),
+            'health_record.permanently_deleted.api',
+            $record,
+            "API: Permanently deleted health record for: {$record->full_name}"
+        );
+
+        $record->forceDelete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Health record permanently deleted successfully.',
         ]);
     }
 

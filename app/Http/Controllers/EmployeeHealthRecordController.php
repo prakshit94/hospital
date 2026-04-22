@@ -42,7 +42,12 @@ class EmployeeHealthRecordController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status;
+            if ($status === 'deleted') {
+                $query->onlyTrashed();
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         $records = $query->latest()->paginate($perPage)->withQueryString();
@@ -381,7 +386,7 @@ class EmployeeHealthRecordController extends Controller
     public function bulkAction(Request $request): JsonResponse|RedirectResponse|\Illuminate\Http\Response
     {
         $request->validate([
-            'action' => 'required|string|in:delete,print',
+            'action' => 'required|string|in:delete,restore,force-delete,print',
             'form_type' => 'nullable|string|in:medical_report,form32,form33',
             'ids' => 'required|array',
             'ids.*' => 'integer',
@@ -393,13 +398,20 @@ class EmployeeHealthRecordController extends Controller
 
         // Action-specific permission checks
         $user = auth()->user();
-        if ($action === 'delete' && !$user->hasPermission('health_records.delete')) {
+        if (in_array($action, ['delete', 'force-delete']) && !$user->hasPermission('health_records.delete')) {
             if ($request->ajax()) {
                 return response()->json(['status' => 'error', 'message' => 'Unauthorized for this destructive action.'], 403);
             }
             return redirect()->back()->withErrors(['error' => 'Unauthorized for this destructive action.']);
         }
         
+        if ($action === 'restore' && !$user->hasPermission('health_records.update')) {
+            if ($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized for this action.'], 403);
+            }
+            return redirect()->back()->withErrors(['error' => 'Unauthorized for this action.']);
+        }
+
         if ($action === 'print' && !$user->hasPermission('health_records.view')) {
             if ($request->ajax()) {
                 return response()->json(['status' => 'error', 'message' => 'Unauthorized to view/print records.'], 403);
@@ -407,23 +419,41 @@ class EmployeeHealthRecordController extends Controller
             return redirect()->back()->withErrors(['error' => 'Unauthorized to view/print records.']);
         }
 
-        if ($action === 'delete') {
-            $count = EmployeeHealthRecord::whereIn('id', $ids)->delete();
-            
-            ActivityLogService::log(
-                auth()->user(),
-                'health_record.bulk_deleted',
-                null,
-                "Bulk deleted {$count} health records."
-            );
+        if (in_array($action, ['delete', 'restore', 'force-delete'])) {
+            try {
+                DB::transaction(function () use ($action, $ids) {
+                    $query = EmployeeHealthRecord::withTrashed()->whereIn('id', $ids);
+                    
+                    switch ($action) {
+                        case 'delete':
+                            $query->delete();
+                            ActivityLogService::log(auth()->user(), 'health_record.bulk_deleted', null, "Bulk deleted " . count($ids) . " health records.");
+                            break;
+                        case 'restore':
+                            $query->restore();
+                            ActivityLogService::log(auth()->user(), 'health_record.bulk_restored', null, "Bulk restored " . count($ids) . " health records.");
+                            break;
+                        case 'force-delete':
+                            $query->forceDelete();
+                            ActivityLogService::log(auth()->user(), 'health_record.bulk_permanently_deleted', null, "Bulk permanently deleted " . count($ids) . " health records.");
+                            break;
+                    }
+                });
 
-            $msg = "Successfully deleted {$count} records.";
-            if ($request->ajax()) {
-                session()->flash('status', $msg);
-                return response()->json(['status' => 'success', 'message' => $msg]);
+                $actionLabel = $action === 'force-delete' ? 'permanently deleted' : ($action === 'delete' ? 'deleted' : 'restored');
+                $msg = "Successfully {$actionLabel} " . count($ids) . " records.";
+                if ($request->ajax()) {
+                    session()->flash('status', $msg);
+                    return response()->json(['status' => 'success', 'message' => $msg]);
+                }
+                
+                return redirect()->back()->with('status', $msg);
+            } catch (\Exception $e) {
+                if ($request->ajax()) {
+                    return response()->json(['status' => 'error', 'message' => 'An error occurred: ' . $e->getMessage()], 500);
+                }
+                return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
             }
-            
-            return redirect()->back()->with('status', $msg);
         }
 
         if ($action === 'print') {
@@ -464,7 +494,26 @@ class EmployeeHealthRecordController extends Controller
         );
 
         return redirect()
-            ->route('health-records.index')
+            ->route('health-records.index', ['status' => 'deleted'])
             ->with('status', 'Health record restored successfully.');
+    }
+
+    public function forceDelete($uuid): RedirectResponse
+    {
+        $record = EmployeeHealthRecord::withTrashed()->where('uuid', $uuid)->firstOrFail();
+        $name = $record->full_name;
+
+        ActivityLogService::log(
+            auth()->user(),
+            'health_record.permanently_deleted',
+            $record,
+            "Permanently deleted health record for: {$name}."
+        );
+
+        $record->forceDelete();
+
+        return redirect()
+            ->route('health-records.index', ['status' => 'deleted'])
+            ->with('status', 'Health record permanently deleted successfully.');
     }
 }

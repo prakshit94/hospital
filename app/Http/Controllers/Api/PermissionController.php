@@ -9,6 +9,7 @@ use App\Models\Permission;
 use App\Services\ActivityLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PermissionController extends Controller
 {
@@ -93,5 +94,96 @@ class PermissionController extends Controller
             'status' => 'success',
             'message' => 'Permission deleted successfully.',
         ]);
+    }
+
+    public function restore($id): JsonResponse
+    {
+        $permission = Permission::withTrashed()->findOrFail($id);
+        $permission->restore();
+
+        ActivityLogService::log(auth()->user(), 'permission.restored.api', $permission, "API: Restored permission {$permission->slug}.");
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permission restored successfully.',
+            'data' => $permission,
+        ]);
+    }
+
+    public function forceDelete($id): JsonResponse
+    {
+        $permission = Permission::withTrashed()->findOrFail($id);
+
+        ActivityLogService::log(auth()->user(), 'permission.permanently_deleted.api', $permission, "API: Permanently deleted permission {$permission->slug}.");
+        $permission->forceDelete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permission permanently deleted successfully.',
+        ]);
+    }
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'action' => ['required', 'string', 'in:delete,restore,force-delete'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $user = auth()->user();
+        if (in_array($action, ['delete', 'restore', 'force-delete']) && !$user->hasPermission('permissions.delete')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized for this destructive action.',
+            ], 403);
+        }
+
+        try {
+            $affectedPermissions = Permission::withTrashed()->whereIn('id', $ids)->pluck('slug')->all();
+
+            DB::transaction(function () use ($action, $ids, $affectedPermissions) {
+                $query = Permission::withTrashed()->whereIn('id', $ids);
+
+                switch ($action) {
+                    case 'delete':
+                        $query->delete();
+                        $this->logBulkAction('permission.bulk_deleted.api', $ids, "API: Soft-deleted " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                    case 'restore':
+                        $query->restore();
+                        $this->logBulkAction('permission.bulk_restored.api', $ids, "API: Restored " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                    case 'force-delete':
+                        $query->forceDelete();
+                        $this->logBulkAction('permission.bulk_permanently_deleted.api', $ids, "API: Permanently deleted " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => count($ids) . ' permissions processed successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred during bulk operation: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function logBulkAction(string $event, array $ids, string $description, array $extra = []): void
+    {
+        ActivityLogService::log(
+            auth()->user(),
+            $event,
+            null,
+            $description,
+            array_merge(['affected_ids' => $ids], $extra)
+        );
     }
 }

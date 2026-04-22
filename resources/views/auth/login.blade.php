@@ -50,7 +50,7 @@
 
                     <div class="ui-field">
                         <label for="email" class="ui-label">Email Address</label>
-                        <input id="email" name="email" type="email" value="{{ old('email', 'admin@example.com') }}" class="ui-input" placeholder="you@example.com" required autofocus>
+                        <input id="email" name="email" type="email" value="{{ old('email', request()->cookie('remembered_email')) }}" class="ui-input" placeholder="you@example.com" required autofocus autocomplete="username">
                     </div>
 
                     <div class="ui-field">
@@ -58,12 +58,12 @@
                             <label for="password" class="ui-label !mb-0">Password</label>
                             <a href="{{ route('password.request') }}" class="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Forgot password?</a>
                         </div>
-                        <input id="password" name="password" type="password" class="ui-input" placeholder="Enter your password" required>
+                        <input id="password" name="password" type="password" class="ui-input" placeholder="Enter your password" required autocomplete="current-password">
                     </div>
 
                     <div class="flex items-center justify-between gap-4">
-                        <label class="flex items-center gap-3 text-sm text-muted-foreground">
-                            <input name="remember" type="checkbox" value="1" class="h-4 w-4" @checked(old('remember'))>
+                        <label for="remember" class="flex items-center gap-3 text-sm text-muted-foreground cursor-pointer">
+                            <input id="remember" name="remember" type="checkbox" value="1" class="h-4 w-4 rounded border-border text-primary focus:ring-primary/20" @checked(old('remember'))>
                             Remember me
                         </label>
                         <span class="ui-chip-muted">Web + API Ready</span>

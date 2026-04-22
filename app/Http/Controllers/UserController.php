@@ -310,7 +310,15 @@ class UserController extends Controller
                 }
             });
 
-            $message = count($ids) . ' users processed successfully.';
+            $actionLabel = [
+                'active' => 'activated',
+                'inactive' => 'deactivated',
+                'delete' => 'deleted',
+                'restore' => 'restored',
+                'force-delete' => 'permanently deleted'
+            ][$action] ?? 'processed';
+
+            $message = count($ids) . " users {$actionLabel} successfully.";
             session()->flash('status', $message);
 
             return response()->json([
@@ -349,7 +357,31 @@ class UserController extends Controller
         );
 
         return redirect()
-            ->route('users.index')
+            ->route('users.index', ['status' => 'deleted'])
             ->with('status', 'User restored successfully.');
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        if (auth()->id() === $user->id) {
+            return back()->withErrors([
+                'user' => 'You cannot permanently delete the account you are currently using.',
+            ]);
+        }
+
+        ActivityLogService::log(
+            auth()->user(),
+            'user.permanently_deleted',
+            $user,
+            "Permanently deleted user {$user->email}.",
+        );
+
+        $user->forceDelete();
+
+        return redirect()
+            ->route('users.index', ['status' => 'deleted'])
+            ->with('status', 'User permanently deleted successfully.');
     }
 }

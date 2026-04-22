@@ -27,6 +27,13 @@ class PermissionController extends Controller
                         ->orWhere('group_name', 'like', "%{$search}%");
                 });
             })
+            ->when($request->string('status')->toString(), function ($query, string $status) {
+                if ($status === 'deleted') {
+                    $query->onlyTrashed();
+                } else {
+                    $query->where('status', $status);
+                }
+            })
             ->orderBy('group_name')
             ->orderBy('name')
             ->paginate($perPage)
@@ -181,5 +188,104 @@ class PermissionController extends Controller
             'message' => "Permission {$permission->slug} is now {$newStatus}.",
             'new_status' => $newStatus,
         ]);
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $permission = Permission::withTrashed()->findOrFail($id);
+        $permission->restore();
+
+        ActivityLogService::log(
+            auth()->user(),
+            'permission.restored',
+            $permission,
+            "Restored permission {$permission->slug}.",
+        );
+
+        return redirect()
+            ->route('permissions.index', ['status' => 'deleted'])
+            ->with('status', 'Permission restored successfully.');
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $permission = Permission::withTrashed()->findOrFail($id);
+
+        ActivityLogService::log(
+            auth()->user(),
+            'permission.permanently_deleted',
+            $permission,
+            "Permanently deleted permission {$permission->slug}.",
+        );
+
+        $permission->forceDelete();
+
+        return redirect()
+            ->route('permissions.index', ['status' => 'deleted'])
+            ->with('status', 'Permission permanently deleted successfully.');
+    }
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'action' => ['required', 'string', 'in:delete,restore,force-delete'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $user = auth()->user();
+        if (in_array($action, ['delete', 'restore', 'force-delete']) && !$user->hasPermission('permissions.delete')) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized for this destructive action.'], 403);
+        }
+
+        try {
+            $affectedPermissions = Permission::withTrashed()->whereIn('id', $ids)->pluck('slug')->all();
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($action, $ids, $affectedPermissions) {
+                $query = Permission::withTrashed()->whereIn('id', $ids);
+                
+                switch ($action) {
+                    case 'delete':
+                        $query->delete();
+                        $this->logBulkAction('permission.bulk_deleted', $ids, "Soft-deleted " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                    case 'restore':
+                        $query->restore();
+                        $this->logBulkAction('permission.bulk_restored', $ids, "Restored " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                    case 'force-delete':
+                        $query->forceDelete();
+                        $this->logBulkAction('permission.bulk_permanently_deleted', $ids, "Permanently deleted " . count($ids) . " permissions.", ['affected_permissions' => $affectedPermissions]);
+                        break;
+                }
+            });
+
+            $message = count($ids) . ' permissions processed successfully.';
+            session()->flash('status', $message);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $message,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred during bulk operation: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function logBulkAction(string $event, array $ids, string $description, array $extra = []): void
+    {
+        ActivityLogService::log(
+            auth()->user(),
+            $event,
+            null,
+            $description,
+            array_merge(['affected_ids' => $ids], $extra)
+        );
     }
 }

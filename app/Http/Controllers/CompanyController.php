@@ -217,7 +217,7 @@ class CompanyController extends Controller
     public function bulkAction(Request $request): JsonResponse
     {
         $request->validate([
-            'action' => 'required|string|in:active,inactive,delete,restore',
+            'action' => 'required|string|in:active,inactive,delete,restore,force-delete',
             'ids' => 'required|array',
             'ids.*' => 'integer',
         ]);
@@ -227,7 +227,7 @@ class CompanyController extends Controller
 
         // Action-specific permission checks
         $user = auth()->user();
-        if ($action === 'delete' && !$user->hasPermission('companies.delete')) {
+        if (in_array($action, ['delete', 'force-delete']) && !$user->hasPermission('companies.delete')) {
             return response()->json(['status' => 'error', 'message' => 'Unauthorized for this destructive action.'], 403);
         }
         
@@ -249,6 +249,10 @@ class CompanyController extends Controller
                         $query->restore();
                         $this->logBulkAction('company.bulk_restored', $ids, "Restored " . count($ids) . " companies.", ['names' => $names]);
                         break;
+                    case 'force-delete':
+                        $query->forceDelete();
+                        $this->logBulkAction('company.bulk_permanently_deleted', $ids, "Permanently deleted " . count($ids) . " companies.", ['names' => $names]);
+                        break;
                     case 'active':
                     case 'inactive':
                         Company::whereIn('id', $ids)->update(['is_active' => $action === 'active']);
@@ -257,7 +261,15 @@ class CompanyController extends Controller
                 }
             });
 
-            $msg = count($ids) . ' companies processed successfully.';
+            $actionLabel = [
+                'active' => 'activated',
+                'inactive' => 'deactivated',
+                'delete' => 'deleted',
+                'restore' => 'restored',
+                'force-delete' => 'permanently deleted'
+            ][$action] ?? 'processed';
+
+            $msg = count($ids) . " companies {$actionLabel} successfully.";
             session()->flash('status', $msg);
 
             return response()->json([
@@ -311,6 +323,23 @@ class CompanyController extends Controller
             "Restored company: {$company->name}"
         );
 
-        return redirect()->route('companies.index')->with('status', "Company '{$company->name}' restored successfully.");
+        return redirect()->route('companies.index', ['status' => 'deleted'])->with('status', "Company '{$company->name}' restored successfully.");
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $company = Company::withTrashed()->findOrFail($id);
+        $name = $company->name;
+
+        ActivityLogService::log(
+            auth()->user(),
+            'company.permanently_deleted',
+            $company,
+            "Permanently deleted company: {$name}"
+        );
+
+        $company->forceDelete();
+
+        return redirect()->route('companies.index', ['status' => 'deleted'])->with('status', "Company '{$name}' permanently deleted successfully.");
     }
 }

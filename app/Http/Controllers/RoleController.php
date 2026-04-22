@@ -27,6 +27,13 @@ class RoleController extends Controller
                         ->orWhere('slug', 'like', "%{$search}%");
                 });
             })
+            ->when($request->string('status')->toString(), function ($query, string $status) {
+                if ($status === 'deleted') {
+                    $query->onlyTrashed();
+                } else {
+                    $query->where('status', $status);
+                }
+            })
             ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
@@ -220,5 +227,114 @@ class RoleController extends Controller
             'message' => "Role {$role->name} is now {$newStatus}.",
             'new_status' => $newStatus,
         ]);
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $role = Role::withTrashed()->findOrFail($id);
+        $role->restore();
+
+        ActivityLogService::log(
+            auth()->user(),
+            'role.restored',
+            $role,
+            "Restored role {$role->name}.",
+        );
+
+        return redirect()
+            ->route('roles.index', ['status' => 'deleted'])
+            ->with('status', 'Role restored successfully.');
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $role = Role::withTrashed()->findOrFail($id);
+
+        if ($role->is_system) {
+            return back()->withErrors([
+                'role' => 'System roles cannot be permanently deleted.',
+            ]);
+        }
+
+        ActivityLogService::log(
+            auth()->user(),
+            'role.permanently_deleted',
+            $role,
+            "Permanently deleted role {$role->name}.",
+        );
+
+        $role->forceDelete();
+
+        return redirect()
+            ->route('roles.index', ['status' => 'deleted'])
+            ->with('status', 'Role permanently deleted successfully.');
+    }
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'action' => ['required', 'string', 'in:delete,restore,force-delete'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $user = auth()->user();
+        if (in_array($action, ['delete', 'restore', 'force-delete']) && !$user->hasPermission('roles.delete')) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized for this destructive action.'], 403);
+        }
+
+        try {
+            $affectedRoles = Role::withTrashed()->whereIn('id', $ids)->pluck('name')->all();
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($action, $ids, $affectedRoles) {
+                $query = Role::withTrashed()->whereIn('id', $ids);
+                
+                switch ($action) {
+                    case 'delete':
+                        $query->get()->each(function($role) {
+                            if (!$role->is_system) $role->delete();
+                        });
+                        $this->logBulkAction('role.bulk_deleted', $ids, "Soft-deleted " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                    case 'restore':
+                        $query->restore();
+                        $this->logBulkAction('role.bulk_restored', $ids, "Restored " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                    case 'force-delete':
+                        $query->get()->each(function($role) {
+                            if (!$role->is_system) $role->forceDelete();
+                        });
+                        $this->logBulkAction('role.bulk_permanently_deleted', $ids, "Permanently deleted " . count($ids) . " roles.", ['affected_roles' => $affectedRoles]);
+                        break;
+                }
+            });
+
+            $message = count($ids) . ' roles processed successfully.';
+            session()->flash('status', $message);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => $message,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred during bulk operation: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function logBulkAction(string $event, array $ids, string $description, array $extra = []): void
+    {
+        ActivityLogService::log(
+            auth()->user(),
+            $event,
+            null,
+            $description,
+            array_merge(['affected_ids' => $ids], $extra)
+        );
     }
 }

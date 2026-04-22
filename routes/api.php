@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function () {
             Route::middleware('permission:users.update')->post('/{user}/toggle-status', [UserController::class, 'toggleStatus']);
             Route::middleware('permission:users.update')->post('/bulk-action', [UserController::class, 'bulkAction']);
             Route::middleware('permission:users.delete')->post('/{id}/restore', [UserController::class, 'restore']);
+            Route::middleware('permission:users.delete')->delete('/{id}/force', [UserController::class, 'forceDelete']);
         });
 
         // Role Management
@@ -40,6 +41,10 @@ Route::prefix('v1')->group(function () {
             Route::middleware('permission:roles.view')->get('/{role}', [RoleController::class, 'show']);
             Route::middleware('permission:roles.update')->match(['put', 'patch'], '/{role}', [RoleController::class, 'update']);
             Route::middleware('permission:roles.delete')->delete('/{role}', [RoleController::class, 'destroy']);
+            
+            Route::middleware('permission:roles.update')->post('/bulk-action', [RoleController::class, 'bulkAction']);
+            Route::middleware('permission:roles.delete')->post('/{id}/restore', [RoleController::class, 'restore']);
+            Route::middleware('permission:roles.delete')->delete('/{id}/force', [RoleController::class, 'forceDelete']);
         });
 
         // Permission Management
@@ -49,6 +54,10 @@ Route::prefix('v1')->group(function () {
             Route::middleware('permission:permissions.view')->get('/{permission}', [PermissionController::class, 'show']);
             Route::middleware('permission:permissions.update')->match(['put', 'patch'], '/{permission}', [PermissionController::class, 'update']);
             Route::middleware('permission:permissions.delete')->delete('/{permission}', [PermissionController::class, 'destroy']);
+            
+            Route::middleware('permission:permissions.update')->post('/bulk-action', [PermissionController::class, 'bulkAction']);
+            Route::middleware('permission:permissions.delete')->post('/{id}/restore', [PermissionController::class, 'restore']);
+            Route::middleware('permission:permissions.delete')->delete('/{id}/force', [PermissionController::class, 'forceDelete']);
         });
 
         // Activity Logs
@@ -64,6 +73,7 @@ Route::prefix('v1')->group(function () {
             
             Route::middleware('permission:health_records.update')->post('/bulk-action', [HealthRecordController::class, 'bulkAction']);
             Route::middleware('permission:health_records.update')->post('/{id}/restore', [HealthRecordController::class, 'restore']);
+            Route::middleware('permission:health_records.delete')->delete('/{id}/force', [HealthRecordController::class, 'forceDelete']);
         });
 
         // Company Management
@@ -77,6 +87,7 @@ Route::prefix('v1')->group(function () {
             Route::middleware('permission:companies.update')->post('/{company}/toggle-status', [CompanyController::class, 'toggleStatus']);
             Route::middleware('permission:companies.update')->post('/bulk-action', [CompanyController::class, 'bulkAction']);
             Route::middleware('permission:companies.update')->post('/{id}/restore', [CompanyController::class, 'restore']);
+            Route::middleware('permission:companies.delete')->delete('/{id}/force', [CompanyController::class, 'forceDelete']);
         });
 
         // Notifications

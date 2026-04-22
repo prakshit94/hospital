@@ -238,4 +238,30 @@ class UserController extends Controller
             'data' => $user,
         ]);
     }
+
+    public function forceDelete($id): JsonResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        
+        if (auth()->id() === $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You cannot permanently delete the account you are currently using.',
+            ], 422);
+        }
+
+        ActivityLogService::log(
+            auth()->user(),
+            'user.permanently_deleted.api',
+            $user,
+            "API: Permanently deleted user {$user->email}.",
+        );
+
+        $user->forceDelete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User permanently deleted successfully.',
+        ]);
+    }
 }

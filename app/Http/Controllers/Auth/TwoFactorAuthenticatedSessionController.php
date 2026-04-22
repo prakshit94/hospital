@@ -49,10 +49,9 @@ class TwoFactorAuthenticatedSessionController extends Controller
             ]);
         }
 
-        Auth::login($user, $request->session()->get('auth.2fa.remember', false));
-
-        $request->session()->forget(['auth.2fa.user_id', 'auth.2fa.remember']);
         $request->session()->regenerate();
+        Auth::login($user, (bool) $request->session()->get('auth.2fa.remember', false));
+        $request->session()->forget(['auth.2fa.user_id', 'auth.2fa.remember']);
         $request->session()->put([
             'auth.session_ip' => $request->ip(),
             'auth.session_ua' => $request->userAgent(),
