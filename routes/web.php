@@ -56,7 +56,6 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:users.view')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
         Route::post('/users/bulk-action', [UserController::class, 'bulkAction'])->name('users.bulk-action');
     });
 
@@ -64,6 +63,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
     });
+
+    Route::middleware('permission:users.view')->get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::middleware('permission:users.update')->get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::middleware('permission:users.update')->match(['put', 'patch'], '/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::middleware('permission:users.update')->post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
@@ -73,7 +74,6 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:roles.view')->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-        Route::get('/roles/{role}', [RoleController::class, 'show'])->name('roles.show');
         Route::post('/roles/bulk-action', [RoleController::class, 'bulkAction'])->name('roles.bulk-action');
     });
 
@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
         Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
     });
+
+    Route::middleware('permission:roles.view')->get('/roles/{role}', [RoleController::class, 'show'])->name('roles.show');
     Route::middleware('permission:roles.update')->get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
     Route::middleware('permission:roles.update')->match(['put', 'patch'], '/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
     Route::middleware('permission:roles.update')->post('/roles/{role}/toggle-status', [RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
