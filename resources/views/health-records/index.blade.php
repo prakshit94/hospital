@@ -60,9 +60,6 @@
                 </select>
 
                 <div class="flex items-center gap-2">
-                    <button type="submit" class="ui-button-primary h-11 px-6 rounded-xl">
-                        Filter
-                    </button>
                     @if(request()->anyFilled(['search', 'company']))
                         <a href="{{ route('health-records.index') }}" class="ui-button-secondary h-11 px-4 rounded-xl flex items-center justify-center">
                             Clear

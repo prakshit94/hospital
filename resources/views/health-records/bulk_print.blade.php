@@ -49,7 +49,7 @@
         <div class="watermark">MEDICAL CERTIFICATE</div>
 
         <div class="header">
-            <h1>{{ config('enterprise-ui.workspace_name', 'LifeCare Hospital') }}</h1>
+            <h1>{{ config('enterprise-ui.workspace_name', 'Divit Hospital') }}</h1>
             <p>Occupational Health & Medical Services</p>
             <p style="font-size: 8px; font-weight: normal; color: #555;">Reg No: 12345/OH/2024 | Contact: +91 98765 43210</p>
         </div>

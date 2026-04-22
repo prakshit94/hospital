@@ -13,7 +13,11 @@ function buildAsyncSearchUrl(form, href = null) {
     const url = new URL(href || form.action || window.location.href, window.location.origin);
     const formData = new FormData(form);
 
+    const page = href ? url.searchParams.get('page') : null;
     url.search = '';
+    if (page) {
+        url.searchParams.set('page', page);
+    }
 
     for (const [key, value] of formData.entries()) {
         if (typeof value === 'string' && value.trim() !== '') {
