@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $pageTitle = 'Profile';
@@ -91,6 +91,64 @@
                     <x-ui.button>Update Password</x-ui.button>
                 </div>
             </form>
+        </x-ui.card>
+
+        <x-ui.card class="space-y-6">
+            <div>
+                <div class="section-kicker">Multi-Factor Authentication</div>
+                <h2 class="section-title">Two-factor authentication</h2>
+                <p class="section-copy">Add an extra layer of security to your account using a time-based one-time password (TOTP).</p>
+            </div>
+
+            <div class="space-y-6">
+                @if (!$user->two_factor_secret)
+                    <form method="POST" action="{{ route('two-factor.enable') }}">
+                        @csrf
+                        <x-ui.button>Enable 2FA</x-ui.button>
+                    </form>
+                @elseif (!$user->two_factor_confirmed_at)
+                    <div class="rounded-xl border border-warning/20 bg-warning/5 p-6">
+                        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-foreground">Finish enabling two-factor authentication</h3>
+                                <p class="text-sm text-muted-foreground leading-relaxed">
+                                    To finish enabling two-factor authentication, scan the following QR code using your phone's authenticator application (Google Authenticator, Authy, etc) and provide the generated TOTP code.
+                                </p>
+
+                                <div id="two-factor-qr-code" class="mt-4 inline-block rounded-lg bg-white p-2 shadow-inner" x-data="{ svg: '' }" x-init="fetch('{{ route('two-factor.qr-code') }}').then(r => r.json()).then(d => svg = d.svg)">
+                                    <div x-html="svg"></div>
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{{ route('two-factor.confirm') }}" class="w-full max-w-sm space-y-4">
+                                @csrf
+                                <div class="ui-field">
+                                    <label for="code" class="ui-label">Authentication Code</label>
+                                    <input id="code" name="code" type="text" class="ui-input" placeholder="000000" required autofocus>
+                                    @error('code')
+                                        <p class="mt-2 text-xs text-danger">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <x-ui.button class="w-full">Confirm 2FA</x-ui.button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="rounded-xl border border-success/20 bg-success/5 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-success">Two-factor authentication is enabled</h3>
+                                <p class="mt-1 text-sm text-muted-foreground">Your account is now protected with an additional layer of security.</p>
+                            </div>
+                            <form method="POST" action="{{ route('two-factor.disable') }}">
+                                @csrf
+                                @method('DELETE')
+                                <x-ui.button variant="danger">Disable 2FA</x-ui.button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+            </div>
         </x-ui.card>
     </div>
 @endsection

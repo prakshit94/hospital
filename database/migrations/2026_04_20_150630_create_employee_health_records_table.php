@@ -17,6 +17,7 @@ return new class extends Migration
             
             // 2. Employee Information
             $table->string('company_name');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->nullOnDelete();
             $table->string('employee_id')->nullable(); // Employee No
             $table->date('examination_date')->nullable();
             $table->string('full_name'); // Employee Name

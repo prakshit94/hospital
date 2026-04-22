@@ -114,6 +114,14 @@
                                                     <span class="text-muted-foreground">Subject ID:</span>
                                                     <span class="font-mono text-primary font-bold">{{ $activity->subject_id ?? 'N/A' }}</span>
                                                 </div>
+                                                <div class="flex justify-between text-[10px]">
+                                                    <span class="text-muted-foreground">Browser:</span>
+                                                    <span class="font-bold text-primary">{{ $activity->browser ?? 'Unknown' }}</span>
+                                                </div>
+                                                <div class="flex justify-between text-[10px]">
+                                                    <span class="text-muted-foreground">Platform:</span>
+                                                    <span class="font-bold text-primary">{{ $activity->platform ?? 'Unknown' }}</span>
+                                                </div>
                                                 <div class="flex flex-col gap-1 mt-2">
                                                     <span class="text-muted-foreground text-[10px]">User Agent:</span>
                                                     <span class="text-[9px] text-muted-foreground/60 leading-tight italic break-all">{{ $activity->user_agent }}</span>

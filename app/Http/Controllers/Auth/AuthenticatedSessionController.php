@@ -19,11 +19,27 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-        $request->session()->regenerate();
+        $request->validateCredentials();
 
         /** @var \App\Models\User $user */
-        $user = $request->user();
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if ($user->two_factor_confirmed_at) {
+            $request->session()->put([
+                'auth.2fa.user_id' => $user->id,
+                'auth.2fa.remember' => $request->boolean('remember'),
+            ]);
+
+            return redirect()->route('two-factor.login');
+        }
+
+        $request->authenticate();
+        $request->session()->regenerate();
+        $request->session()->put([
+            'auth.session_ip' => $request->ip(),
+            'auth.session_ua' => $request->userAgent(),
+        ]);
+
         $user->forceFill([
             'last_login_at' => now(),
         ])->save();
@@ -55,6 +71,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        return redirect()->route('login');
 
         return redirect()->route('login');
     }

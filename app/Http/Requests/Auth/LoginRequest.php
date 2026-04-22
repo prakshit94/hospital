@@ -28,11 +28,7 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt([
-            'email' => $this->string('email')->toString(),
-            'password' => $this->input('password'),
-            'status' => 'active',
-        ], $this->boolean('remember'))) {
+        if (! Auth::attempt($this->only('email', 'password') + ['status' => 'active'], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -41,6 +37,21 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    public function validateCredentials(): void
+    {
+        $this->ensureIsNotRateLimited();
+
+        $user = \App\Models\User::where('email', $this->email)->first();
+
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($this->password, $user->password) || $user->status !== 'active') {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'),
+            ]);
+        }
     }
 
     public function ensureIsNotRateLimited(): void

@@ -37,6 +37,9 @@ class User extends Authenticatable
         'last_login_at',
         'last_active_at',
         'notifications_read_at',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -47,6 +50,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -61,8 +66,14 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'last_active_at' => 'datetime',
             'notifications_read_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function devices()
+    {
+        return $this->hasMany(UserDevice::class);
     }
 
     public function roles(): BelongsToMany

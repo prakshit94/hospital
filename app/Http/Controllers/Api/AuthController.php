@@ -29,6 +29,23 @@ class AuthController extends Controller
         }
 
         $user->load('roles.permissions');
+
+        if ($user->two_factor_confirmed_at && !$request->has('code')) {
+            return response()->json([
+                'message' => 'Two-factor authentication code required.',
+                'requires_2fa' => true,
+            ], 403);
+        }
+
+        if ($user->two_factor_confirmed_at) {
+            $twoFactorService = app(\App\Services\TwoFactorService::class);
+            if (!$twoFactorService->verifyCode(decrypt($user->two_factor_secret), $request->code)) {
+                throw ValidationException::withMessages([
+                    'code' => ['The provided two-factor authentication code was invalid.'],
+                ]);
+            }
+        }
+
         $user->forceFill(['last_login_at' => now()])->save();
 
         $token = $user->createToken($credentials['device_name'] ?? 'api-token')->plainTextToken;

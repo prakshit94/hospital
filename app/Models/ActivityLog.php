@@ -17,6 +17,8 @@ class ActivityLog extends Model
         'properties',
         'ip_address',
         'user_agent',
+        'browser',
+        'platform',
     ];
 
     /**

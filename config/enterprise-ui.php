@@ -51,9 +51,26 @@ return [
                     'title' => 'System',
                     'icon' => 'settings',
                     'children' => [
-                        ['title' => 'Activity Logs', 'route' => 'activity-logs.index', 'pattern' => 'activity-logs*', 'icon' => 'file-text', 'permission' => 'activities.view'],
                         ['title' => 'Reports', 'route' => 'reports.index', 'pattern' => 'reports*', 'icon' => 'file-text', 'permission' => 'reports.view'],
                     ],
+                ],
+            ],
+        ],
+        [
+            'label' => 'Security',
+            'items' => [
+                [
+                    'title' => 'Activity Logs',
+                    'icon' => 'activity',
+                    'route' => 'activity-logs.index',
+                    'pattern' => 'activity-logs*',
+                    'permission' => 'activities.view'
+                ],
+                [
+                    'title' => 'My Devices',
+                    'icon' => 'smartphone',
+                    'route' => 'devices.index',
+                    'pattern' => 'devices*',
                 ],
             ],
         ],

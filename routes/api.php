@@ -8,7 +8,9 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('api.login');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me'])->name('api.me');
@@ -33,5 +35,14 @@ Route::prefix('v1')->group(function () {
         Route::middleware('permission:permissions.delete')->delete('/permissions/{permission}', [PermissionController::class, 'destroy']);
 
         Route::middleware('permission:activities.view')->get('/activity-logs', [ActivityLogController::class, 'index']);
+
+        Route::get('/health-records', [\App\Http\Controllers\Api\HealthRecordController::class, 'index']);
+        Route::post('/health-records', [\App\Http\Controllers\Api\HealthRecordController::class, 'store']);
+        Route::get('/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'show']);
+        Route::match(['put', 'patch'], '/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'update']);
+        Route::delete('/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'destroy']);
+
+        Route::get('/companies', [\App\Http\Controllers\Api\CompanyController::class, 'index']);
+        Route::get('/companies/{company}', [\App\Http\Controllers\Api\CompanyController::class, 'show']);
     });
 });

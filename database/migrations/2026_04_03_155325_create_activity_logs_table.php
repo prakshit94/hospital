@@ -21,6 +21,8 @@ return new class extends Migration
             $table->json('properties')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
+            $table->string('browser')->nullable();
+            $table->string('platform')->nullable();
             $table->timestamps();
 
             $table->index(['subject_type', 'subject_id']);

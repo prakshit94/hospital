@@ -21,6 +21,10 @@ Route::get('/', fn () => auth()->check()
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+
+    Route::get('/two-factor-login', [\App\Http\Controllers\Auth\TwoFactorAuthenticatedSessionController::class, 'create'])->name('two-factor.login');
+    Route::post('/two-factor-login', [\App\Http\Controllers\Auth\TwoFactorAuthenticatedSessionController::class, 'store'])->name('two-factor.login.store');
+
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
@@ -32,6 +36,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    Route::post('/user/two-factor-authentication', [\App\Http\Controllers\TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::get('/user/two-factor-qr-code', [\App\Http\Controllers\TwoFactorController::class, 'showQrCode'])->name('two-factor.qr-code');
+    Route::post('/user/two-factor-confirm', [\App\Http\Controllers\TwoFactorController::class, 'confirm'])->name('two-factor.confirm');
+    Route::delete('/user/two-factor-authentication', [\App\Http\Controllers\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+
+    Route::get('/devices', [\App\Http\Controllers\DeviceController::class, 'index'])->name('devices.index');
+    Route::delete('/devices/{device}', [\App\Http\Controllers\DeviceController::class, 'destroy'])->name('devices.destroy');
     Route::post('/notifications/mark-as-read', function () {
         auth()->user()->update(['notifications_read_at' => now()]);
         return response()->json(['status' => 'success']);

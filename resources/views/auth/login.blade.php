@@ -1,4 +1,4 @@
-﻿@extends('layouts.guest')
+@extends('layouts.guest')
 
 @php
     $pageTitle = 'Sign In';
@@ -8,20 +8,20 @@
     <div class="auth-shell">
         <div class="auth-spotlight">
             <div class="auth-spotlight-panel">
-                <span class="hero-kicker">AccessHub</span>
-                <h1 class="hero-title max-w-lg">Simple access control for your team.</h1>
-                <p class="hero-copy max-w-xl">Manage users, roles, permissions, reports, and audit logs in one place.</p>
+                <span class="hero-kicker">Divit Hospital AccessHub</span>
+                <h1 class="hero-title max-w-lg">Advanced security for medical workspace.</h1>
+                <p class="hero-copy max-w-xl">A highly secure environment with TOTP-based 2FA, session binding, and real-time device tracking for complete data integrity.</p>
 
                 <div class="mt-8 grid gap-4 sm:grid-cols-2">
                     <div class="auth-feature">
-                        <div class="section-kicker">Users</div>
-                        <div class="mt-2 text-lg font-semibold text-foreground">Account management</div>
-                        <p class="mt-2 text-sm text-muted-foreground">Create, update, and review account access.</p>
+                        <div class="section-kicker">Security</div>
+                        <div class="mt-2 text-lg font-semibold text-foreground">Multi-Factor Auth</div>
+                        <p class="mt-2 text-sm text-muted-foreground">Protect your clinical data with mandatory 2FA verification.</p>
                     </div>
                     <div class="auth-feature">
-                        <div class="section-kicker">Audit</div>
-                        <div class="mt-2 text-lg font-semibold text-foreground">Activity tracking</div>
-                        <p class="mt-2 text-sm text-muted-foreground">Review changes and sign-ins from the same workspace.</p>
+                        <div class="section-kicker">Tracking</div>
+                        <div class="mt-2 text-lg font-semibold text-foreground">Device Intelligence</div>
+                        <p class="mt-2 text-sm text-muted-foreground">Real-time alerts for new sign-ins and session binding.</p>
                     </div>
                 </div>
             </div>
@@ -30,13 +30,13 @@
         <div class="flex items-center justify-center">
             <div class="auth-card">
                 <div class="mb-8 text-center">
-                    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary to-sky-500 text-white shadow-xl shadow-primary/20">
+                    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary to-emerald-500 text-white shadow-xl shadow-primary/20">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path>
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                     </div>
-                    <h1 class="font-heading text-3xl font-black tracking-tight">AccessHub</h1>
-                    <p class="mt-2 text-sm text-muted-foreground">Sign in to manage users, roles, permissions, and API access.</p>
+                    <h1 class="font-heading text-3xl font-black tracking-tight">Divit Hospital</h1>
+                    <p class="mt-2 text-sm text-muted-foreground">Secure sign-in for medical and administrative staff.</p>
                 </div>
 
                 @if($errors->any())

@@ -25,6 +25,9 @@ class ActivityLogService
         string $description = '',
         array $properties = [],
     ): ActivityLog {
+        $ua = request()?->userAgent() ?? '';
+        $metadata = self::parseUserAgent($ua);
+
         return ActivityLog::create([
             'causer_id' => $causer?->getAuthIdentifier(),
             'action' => $action,
@@ -33,8 +36,46 @@ class ActivityLogService
             'subject_id' => $subject?->getKey(),
             'properties' => $properties,
             'ip_address' => request()?->ip(),
-            'user_agent' => request()?->userAgent(),
+            'user_agent' => $ua,
+            'browser' => $metadata['browser'],
+            'platform' => $metadata['platform'],
         ]);
+    }
+
+    public static function parseUserAgent(string $ua): array
+    {
+        $browser = 'Unknown';
+        $platform = 'Unknown';
+
+        // Basic Platform detection
+        if (preg_match('/linux/i', $ua)) {
+            $platform = 'Linux';
+        } elseif (preg_match('/macintosh|mac os x/i', $ua)) {
+            $platform = 'Mac';
+        } elseif (preg_match('/windows|win32/i', $ua)) {
+            $platform = 'Windows';
+        } elseif (preg_match('/iphone|ipad/i', $ua)) {
+            $platform = 'iOS';
+        } elseif (preg_match('/android/i', $ua)) {
+            $platform = 'Android';
+        }
+
+        // Basic Browser detection
+        if (preg_match('/msie/i', $ua) && !preg_match('/opera/i', $ua)) {
+            $browser = 'Internet Explorer';
+        } elseif (preg_match('/firefox/i', $ua)) {
+            $browser = 'Firefox';
+        } elseif (preg_match('/chrome/i', $ua)) {
+            $browser = 'Chrome';
+        } elseif (preg_match('/safari/i', $ua)) {
+            $browser = 'Safari';
+        } elseif (preg_match('/opera/i', $ua)) {
+            $browser = 'Opera';
+        } elseif (preg_match('/netscape/i', $ua)) {
+            $browser = 'Netscape';
+        }
+
+        return compact('browser', 'platform');
     }
 
     public static function logWithChanges(
