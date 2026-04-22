@@ -40,9 +40,12 @@ class AuthAndAccessTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonStructure([
+                'status',
                 'message',
-                'token',
-                'user' => ['id', 'name', 'email', 'status', 'roles', 'permissions'],
+                'data' => [
+                    'token',
+                    'user' => ['id', 'name', 'email', 'status', 'roles', 'permissions'],
+                ],
             ]);
     }
 

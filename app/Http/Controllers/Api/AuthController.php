@@ -32,8 +32,11 @@ class AuthController extends Controller
 
         if ($user->two_factor_confirmed_at && !$request->has('code')) {
             return response()->json([
+                'status' => 'error',
                 'message' => 'Two-factor authentication code required.',
-                'requires_2fa' => true,
+                'data' => [
+                    'requires_2fa' => true,
+                ],
             ], 403);
         }
 
@@ -58,9 +61,12 @@ class AuthController extends Controller
         );
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Login successful.',
-            'token' => $token,
-            'user' => $this->userPayload($user),
+            'data' => [
+                'token' => $token,
+                'user' => $this->userPayload($user),
+            ],
         ]);
     }
 
@@ -80,6 +86,7 @@ class AuthController extends Controller
         );
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Token revoked successfully.',
         ]);
     }
@@ -91,7 +98,10 @@ class AuthController extends Controller
         $user->load('roles.permissions');
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'status' => 'success',
+            'data' => [
+                'user' => $this->userPayload($user),
+            ],
         ]);
     }
 

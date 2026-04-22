@@ -25,6 +25,9 @@ class ActivityLogController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return response()->json($activities);
+        return response()->json([
+            'status' => 'success',
+            'data' => $activities,
+        ]);
     }
 }

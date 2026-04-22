@@ -30,7 +30,10 @@ class PermissionController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return response()->json($permissions);
+        return response()->json([
+            'status' => 'success',
+            'data' => $permissions,
+        ]);
     }
 
     /**
@@ -43,6 +46,7 @@ class PermissionController extends Controller
         ActivityLogService::log($request->user(), 'permission.created.api', $permission, "Created permission {$permission->slug} via API.");
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Permission created successfully.',
             'data' => $permission,
         ], 201);
@@ -56,6 +60,7 @@ class PermissionController extends Controller
         $permission->load('roles');
 
         return response()->json([
+            'status' => 'success',
             'data' => $permission,
         ]);
     }
@@ -70,6 +75,7 @@ class PermissionController extends Controller
         ActivityLogService::log($request->user(), 'permission.updated.api', $permission, "Updated permission {$permission->slug} via API.");
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Permission updated successfully.',
             'data' => $permission,
         ]);
@@ -84,6 +90,7 @@ class PermissionController extends Controller
         $permission->delete();
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Permission deleted successfully.',
         ]);
     }

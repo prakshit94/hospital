@@ -28,7 +28,10 @@ class RoleController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return response()->json($roles);
+        return response()->json([
+            'status' => 'success',
+            'data' => $roles,
+        ]);
     }
 
     /**
@@ -43,6 +46,7 @@ class RoleController extends Controller
         ActivityLogService::log($request->user(), 'role.created.api', $role, "Created role {$role->name} via API.");
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Role created successfully.',
             'data' => $role,
         ], 201);
@@ -56,6 +60,7 @@ class RoleController extends Controller
         $role->load(['permissions', 'users']);
 
         return response()->json([
+            'status' => 'success',
             'data' => $role,
         ]);
     }
@@ -72,6 +77,7 @@ class RoleController extends Controller
         ActivityLogService::log($request->user(), 'role.updated.api', $role, "Updated role {$role->name} via API.");
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Role updated successfully.',
             'data' => $role,
         ]);
@@ -84,12 +90,14 @@ class RoleController extends Controller
     {
         if ($role->is_system) {
             return response()->json([
+                'status' => 'error',
                 'message' => 'System roles cannot be deleted.',
             ], 422);
         }
 
         if ($role->users()->exists()) {
             return response()->json([
+                'status' => 'error',
                 'message' => 'Remove users from this role before deleting it.',
             ], 422);
         }
@@ -98,6 +106,7 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
+            'status' => 'success',
             'message' => 'Role deleted successfully.',
         ]);
     }

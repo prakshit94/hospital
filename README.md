@@ -33,8 +33,18 @@ Authenticates a user and returns a Sanctum token.
 - `code` (string, optional) - Required if 2FA is enabled for the account.
 
 **Responses:**
-- `200 OK`: Returns token and user object.
-- `403 Forbidden`: 2FA code required (`requires_2fa: true`).
+- `200 OK`: Returns success status, token and user object within `data`.
+  ```json
+  {
+      "status": "success",
+      "message": "Login successful.",
+      "data": {
+          "token": "...",
+          "user": { ... }
+      }
+  }
+  ```
+- `403 Forbidden`: 2FA code required (`status: error`, `requires_2fa: true`).
 - `422 Unprocessable Content`: Validation errors or rate limit exceeded.
 
 #### Logout

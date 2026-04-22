@@ -39,7 +39,10 @@ class HealthRecordController extends Controller
 
         $records = $query->latest()->paginate($perPage);
 
-        return response()->json($records);
+        return response()->json([
+            'status' => 'success',
+            'data' => $records,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -80,9 +83,10 @@ class HealthRecordController extends Controller
             );
 
             return response()->json([
+                'status' => 'success',
                 'message' => 'Health record created successfully.',
                 'data' => $record
-            ], 21);
+            ], 201);
         });
     }
 
@@ -95,7 +99,10 @@ class HealthRecordController extends Controller
             ->with(['creator', 'updater', 'company'])
             ->firstOrFail();
 
-        return response()->json($record);
+        return response()->json([
+            'status' => 'success',
+            'data' => $record,
+        ]);
     }
 
     public function update(Request $request, string $id): JsonResponse
@@ -144,6 +151,7 @@ class HealthRecordController extends Controller
             $record->save();
 
             return response()->json([
+                'status' => 'success',
                 'message' => 'Health record updated successfully.',
                 'data' => $record
             ]);
@@ -160,14 +168,92 @@ class HealthRecordController extends Controller
 
         ActivityLogService::log(
             auth()->user(),
-            'health_record.deleted',
+            'health_record.deleted.api',
             $record,
             "API: Deleted health record for: {$record->full_name}"
         );
 
         $record->delete();
 
-        return response()->json(['message' => 'Health record deleted successfully.']);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Health record deleted successfully.',
+        ]);
+    }
+
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'action' => 'required|string|in:delete,restore',
+            'ids' => 'required|array',
+            'ids.*' => 'required', // Could be UUID or ID
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        $user = auth()->user();
+        if ($action === 'delete' && !$user->hasPermission('health_records.delete')) {
+            return response()->json(['message' => 'Unauthorized for deletion.'], 403);
+        }
+        if ($action === 'restore' && !$user->hasPermission('health_records.update')) {
+            return response()->json(['message' => 'Unauthorized for restoration.'], 403);
+        }
+
+        try {
+            DB::transaction(function () use ($action, $ids) {
+                $query = EmployeeHealthRecord::withTrashed()
+                    ->where(function($q) use ($ids) {
+                        $q->whereIn('id', $ids)->orWhereIn('uuid', $ids);
+                    });
+
+                switch ($action) {
+                    case 'delete':
+                        $query->delete();
+                        ActivityLogService::log(auth()->user(), 'health_record.bulk_deleted.api', null, "API: Bulk deleted " . count($ids) . " health records.");
+                        break;
+                    case 'restore':
+                        $query->restore();
+                        ActivityLogService::log(auth()->user(), 'health_record.bulk_restored.api', null, "API: Bulk restored " . count($ids) . " health records.");
+                        break;
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => count($ids) . ' records processed successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function restore(string $id): JsonResponse
+    {
+        $this->authorizePermission('health_records.update');
+
+        $record = EmployeeHealthRecord::withTrashed()
+            ->where('id', $id)
+            ->orWhere('uuid', $id)
+            ->firstOrFail();
+
+        $record->restore();
+
+        ActivityLogService::log(
+            auth()->user(),
+            'health_record.restored.api',
+            $record,
+            "API: Restored health record for: {$record->full_name}"
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Health record restored successfully.',
+            'data' => $record
+        ]);
     }
 
     protected function authorizePermission(string $permission)

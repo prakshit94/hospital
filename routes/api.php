@@ -2,12 +2,16 @@
 
 use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\HealthRecordController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // Auth Routes
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:login')
         ->name('api.login');
@@ -16,33 +20,66 @@ Route::prefix('v1')->group(function () {
         Route::get('/me', [AuthController::class, 'me'])->name('api.me');
         Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
-        Route::middleware('permission:users.view')->get('/users', [UserController::class, 'index']);
-        Route::middleware('permission:users.create')->post('/users', [UserController::class, 'store']);
-        Route::middleware('permission:users.view')->get('/users/{user}', [UserController::class, 'show']);
-        Route::middleware('permission:users.update')->match(['put', 'patch'], '/users/{user}', [UserController::class, 'update']);
-        Route::middleware('permission:users.delete')->delete('/users/{user}', [UserController::class, 'destroy']);
+        // User Management
+        Route::prefix('users')->group(function () {
+            Route::middleware('permission:users.view')->get('/', [UserController::class, 'index']);
+            Route::middleware('permission:users.create')->post('/', [UserController::class, 'store']);
+            Route::middleware('permission:users.view')->get('/{user}', [UserController::class, 'show']);
+            Route::middleware('permission:users.update')->match(['put', 'patch'], '/{user}', [UserController::class, 'update']);
+            Route::middleware('permission:users.delete')->delete('/{user}', [UserController::class, 'destroy']);
+            
+            Route::middleware('permission:users.update')->post('/{user}/toggle-status', [UserController::class, 'toggleStatus']);
+            Route::middleware('permission:users.update')->post('/bulk-action', [UserController::class, 'bulkAction']);
+            Route::middleware('permission:users.delete')->post('/{id}/restore', [UserController::class, 'restore']);
+        });
 
-        Route::middleware('permission:roles.view')->get('/roles', [RoleController::class, 'index']);
-        Route::middleware('permission:roles.create')->post('/roles', [RoleController::class, 'store']);
-        Route::middleware('permission:roles.view')->get('/roles/{role}', [RoleController::class, 'show']);
-        Route::middleware('permission:roles.update')->match(['put', 'patch'], '/roles/{role}', [RoleController::class, 'update']);
-        Route::middleware('permission:roles.delete')->delete('/roles/{role}', [RoleController::class, 'destroy']);
+        // Role Management
+        Route::prefix('roles')->group(function () {
+            Route::middleware('permission:roles.view')->get('/', [RoleController::class, 'index']);
+            Route::middleware('permission:roles.create')->post('/', [RoleController::class, 'store']);
+            Route::middleware('permission:roles.view')->get('/{role}', [RoleController::class, 'show']);
+            Route::middleware('permission:roles.update')->match(['put', 'patch'], '/{role}', [RoleController::class, 'update']);
+            Route::middleware('permission:roles.delete')->delete('/{role}', [RoleController::class, 'destroy']);
+        });
 
-        Route::middleware('permission:permissions.view')->get('/permissions', [PermissionController::class, 'index']);
-        Route::middleware('permission:permissions.create')->post('/permissions', [PermissionController::class, 'store']);
-        Route::middleware('permission:permissions.view')->get('/permissions/{permission}', [PermissionController::class, 'show']);
-        Route::middleware('permission:permissions.update')->match(['put', 'patch'], '/permissions/{permission}', [PermissionController::class, 'update']);
-        Route::middleware('permission:permissions.delete')->delete('/permissions/{permission}', [PermissionController::class, 'destroy']);
+        // Permission Management
+        Route::prefix('permissions')->group(function () {
+            Route::middleware('permission:permissions.view')->get('/', [PermissionController::class, 'index']);
+            Route::middleware('permission:permissions.create')->post('/', [PermissionController::class, 'store']);
+            Route::middleware('permission:permissions.view')->get('/{permission}', [PermissionController::class, 'show']);
+            Route::middleware('permission:permissions.update')->match(['put', 'patch'], '/{permission}', [PermissionController::class, 'update']);
+            Route::middleware('permission:permissions.delete')->delete('/{permission}', [PermissionController::class, 'destroy']);
+        });
 
+        // Activity Logs
         Route::middleware('permission:activities.view')->get('/activity-logs', [ActivityLogController::class, 'index']);
 
-        Route::get('/health-records', [\App\Http\Controllers\Api\HealthRecordController::class, 'index']);
-        Route::post('/health-records', [\App\Http\Controllers\Api\HealthRecordController::class, 'store']);
-        Route::get('/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'show']);
-        Route::match(['put', 'patch'], '/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'update']);
-        Route::delete('/health-records/{healthRecord}', [\App\Http\Controllers\Api\HealthRecordController::class, 'destroy']);
+        // Health Records
+        Route::prefix('health-records')->group(function () {
+            Route::middleware('permission:health_records.view')->get('/', [HealthRecordController::class, 'index']);
+            Route::middleware('permission:health_records.create')->post('/', [HealthRecordController::class, 'store']);
+            Route::middleware('permission:health_records.view')->get('/{healthRecord}', [HealthRecordController::class, 'show']);
+            Route::middleware('permission:health_records.update')->match(['put', 'patch'], '/{healthRecord}', [HealthRecordController::class, 'update']);
+            Route::middleware('permission:health_records.delete')->delete('/{healthRecord}', [HealthRecordController::class, 'destroy']);
+            
+            Route::middleware('permission:health_records.update')->post('/bulk-action', [HealthRecordController::class, 'bulkAction']);
+            Route::middleware('permission:health_records.update')->post('/{id}/restore', [HealthRecordController::class, 'restore']);
+        });
 
-        Route::get('/companies', [\App\Http\Controllers\Api\CompanyController::class, 'index']);
-        Route::get('/companies/{company}', [\App\Http\Controllers\Api\CompanyController::class, 'show']);
+        // Company Management
+        Route::prefix('companies')->group(function () {
+            Route::middleware('permission:companies.view')->get('/', [CompanyController::class, 'index']);
+            Route::middleware('permission:companies.create')->post('/', [CompanyController::class, 'store']);
+            Route::middleware('permission:companies.view')->get('/{company}', [CompanyController::class, 'show']);
+            Route::middleware('permission:companies.update')->match(['put', 'patch'], '/{company}', [CompanyController::class, 'update']);
+            Route::middleware('permission:companies.delete')->delete('/{company}', [CompanyController::class, 'destroy']);
+            
+            Route::middleware('permission:companies.update')->post('/{company}/toggle-status', [CompanyController::class, 'toggleStatus']);
+            Route::middleware('permission:companies.update')->post('/bulk-action', [CompanyController::class, 'bulkAction']);
+            Route::middleware('permission:companies.update')->post('/{id}/restore', [CompanyController::class, 'restore']);
+        });
+
+        // Notifications
+        Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
     });
 });
