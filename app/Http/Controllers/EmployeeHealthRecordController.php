@@ -446,113 +446,177 @@ class EmployeeHealthRecordController extends Controller
                    ->download("Form_33_{$healthRecord->employee_id}.pdf");
     }
 
-    public function printAll(EmployeeHealthRecord $healthRecord): \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $healthRecord->loadMissing(['company', 'documents']);
+    public function printAll(EmployeeHealthRecord $healthRecord): \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+{
+    $healthRecord->loadMissing(['company', 'documents']);
 
-        $tmpDir = storage_path('app/temp_pdfs');
-        if (!file_exists($tmpDir)) {
-            mkdir($tmpDir, 0755, true);
-        }
-
-        $pdfFilesToMerge = [];
-        $uniqueId = uniqid();
-
-        // 1. Generate Medical Report (Portrait)
-        $mainPdfPath = $tmpDir . "/{$uniqueId}_main.pdf";
-        \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print', ['record' => $healthRecord])
-            ->setPaper('a4', 'portrait')
-            ->setOption(['isRemoteEnabled' => true])
-            ->save($mainPdfPath);
-        $pdfFilesToMerge[] = $mainPdfPath;
-
-        // 2. Generate Form 32 (Landscape)
-        $form32PdfPath = $tmpDir . "/{$uniqueId}_form32.pdf";
-        \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form32', ['record' => $healthRecord])
-            ->setPaper('a4', 'landscape')
-            ->setOption(['isRemoteEnabled' => true])
-            ->save($form32PdfPath);
-        $pdfFilesToMerge[] = $form32PdfPath;
-
-        // 3. Generate Form 33 (Portrait)
-        $form33PdfPath = $tmpDir . "/{$uniqueId}_form33.pdf";
-        \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form33', ['record' => $healthRecord])
-            ->setPaper('a4', 'portrait')
-            ->setOption(['isRemoteEnabled' => true])
-            ->save($form33PdfPath);
-        $pdfFilesToMerge[] = $form33PdfPath;
-
-        // 4. Handle Attachments
-        $imageAttachments = [];
-        foreach ($healthRecord->documents as $doc) {
-            $ext = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
-            $fullPath = storage_path('app/public/' . $doc->path);
-
-            if (!file_exists($fullPath)) continue;
-
-            if ($ext === 'pdf') {
-                // Directly merge PDF attachments
-                $pdfFilesToMerge[] = $fullPath;
-            } elseif (in_array($ext, ['jpg', 'jpeg', 'png'])) {
-                $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
-                try {
-                    $imageData = file_get_contents($fullPath);
-                    if ($imageData !== false) {
-                        $imageAttachments[] = [
-                            'name' => $doc->original_name,
-                            'src'  => 'data:' . $mime . ';base64,' . base64_encode($imageData),
-                            'size' => $doc->formatted_size,
-                            'date' => $doc->created_at->format('d/m/Y'),
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    Log::error("Failed to process image attachment for printAll: " . $e->getMessage());
-                }
-            }
-        }
-
-        // 5. Generate Image Attachments PDF (if any)
-        if (!empty($imageAttachments)) {
-            $imagesPdfPath = $tmpDir . "/{$uniqueId}_images.pdf";
-            \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_attachments', [
-                'record' => $healthRecord,
-                'imageAttachments' => $imageAttachments
-            ])
-            ->setPaper('a4', 'portrait')
-            ->setOption(['isRemoteEnabled' => true])
-            ->save($imagesPdfPath);
-            $pdfFilesToMerge[] = $imagesPdfPath;
-        }
-
-        // 6. Merge all using Webklex/PDFMerger
-        $mergedPdfPath = $tmpDir . "/{$uniqueId}_merged.pdf";
-        
-        try {
-            $merger = \Webklex\PDFMerger\Facades\PDFMergerFacade::init();
-            foreach ($pdfFilesToMerge as $pdfFile) {
-                $merger->addPDF($pdfFile, 'all');
-            }
-            $merger->merge();
-            $merger->save($mergedPdfPath);
-        } catch (\Exception $e) {
-            Log::error("PDF merge failed: " . $e->getMessage());
-        }
-
-        // 7. Clean up temporary individual PDFs
-        foreach ($pdfFilesToMerge as $file) {
-            // Only delete files in our temp dir, not the original attached PDFs
-            if (str_starts_with($file, $tmpDir) && file_exists($file)) {
-                @unlink($file);
-            }
-        }
-
-        if (file_exists($mergedPdfPath)) {
-            return response()->download($mergedPdfPath, "Complete_Report_{$healthRecord->employee_id}.pdf")->deleteFileAfterSend(true);
-        }
-
-        return back()->withErrors(['error' => 'Failed to generate combined PDF report.']);
+    $tmpDir = storage_path('app/temp_pdfs');
+    if (!file_exists($tmpDir)) {
+        mkdir($tmpDir, 0755, true);
     }
 
+    // Cleanup old temp files
+    foreach (glob($tmpDir . "/*") as $file) {
+        if (is_file($file) && (time() - filemtime($file) > 3600)) {
+            @unlink($file);
+        }
+    }
+
+    $pdfFilesToMerge = [];
+    $uniqueId = uniqid();
+
+    // 1. Main PDF
+    $mainPdfPath = $tmpDir . "/{$uniqueId}_main.pdf";
+    \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print', ['record' => $healthRecord])
+        ->setPaper('a4', 'portrait')
+        ->setOption(['isRemoteEnabled' => true])
+        ->save($mainPdfPath);
+    $pdfFilesToMerge[] = $mainPdfPath;
+
+    // 2. Form 32
+    $form32PdfPath = $tmpDir . "/{$uniqueId}_form32.pdf";
+    \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form32', ['record' => $healthRecord])
+        ->setPaper('a4', 'landscape')
+        ->setOption(['isRemoteEnabled' => true])
+        ->save($form32PdfPath);
+    $pdfFilesToMerge[] = $form32PdfPath;
+
+    // 3. Form 33
+    $form33PdfPath = $tmpDir . "/{$uniqueId}_form33.pdf";
+    \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form33', ['record' => $healthRecord])
+        ->setPaper('a4', 'portrait')
+        ->setOption(['isRemoteEnabled' => true])
+        ->save($form33PdfPath);
+    $pdfFilesToMerge[] = $form33PdfPath;
+
+    // 4. Attachments
+    $imageAttachments = [];
+
+    foreach ($healthRecord->documents as $doc) {
+        $ext = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
+        $fullPath = storage_path('app/public/' . $doc->path);
+
+        if (!file_exists($fullPath)) continue;
+
+        if ($ext === 'pdf') {
+
+            $convertedPdfPath = $tmpDir . DIRECTORY_SEPARATOR . uniqid() . '_converted.pdf';
+
+            // Detect OS
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $gsBinary = 'C:\\Program Files\\gs\\gs10.07.0\\bin\\gswin64c.exe';
+
+                if (!file_exists($gsBinary)) {
+                    \Log::error('Ghostscript not found', ['path' => $gsBinary]);
+                    $pdfFilesToMerge[] = $fullPath;
+                    continue;
+                }
+
+                $gsCommand = '"' . $gsBinary . '"';
+            } else {
+                $gsCommand = 'gs';
+            }
+
+            // Build command
+            $cmd = sprintf(
+                '%s -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH -sOutputFile=%s %s',
+                $gsCommand,
+                escapeshellarg($convertedPdfPath),
+                escapeshellarg($fullPath)
+            );
+
+            exec($cmd, $output, $returnVar);
+
+            // Debug logs (remove later if not needed)
+            \Log::info("Ghostscript CMD: " . $cmd);
+            \Log::info("Ghostscript RETURN: " . $returnVar);
+
+            if ($returnVar === 0 && file_exists($convertedPdfPath)) {
+                $pdfFilesToMerge[] = $convertedPdfPath;
+            } else {
+                \Log::warning("Ghostscript conversion failed, using original PDF", [
+                    'file' => $doc->original_name,
+                    'return_var' => $returnVar,
+                    'cmd' => $cmd
+                ]);
+
+                $pdfFilesToMerge[] = $fullPath;
+            }
+
+        } elseif (in_array($ext, ['jpg', 'jpeg', 'png'])) {
+
+            $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
+
+            try {
+                $imageData = file_get_contents($fullPath);
+
+                if ($imageData !== false) {
+                    $imageAttachments[] = [
+                        'name' => $doc->original_name,
+                        'src'  => 'data:' . $mime . ';base64,' . base64_encode($imageData),
+                        'size' => $doc->formatted_size,
+                        'date' => $doc->created_at->format('d/m/Y'),
+                    ];
+                }
+            } catch (\Exception $e) {
+                \Log::error("Image processing failed: " . $e->getMessage());
+            }
+        }
+    }
+
+    // 5. Image PDF
+    if (!empty($imageAttachments)) {
+        $imagesPdfPath = $tmpDir . "/{$uniqueId}_images.pdf";
+
+        \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_attachments', [
+            'record' => $healthRecord,
+            'imageAttachments' => $imageAttachments
+        ])
+        ->setPaper('a4', 'portrait')
+        ->setOption(['isRemoteEnabled' => true])
+        ->save($imagesPdfPath);
+
+        $pdfFilesToMerge[] = $imagesPdfPath;
+    }
+
+    // 6. Merge PDFs
+    $mergedPdfPath = $tmpDir . "/{$uniqueId}_merged.pdf";
+
+    try {
+        $merger = \Webklex\PDFMerger\Facades\PDFMergerFacade::init();
+
+        foreach ($pdfFilesToMerge as $pdfFile) {
+            if (file_exists($pdfFile)) {
+                $merger->addPDF($pdfFile, 'all');
+            } else {
+                \Log::error("Missing file for merge: " . $pdfFile);
+            }
+        }
+
+        $merger->merge();
+        $merger->save($mergedPdfPath);
+
+    } catch (\Exception $e) {
+        \Log::error("PDF merge failed: " . $e->getMessage(), [
+            'files' => $pdfFilesToMerge
+        ]);
+    }
+
+    // 7. Cleanup temp files
+    foreach ($pdfFilesToMerge as $file) {
+        if (str_starts_with($file, $tmpDir) && file_exists($file)) {
+            @unlink($file);
+        }
+    }
+
+    if (file_exists($mergedPdfPath)) {
+        return response()
+            ->download($mergedPdfPath, "Complete_Report_{$healthRecord->employee_id}.pdf")
+            ->deleteFileAfterSend(true);
+    }
+
+    return back()->withErrors(['error' => 'Failed to generate combined PDF report.']);
+}
     public function bulkAction(Request $request): JsonResponse|RedirectResponse|\Illuminate\Http\Response
     {
         $request->validate([
