@@ -27,7 +27,7 @@
         .signature-table td { border: none; text-align: center; vertical-align: bottom; padding: 0; }
         .signature-line { border-top: 1.5px solid #000; width: 85%; margin: 0 auto; padding-top: 4px; font-weight: bold; font-size: 9.5px; }
         
-        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50__) rotate(-45deg); font-size: 70px; color: rgba(0,0,0,0.02); z-index: -1; white-space: nowrap; pointer-events: none; }
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(0,0,0,0.02); z-index: -1; white-space: nowrap; pointer-events: none; }
         
         .page-break { page-break-after: always; }
         

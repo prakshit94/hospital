@@ -113,6 +113,7 @@ Route::middleware('auth')->group(function () {
         Route::get('health-records/{health_record}/print', [EmployeeHealthRecordController::class, 'print'])->name('health-records.print');
         Route::get('health-records/{health_record}/print-form32', [EmployeeHealthRecordController::class, 'printForm32'])->name('health-records.print-form32');
         Route::get('health-records/{health_record}/print-form33', [EmployeeHealthRecordController::class, 'printForm33'])->name('health-records.print-form33');
+        Route::get('health-records/{health_record}/print-all', [EmployeeHealthRecordController::class, 'printAll'])->name('health-records.print-all');
         Route::get('health-records', [EmployeeHealthRecordController::class, 'index'])->name('health-records.index');
         Route::get('health-records/{health_record}', [EmployeeHealthRecordController::class, 'show'])->name('health-records.show');
         Route::post('health-records/bulk-action', [EmployeeHealthRecordController::class, 'bulkAction'])->name('health-records.bulk-action');

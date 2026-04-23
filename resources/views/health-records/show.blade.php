@@ -368,6 +368,11 @@
                             Form 33 (Fitness Cert)
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10M7 17L17 7"/></svg>
                         </x-ui.button>
+                        <div class="my-0.5 border-t border-border/50"></div>
+                        <x-ui.button variant="primary" size="sm" href="{{ route('health-records.print-all', $record->uuid) }}" target="_blank" class="w-full justify-between shadow-sm">
+                            Print Complete Report
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                        </x-ui.button>
                     </div>
                 </x-ui.card>
             </div>
