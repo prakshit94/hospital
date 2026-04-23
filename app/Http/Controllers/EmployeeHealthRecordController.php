@@ -524,15 +524,18 @@ class EmployeeHealthRecordController extends Controller
             $pdfFilesToMerge[] = $imagesPdfPath;
         }
 
-        // 6. Merge all using Ghostscript
+        // 6. Merge all using Webklex/PDFMerger
         $mergedPdfPath = $tmpDir . "/{$uniqueId}_merged.pdf";
-        $filesStr = implode(' ', array_map('escapeshellarg', $pdfFilesToMerge));
         
-        $cmd = "gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=" . escapeshellarg($mergedPdfPath) . " " . $filesStr . " 2>&1";
-        exec($cmd, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            Log::error("Ghostscript merge failed: " . implode("\n", $output));
+        try {
+            $merger = \Webklex\PDFMerger\Facades\PDFMergerFacade::init();
+            foreach ($pdfFilesToMerge as $pdfFile) {
+                $merger->addPDF($pdfFile, 'all');
+            }
+            $merger->merge();
+            $merger->save($mergedPdfPath);
+        } catch (\Exception $e) {
+            Log::error("PDF merge failed: " . $e->getMessage());
         }
 
         // 7. Clean up temporary individual PDFs
