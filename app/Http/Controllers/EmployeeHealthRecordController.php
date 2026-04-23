@@ -376,6 +376,8 @@ class EmployeeHealthRecordController extends Controller
 
     public function printForm33(EmployeeHealthRecord $healthRecord)
     {
+        $healthRecord->loadMissing('company');
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form33', ['record' => $healthRecord]);
         
         return $pdf->setPaper('a4', 'portrait')
@@ -457,7 +459,7 @@ class EmployeeHealthRecordController extends Controller
         }
 
         if ($action === 'print') {
-            $records = EmployeeHealthRecord::whereIn('id', $ids)->get();
+            $records = EmployeeHealthRecord::whereIn('id', $ids)->with('company')->get();
             
             $view = 'health-records.bulk_print';
             $filename = "Bulk_Medical_Reports.pdf";

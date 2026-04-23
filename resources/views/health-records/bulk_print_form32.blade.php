@@ -4,64 +4,186 @@
     <meta charset="UTF-8">
     <title>Bulk Form 32</title>
     <style>
-        @page { size: A4 landscape; margin: 10mm; }
-        body { font-family: Arial, sans-serif; font-size: 9pt; line-height: 1.3; color: #000; margin: 0; padding: 0; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        th, td { border: 1px solid #000; padding: 4px; vertical-align: top; }
-        th { font-weight: bold; text-align: center; background-color: #f2f2f2; }
-        .text-center { text-align: center; }
-        .header { text-align: center; margin-bottom: 15px; }
-        .header h1 { margin: 0; font-size: 14pt; text-transform: uppercase; }
-        .header p { margin: 2px 0; font-size: 10pt; }
-        .info-table td { border: none; padding: 2px 5px; }
-        .label { font-weight: bold; }
-        .main-table thead th { font-size: 8pt; }
-        .main-table tbody td { font-size: 8.5pt; }
-        .vision-table { margin: 5px 0; }
-        .vision-table th, .vision-table td { padding: 2px; font-size: 8pt; text-align: center; }
-        .signature-line { border-top: 1px solid #000; width: 45%; text-align: center; margin-top: 30px; font-weight: bold; white-space: nowrap; }
-        .note { font-size: 8pt; margin-top: 10px; }
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            line-height: 1.3;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        th {
+            font-weight: bold;
+            text-align: center;
+            background-color: #f2f2f2;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 14pt;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin: 2px 0;
+            font-size: 10pt;
+        }
+
+        .info-table td {
+            border: none;
+            padding: 2px 5px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .main-table thead th {
+            font-size: 8pt;
+        }
+
+        .main-table tbody td {
+            font-size: 8.5pt;
+        }
+
+        .vision-table {
+            margin: 5px 0;
+        }
+
+        .vision-table th, .vision-table td {
+            padding: 2px;
+            font-size: 8pt;
+            text-align: center;
+        }
+
+        .footer-section {
+            margin-top: 40px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 45%;
+            text-align: center;
+            margin-top: 30px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .note {
+            font-size: 8pt;
+            margin-top: 10px;
+        }
+
+        .w-full { width: 100%; }
+
         .page-break { page-break-after: always; }
 
         @media print {
-            @page { size: A4 landscape; margin: 6mm; }
-            body { zoom: 0.82; }
-            table, tr, td, th { page-break-inside: avoid !important; }
-            .header { margin-bottom: 8px; }
+            @page {
+                size: A4 landscape;
+                margin: 6mm;
+            }
+
+            table, tr, td, th {
+                page-break-inside: avoid !important;
+            }
+
+            .main-table,
+            .footer-section,
+            .note {
+                page-break-inside: avoid;
+            }
+
+            th, td {
+                padding: 3px !important;
+            }
+
+            .header {
+                margin-bottom: 8px;
+            }
+
+            .footer-section {
+                margin-top: 20px;
+            }
         }
     </style>
 </head>
 <body>
     @foreach($records as $record)
-        @php
-            $examDate    = $record->examination_date ? $record->examination_date->format('d-m-Y') : 'NA';
-            $joiningDate = $record->joining_date     ? $record->joining_date->format('d-m-Y')     : 'NA';
-            $status      = strtoupper($record->health_status ?? '');
-            $num         = 1;
-        @endphp
+        @php $num = 1; @endphp
         <div class="header">
-            <h1>Form No. 32 — Health Register</h1>
+            <h1>Form No. 32</h1>
             <p>(Prescribed under Rule 68-T and 102)</p>
-            <p>In respect of persons employed in hazardous processes</p>
+            <h2>HEALTH REGISTER</h2>
         </div>
 
         <table class="info-table">
-            <tr>
-                <td><span class="label">{{ $num++ }}. Serial No.:</span> {{ $record->employee_id }}</td>
-                <td><span class="label">{{ $num++ }}. Name:</span> {{ $record->full_name }}</td>
-                <td><span class="label">{{ $num++ }}. Sex:</span> {{ $record->gender ?? '-' }}</td>
-                <td>
-                    <span class="label">{{ $num++ }}. DOB:</span>
-                    {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
-                    @if($record->dob)
-                        (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
-                    @endif
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2"><span class="label">{{ $num++ }}. Company:</span> {{ $record->company_name }}</td>
-                <td colspan="2"><span class="label">{{ $num++ }}. Address:</span> {{ $record->address ?? '-' }}</td>
-            </tr>
+        <tr>
+            <td>
+                <span class="label">{{ $num++ }}. Serial Number:</span>
+                {{ $record->employee_id }}
+            </td>
+            <td>
+                <span class="label">{{ $num++ }}. Name:</span>
+                {{ $record->full_name }}
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span class="label">{{ $num++ }}. Sex:</span>
+                {{ $record->gender ?? '-' }}
+            </td>
+            <td>
+                <span class="label">{{ $num++ }}. Date Of Birth:</span>
+                {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
+                @if($record->dob)
+                    (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
+                @endif
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <span class="label">{{ $num++ }}. Company:</span>
+                {{ $record->company_name }}
+            </td>
+            <td>
+                <span class="label">{{ $num++ }}. Address:</span>
+                {{ $record->address ?? '-' }}
+            </td>
+        </tr>
         </table>
 
         <table class="main-table">
@@ -75,14 +197,14 @@
                     <th rowspan="2">Date of<br>Posting</th>
                     <th rowspan="2">Date of<br>Leave /<br>Transfer</th>
                     <th rowspan="2">Reasons<br>for<br>Discharge</th>
-                    <th colspan="4">Medical Examination & Results</th>
+                    <th colspan="4">Medical Examination &amp; Results</th>
                     <th colspan="4">If Declared Unfit</th>
-                    <th rowspan="2">Signature & Date<br>Med. Officer /<br>Certifying Surgeon</th>
+                    <th rowspan="2">Signature &amp; Date<br>Med. Officer /<br>Certifying Surgeon</th>
                 </tr>
                 <tr>
                     <th>Exam<br>Date</th>
-                    <th>Signs & Symptoms Observed</th>
-                    <th>Nature of Tests & Results</th>
+                    <th>Signs &amp; Symptoms Observed</th>
+                    <th>Nature of Tests &amp; Results</th>
                     <th>Fit /<br>Unfit</th>
                     <th>Period<br>Temp.<br>Withdrawal</th>
                     <th>Reasons<br>Withdrawal</th>
@@ -91,6 +213,11 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $examDate    = $record->examination_date ? $record->examination_date->format('d-m-Y') : 'NA';
+                    $joiningDate = $record->joining_date     ? $record->joining_date->format('d-m-Y')     : 'NA';
+                    $status      = strtoupper($record->health_status ?? '');
+                @endphp
                 <tr>
                     <td>{{ $record->department ?? $record->designation ?? '-' }}</td>
                     <td>{{ $record->hazardous_process ?? '-' }}</td>
@@ -103,14 +230,17 @@
                     <td class="text-center">{{ $examDate }}</td>
 
                     <td>
-                        <div><span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
-                        <div style="margin-top: 5px; border-top: 0.5px solid #000; padding-top: 2px;">
-                            <span class="label">Height:</span> {{ $record->height ?? '-' }} cm | 
-                            <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg<br>
-                            <span class="label">Chest B/A:</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }}<br>
-                            <span class="label">Temp:</span> {{ $record->temperature ?? '-' }}°F | 
-                            <span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm<br>
-                            <span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}
+                        <div>
+                            <span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}
+                        </div>
+
+                        <div style="margin-top: 5px; border-top: 0.5px solid #000; padding-top: 5px;">
+                            <div><span class="label">Height:</span> {{ $record->height ?? '-' }} cm</div>
+                            <div><span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg</div>
+                            <div><span class="label">Chest (Before/After):</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }}</div>
+                            <div><span class="label">Temperature:</span> {{ $record->temperature ?? '-' }}°F</div>
+                            <div><span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm</div>
+                            <div><span class="label">Blood Pressure:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}</div>
                         </div>
 
                         <table class="vision-table">
@@ -121,12 +251,46 @@
                             <tr><td>Colour</td><td colspan="2">{{ $record->colour_vision ?? '-' }}</td></tr>
                         </table>
 
-                        <div style="font-size: 7.5pt; border-top: 0.5px solid #000; padding-top: 2px;">
-                            <span class="label">Ear/Throat:</span> {{ $record->ear ?? '-' }} / {{ $record->throat ?? '-' }}<br>
-                            <span class="label">Nose/Eye:</span> {{ $record->nose ?? '-' }} / {{ $record->eye ?? '-' }}<br>
-                            <span class="label">Skin/Tongue:</span> {{ $record->skin ?? '-' }} / {{ $record->tongue ?? '-' }}<br>
-                            <span class="label">CVS/CNS:</span> {{ $record->cvs ?? '-' }} / {{ $record->cns ?? '-' }}<br>
-                            <span class="label">Abdo/Resp:</span> {{ $record->per_abdomen ?? '-' }} / {{ $record->resp_system ?? '-' }}
+                        <div style="margin-top: 3px; border-top: 0.5px solid #000; padding-top: 3px; font-size: 7pt; line-height: 1.1;">
+                            <table style="width: 100%; border: none; border-collapse: collapse;">
+                                <tr>
+                                    <td style="border: none; padding: 0; width: 33%; vertical-align: top;">
+                                        <b>Ear:</b> {{ $record->ear ?? '-' }}<br>
+                                        <b>Throat:</b> {{ $record->throat ?? '-' }}<br>
+                                        <b>Nose:</b> {{ $record->nose ?? '-' }}<br>
+                                        <b>Eye:</b> {{ $record->eye ?? '-' }}<br>
+                                        <b>Conjunctiva:</b> {{ $record->conjunctiva ?? '-' }}
+                                    </td>
+                                    <td style="border: none; padding: 0; width: 33%; vertical-align: top;">
+                                        <b>Skin:</b> {{ $record->skin ?? '-' }}<br>
+                                        <b>Tongue:</b> {{ $record->tongue ?? '-' }}<br>
+                                        <b>Nails:</b> {{ $record->nails ?? '-' }}<br>
+                                        <b>Teeth:</b> {{ $record->teeth ?? '-' }}<br>
+                                        <b>Lymph:</b> {{ $record->lymphnode ?? '-' }}
+                                    </td>
+                                    <td style="border: none; padding: 0; width: 33%; vertical-align: top;">
+                                        <b>Cyanosis:</b> {{ $record->cyanosis ?? '-' }}<br>
+                                        <b>Jaundice:</b> {{ $record->jaundice ?? '-' }}<br>
+                                        <b>Anaemia:</b> {{ $record->anaemia ?? '-' }}<br>
+                                        <b>Oedema:</b> {{ $record->oedema ?? '-' }}<br>
+                                        <b>Clubbing:</b> {{ $record->clubbing ?? '-' }}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div style="margin-top: 2px;">
+                                <b>Allergy:</b> {{ $record->allergy_status ?? '-' }} |
+                                <b>PEFR:</b> {{ $record->pefr ?? '-' }} |
+                                <b>Eczema:</b> {{ $record->eczema ?? '-' }}
+                            </div>
+
+                            <div style="margin-top: 2px;">
+                                <b>CVS:</b> {{ $record->cvs ?? '-' }} |
+                                <b>CNS:</b> {{ $record->cns ?? '-' }} |
+                                <b>Abdomen:</b> {{ $record->per_abdomen ?? '-' }} |
+                                <b>Resp:</b> {{ $record->resp_system ?? '-' }} |
+                                <b>GU:</b> {{ $record->genito_urinary ?? '-' }}
+                            </div>
                         </div>
                     </td>
 

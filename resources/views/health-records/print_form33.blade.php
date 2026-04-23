@@ -191,8 +191,8 @@ table, tr, td {
     <tr>
     <td class="lbl">7. Name & address of the factory :</td>
     <td class="val">
-        : {{ $record->company->name ?? $record->company_name }}<br>
-        {{ $record->company->address ?? '' }}
+        : {{ optional($record->company)->name ?? $record->company_name }}<br>
+        {{ optional($record->company)->address ?? '' }}
     </td>
 </tr>
 
@@ -284,8 +284,8 @@ table, tr, td {
 
             <!-- Doctor Signature -->
             <td>
-                Dr. {{ $record->doctor_name }}<br>
-                {{ $record->doctor_qualification }}<br>
+                Dr. {{ $record->doctor_name ?? '' }}<br>
+                {{ $record->doctor_qualification ?? '' }}<br>
 
                 @if($record->doctor_signature)
                     <!-- <img src="{{ public_path('storage/'.$record->doctor_signature) }}" height="40"> -->
