@@ -1,128 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Form No. 33 — Certificate of Fitness</title>
-      <style> @page { size: A4; margin: 10mm; }
-         body { font-family: "Times New Roman", serif; font-size: 12px; color: #000; }
-         .page { width: 100%; }
-         table { width: 100%; border-collapse: collapse; }
-         td, th { padding: 4px; vertical-align: top; }
-         .header { text-align: center; border: 1px solid #000; padding: 5px; margin-bottom: 10px; }
-         .header h1 { font-size: 16px; }
-         .subtitle { font-size: 13px; font-weight: bold; }
-         .rule-ref, .issued-by { font-size: 11px; }
-         .lbl { width: 55%; font-weight: bold; }
-         .val { width: 45%; border-bottom: 1px dotted #000; }
-         .sub-lbl { padding-left: 20px; font-weight: bold; }
-         .divider { border-top: 1px solid #000; margin: 10px 0; }
-         .cert-text { margin: 5px 0; text-align: justify; }
-         .dline { border-bottom: 1px dotted #000; padding: 0 5px; }
-         .fit-status { font-weight: bold; text-decoration: underline; }
-         .sig-container { margin-top: 20px; }
-         .sig-box { text-align: center; }
-         .sig-space { height: 40px; }
-         .sig-line { border-top: 1px solid #000; display: inline-block; width: 80%; }
-         .ext-table th, .ext-table td { border: 1px solid #000; text-align: center; }
-         .footer-note { font-size: 10px; text-align: center; margin-top: 10px; } 
-      </style>
-   </head>
-   <body>
-      @php 
-         $dob = $record->dob ? $record->dob->format('d-m-Y') : 'N/A'; 
-         $age = $record->dob ? (int) $record->dob->diffInYears(now()) : 'N/A'; 
-         $examDate = $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A'; 
-         $extensionDate = $record->examination_date ? $record->examination_date->copy()->addMonths(6)->format('d/m/Y') : 'N/A'; 
-         $isFit = strtoupper($record->health_status ?? '') === 'FIT';
-         $num = 1;
-      @endphp
-      <div class="page">
-         <div class="header">
-            <h1>Form No. 33</h1>
-            <div class="rule-ref">(Prescribed under Rule 68-T and 102)</div>
-            <div class="subtitle">Certificate of Fitness of Employment in Hazardous Process and Operations</div>
-            <div class="issued-by">(TO BE ISSUED BY FACTORY MEDICAL OFFICER)</div>
-         </div>
-         <table>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form No. 33 — Certificate of Fitness</title>
+<style>
+@page {
+    size: A4;
+    margin: 10mm; /* reduced margins to gain space */
+}
+
+body {
+    font-family: "Times New Roman", serif;
+    font-size: 14px; /* slightly bigger */
+    color: #000;
+    line-height: 1.35; /* tighter to save space */
+}
+
+.page {
+    width: 100%;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 10px; /* reduced */
+}
+
+.header h1 {
+    font-size: 22px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.rule-ref {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.subtitle {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.issued-by {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Table */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+}
+
+.details-table td {
+    padding: 3px 0;
+    vertical-align: top;
+    font-size: 15px;
+}
+
+.lbl {
+    width: 45%;
+}
+
+.val {
+    width: 55%;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+/* Certificate Text */
+.cert-text {
+    margin: 10px 0;
+    text-align: justify;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* Signature Section */
+.sig-section {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.sig-box {
+    width: 50%;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.stamp-area {
+    /* border: 1px solid #000000ff; */
+    padding: 8px;
+    min-height: 65px;
+    width: 85%;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* Extension Table */
+.ext-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.ext-table th,
+.ext-table td {
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: left;
+    font-size: 14px; /* ✅ updated to match document */
+}
+
+.ext-table th {
+    font-weight: normal;
+    text-align: center;
+}
+
+/* Footer */
+.footer-note {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+/* Strike */
+.strike {
+    text-decoration: line-through;
+    color: #666;
+}
+
+/* Prevent page break */
+.page {
+    page-break-after: avoid;
+}
+
+table, tr, td {
+    page-break-inside: avoid;
+}
+</style>
+</head>
+<body>
+    @php 
+        $dob = $record->dob ? $record->dob->format('d-m-Y') : ' '; 
+        $age = $record->dob ? (int) $record->dob->diffInYears(now()) : ' '; 
+        $isFit = strtoupper($record->health_status ?? '') === 'FIT';
+    @endphp
+
+    <div class="page">
+        <div class="header">
+            <h1>FORM NO. 33</h1> 
+            <div class="rule-ref">(Prescribed under Rule 68-T and 102)</div> 
+            <div class="subtitle">Certificate of Fitness of employment in hazardous process and operations.</div> 
+            <div class="issued-by">(TO BE ISSUED BY FACTORY MEDICAL OFFICER)</div> 
+        </div>
+
+        <table class="details-table">
+    <tr>
+        <td class="lbl">1. Serial number in the register of adult workers :</td> 
+        <td class="val">: {{ $record->employee_id }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">2. Name of the person examined :</td> 
+        <td class="val">: {{ strtoupper($record->full_name) }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">3. Father's Name :</td> 
+        <td class="val">: {{ $record->father_name ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">4. Sex :</td> 
+        <td class="val">: {{ ucfirst($record->gender ?? '-') }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">5. Residence :</td> 
+        <td class="val">: {{ $record->address ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">6. Date of birth, if available :</td> 
+        <td class="val">: {{ $dob }}</td>
+    </tr>
+    <!-- <tr>
+        <td class="lbl">7. Name & address of the factory :</td> 
+        <td class="val">: {{ $record->company_name }}</td>
+    </tr> -->
+
+    <tr>
+    <td class="lbl">7. Name & address of the factory :</td>
+    <td class="val">
+        : {{ $record->company->name ?? $record->company_name }}<br>
+        {{ $record->company->address ?? '' }}
+    </td>
+</tr>
+
+    <!-- Main Point 8 -->
+    <tr>
+        <td class="lbl">8. The worker is employed/proposed :</td> 
+        <td class="val">: {{ $record->department ?? '-' }}</td>
+    </tr>
+
+    <!-- Sub-points under 8 -->
+    <tr>
+        <td class="lbl sub"> &nbsp;&nbsp;&nbsp;(a) Hazardous process :</td> 
+        <td class="val">: {{ $record->hazardous_process ?? '-' }}</td>
+    </tr>
+    <tr>
+        <td class="lbl sub"> &nbsp;&nbsp;&nbsp;(b) Dangerous operation :</td> 
+        <td class="val">: {{ $record->dangerous_operation ?? '-' }}</td>
+    </tr>
+</table>
+
+        <div class="cert-text">
+            I certify that I have personally examined the above named person whose identification marks are <strong>{{ $record->identification_mark ?? '................................................' }}</strong> and who is desirous of being employed in above mentioned process/operation and that his/her, age, as can be ascertained from my examination, is <strong>{{ $age }}</strong> years. 
+        </div>
+
+        <div class="cert-text {{ !$isFit ? 'strike' : '' }}">
+            In my opinion he/she is fit for employment in the Said manufacturing process/operation. 
+        </div>
+
+        <div class="cert-text {{ $isFit ? 'strike' : '' }}">
+            In my opinion he/she is unfit for employment in the said manufacturing process/operation for the reason <strong>{{ !$isFit ? ($record->doctor_remarks ?? ' ') : ' ' }}</strong>. He/She is referred for further examination to the Certifying Surgeon. 
+        </div>
+
+        <div class="cert-text" style="text-align: center;">
+    The serial number of previous certificate is 
+    <strong>{{ $record->prev_cert_no ?? '........................................' }}</strong>.
+</div>
+
+        <table class="sig-section">
             <tr>
-               <td class="lbl">{{ $num++ }}. Serial number in the register of adult workers:</td>
-               <td class="val">{{ $record->employee_id }}</td>
+                <td class="sig-box">
+                    Signature or left hand thumb<br>
+                    impression of the person examined : 
+                    <!-- <div style="margin-top: 50px;">_________________________</div> -->
+                </td>
+                <td class="sig-box">
+                    Signature of the Factory Medical Officer : 
+                    <div class="stamp-area">
+                        Stamp of factory Medical Officer with<br>
+                        Name of the Factory : 
+                    </div>
+                </td>
             </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Name of the person examined:</td>
-               <td class="val"><strong>{{ strtoupper($record->full_name) }}</strong></td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Father's Name:</td>
-               <td class="val">{{ $record->father_name ?? '-' }}</td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Sex:</td>
-               <td class="val">{{ ucfirst($record->sex ?? $record->gender ?? '-') }}</td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Date of Birth / Age:</td>
-               <td class="val">{{ $dob }} / {{ $age }} Years</td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Residence:</td>
-               <td class="val">{{ $record->address ?? '-' }}</td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. Name & address of the factory:</td>
-               <td class="val">{{ $record->company_name }}</td>
-            </tr>
-            <tr>
-               <td class="lbl">{{ $num++ }}. The worker is employed / proposed to be employed in:</td>
-               <td class="val">{{ $record->department ?? $record->designation ?? '-' }}</td>
-            </tr>
-            <tr>
-               <td class="sub-lbl">(a) Hazardous process:</td>
-               <td class="val">{{ $record->hazardous_process ?? '-' }}</td>
-            </tr>
-            <tr>
-               <td class="sub-lbl">(b) Dangerous operation:</td>
-               <td class="val">{{ $record->dangerous_operation ?? '-' }}</td>
-            </tr>
-         </table>
-         <hr class="divider">
-         <div class="cert-text"> I certify that I have personally examined the above named person whose identification marks are <span class="dline">{{ $record->identification_mark ?? '................................................' }}</span> and who is desirous of being employed in above mentioned process / operation and that his / her age, as can be ascertained from my examination, is <span class="dline">{{ $age }}</span> years. </div>
-         <div class="cert-text"> In my opinion he / she is <span class="fit-status">{{ $isFit ? 'FIT' : 'UNFIT' }}</span>. </div>
-         @if(!$isFit) 
-         <div class="cert-text"> <strong>Reason:</strong> <span class="dline">{{ $record->doctor_remarks ?? '-' }}</span> </div>
-         @endif
-         <table class="sig-container">
-            <tr>
-               <td class="sig-box">
-                  <div class="sig-space"></div>
-                  <div class="sig-line">Person Signature</div>
-               </td>
-               <td class="sig-box">
-                  <div class="sig-space"></div>
-                  <div class="sig-line">Doctor Signature</div>
-               </td>
-            </tr>
-         </table>
-         <table class="ext-table">
-            <thead>
-               <tr>
-                  <th>Examined</th>
-                  <th>Valid Till</th>
-                  <th>Remarks</th>
-                  <th>Sign</th>
-               </tr>
-            </thead>
-            <tbody>
-               <tr>
-                  <td>{{ $examDate }}</td>
-                  <td>{{ $extensionDate }}</td>
-                  <td>{{ $record->present_complain ?? '-' }}</td>
-                  <td></td>
-               </tr>
-            </tbody>
-         </table>
-         <div class="footer-note"> Note: This certificate is not proof of age. </div>
-      </div>
-   </body>
+        </table>
+
+        <table class="ext-table">
+    <thead>
+        <tr>
+            <th width="15%">
+                I certify that I examined the person mentioned above on (date of examination)
+            </th> 
+            <th width="30%">
+                I extend this certificate unfit (if certificate is not extended, the period for which the worker is considered unfit for work is to be mentioned)
+            </th> 
+            <th width="30%">
+                Signs and symptoms observed during examination
+            </th> 
+            <th width="25%">
+                Signature of the Factory medical Officer with date.
+            </th> 
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <!-- Date of Examination -->
+            <td height="80px">
+                {{ optional($record->examination_date)->format('d-m-Y') }}
+            </td>
+
+            <!-- Fit / Unfit -->
+            <td>
+                {{ $record->health_status ?? 'Fit' }}<br>
+                {{ $record->job_restriction ?? '' }}
+            </td>
+
+            <!-- Symptoms -->
+            <td>
+                {{ $record->present_complain ?? $record->diagnosis ?? '' }}
+            </td>
+
+            <!-- Doctor Signature -->
+            <td>
+                Dr. {{ $record->doctor_name }}<br>
+                {{ $record->doctor_qualification }}<br>
+
+                @if($record->doctor_signature)
+                    <!-- <img src="{{ public_path('storage/'.$record->doctor_signature) }}" height="40"> -->
+                @endif
+
+                <br>
+                Date: {{ optional($record->examination_date)->format('d-m-Y') }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+        <div class="footer-note">
+            <strong>Notes :</strong> <br>
+            1. If declared unfit, reference should be made immediately to the Certifying Surgeon. <br>
+            2. Certifying Surgeon should communicate his findings to the occupier within 30 days of the receipt of this reference. 
+        </div>
+    </div>
+</body>
 </html>
