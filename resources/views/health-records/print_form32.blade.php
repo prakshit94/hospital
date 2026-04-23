@@ -216,15 +216,34 @@
                 <td class="text-center">{{ $examDate }}</td>
 
                 <td>
-                    <div><span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
-                    <div style="margin-top: 5px; border-top: 0.5px solid #000; padding-top: 2px;">
-                        <span class="label">Height:</span> {{ $record->height ?? '-' }} cm | 
-                        <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg<br>
-                        <span class="label">Chest B/A:</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }}<br>
-                        <span class="label">Temp:</span> {{ $record->temperature ?? '-' }}°F | 
-                        <span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm<br>
-                        <span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}
-                    </div>
+                    <div>
+    <span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}
+</div>
+
+<div style="margin-top: 5px; border-top: 0.5px solid #000; padding-top: 5px;">
+    <ul style="margin: 0; padding-left: 15px; list-style-type: disc;">
+        <li>
+            <span class="label">Height:</span> {{ $record->height ?? '-' }} cm
+        </li>
+        <li>
+            <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg
+        </li>
+        <li>
+            <span class="label">Chest (Before/After):</span> 
+            {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }}
+        </li>
+        <li>
+            <span class="label">Temperature:</span> {{ $record->temperature ?? '-' }}°F
+        </li>
+        <li>
+            <span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm
+        </li>
+        <li>
+            <span class="label">Blood Pressure:</span> 
+            {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}
+        </li>
+    </ul>
+</div>
 
                     <table class="vision-table">
                         <tr><th>Vision</th><th>Right</th><th>Left</th></tr>
@@ -234,13 +253,47 @@
                         <tr><td>Colour</td><td colspan="2">{{ $record->colour_vision ?? '-' }}</td></tr>
                     </table>
 
-                    <div style="font-size: 7.5pt; border-top: 0.5px solid #000; padding-top: 2px;">
-                        <span class="label">Ear/Throat:</span> {{ $record->ear ?? '-' }} / {{ $record->throat ?? '-' }}<br>
-                        <span class="label">Nose/Eye:</span> {{ $record->nose ?? '-' }} / {{ $record->eye ?? '-' }}<br>
-                        <span class="label">Skin/Tongue:</span> {{ $record->skin ?? '-' }} / {{ $record->tongue ?? '-' }}<br>
-                        <span class="label">CVS/CNS:</span> {{ $record->cvs ?? '-' }} / {{ $record->cns ?? '-' }}<br>
-                        <span class="label">Abdo/Resp:</span> {{ $record->per_abdomen ?? '-' }} / {{ $record->resp_system ?? '-' }}
-                    </div>
+                    <div style="margin-top: 3px; border-top: 0.5px solid #000; padding-top: 3px; font-size: 7pt; line-height: 1.1;">
+    
+    <div style="display: inline-block; width: 32%;">
+        <b>Ear:</b> {{ $record->ear ?? '-' }}<br>
+        <b>Throat:</b> {{ $record->throat ?? '-' }}<br>
+        <b>Nose:</b> {{ $record->nose ?? '-' }}<br>
+        <b>Eye:</b> {{ $record->eye ?? '-' }}<br>
+        <b>Conjunctiva:</b> {{ $record->conjunctiva ?? '-' }}
+    </div>
+
+    <div style="display: inline-block; width: 32%; vertical-align: top;">
+        <b>Skin:</b> {{ $record->skin ?? '-' }}<br>
+        <b>Tongue:</b> {{ $record->tongue ?? '-' }}<br>
+        <b>Nails:</b> {{ $record->nails ?? '-' }}<br>
+        <b>Teeth:</b> {{ $record->teeth ?? '-' }}<br>
+        <b>Lymph:</b> {{ $record->lymphnode ?? '-' }}
+    </div>
+
+    <div style="display: inline-block; width: 32%; vertical-align: top;">
+        <b>Cyanosis:</b> {{ $record->cyanosis ?? '-' }}<br>
+        <b>Jaundice:</b> {{ $record->jaundice ?? '-' }}<br>
+        <b>Anaemia:</b> {{ $record->anaemia ?? '-' }}<br>
+        <b>Oedema:</b> {{ $record->oedema ?? '-' }}<br>
+        <b>Clubbing:</b> {{ $record->clubbing ?? '-' }}
+    </div>
+
+    <div style="margin-top: 2px;">
+        <b>Allergy:</b> {{ $record->allergy_status ?? '-' }} |
+        <b>PEFR:</b> {{ $record->pefr ?? '-' }} |
+        <b>Eczema:</b> {{ $record->eczema ?? '-' }}
+    </div>
+
+    <div style="margin-top: 2px;">
+        <b>CVS:</b> {{ $record->cvs ?? '-' }} |
+        <b>CNS:</b> {{ $record->cns ?? '-' }} |
+        <b>Abdomen:</b> {{ $record->per_abdomen ?? '-' }} |
+        <b>Resp:</b> {{ $record->resp_system ?? '-' }} |
+        <b>GU:</b> {{ $record->genito_urinary ?? '-' }}
+    </div>
+
+</div>
                 </td>
 
                 <td>
