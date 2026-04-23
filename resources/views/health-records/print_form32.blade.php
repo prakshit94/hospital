@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Form No. 32 — Health Register</title>
+    <title>Form No. 32</title>
     <style>
         @page {
             size: A4 landscape;
@@ -148,29 +148,48 @@
 <body>
     @php $num = 1; @endphp
     <div class="header">
-        <h1>Form No. 32 — Health Register</h1>
+        <h1>Form No. 32</h1>
         <p>(Prescribed under Rule 68-T and 102)</p>
-        <p>In respect of persons employed in hazardous processes</p>
+        <H2>HEALTH REGISTER</H2>
     </div>
 
     <table class="info-table">
-        <tr>
-            <td><span class="label">{{ $num++ }}. Serial No.:</span> {{ $record->employee_id }}</td>
-            <td><span class="label">{{ $num++ }}. Name:</span> {{ $record->full_name }}</td>
-            <td><span class="label">{{ $num++ }}. Sex:</span> {{ $record->gender ?? '-' }}</td>
-            <td>
-                <span class="label">{{ $num++ }}. DOB:</span>
-                {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
-                @if($record->dob)
-                    (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
-                @endif
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2"><span class="label">{{ $num++ }}. Company:</span> {{ $record->company_name }}</td>
-            <td colspan="2"><span class="label">{{ $num++ }}. Address:</span> {{ $record->address ?? '-' }}</td>
-        </tr>
-    </table>
+    <tr>
+        <td>
+            <span class="label">{{ $num++ }}. Serial Number:</span>
+            {{ $record->employee_id }}
+        </td>
+        <td>
+            <span class="label">{{ $num++ }}. Name:</span>
+            {{ $record->full_name }}
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <span class="label">{{ $num++ }}. Sex:</span>
+            {{ $record->gender ?? '-' }}
+        </td>
+        <td>
+            <span class="label">{{ $num++ }}. Date Of Birth:</span>
+            {{ $record->dob ? $record->dob->format('d-m-Y') : 'NA' }}
+            @if($record->dob)
+                (Age: {{ (int) $record->dob->diffInYears(now()) }} yrs)
+            @endif
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <span class="label">{{ $num++ }}. Company:</span>
+            {{ $record->company_name }}
+        </td>
+        <td>
+            <span class="label">{{ $num++ }}. Address:</span>
+            {{ $record->address ?? '-' }}
+        </td>
+    </tr>
+</table>
 
     <table class="main-table">
         <thead>
