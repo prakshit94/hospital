@@ -161,7 +161,7 @@ table, tr, td {
         <table class="details-table">
     <tr>
         <td class="lbl">1. Serial number in the register of adult workers :</td> 
-        <td class="val">: {{ $record->employee_id }}</td>
+        <td class="val">: {{ $record->employee->employee_id ?? 'N/A' }}</td>
     </tr>
     <tr>
         <td class="lbl">2. Name of the person examined :</td> 

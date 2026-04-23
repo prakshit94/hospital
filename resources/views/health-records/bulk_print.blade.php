@@ -62,7 +62,7 @@
             <div class="section-title">{{ $sectionNum++ }}. Employee Information</div>
             <table>
                 <tr>
-                    <th>{{ $num++ }}. Employee No</th><td>{{ $record->employee_id }}</td>
+                    <th>{{ $num++ }}. Employee No</th><td>{{ $record->employee->employee_id ?? 'N/A' }}</td>
                     <th>{{ $num++ }}. Date of Exam</th><td>{{ $formatDate($record->examination_date) }}</td>
                 </tr>
                 <tr>

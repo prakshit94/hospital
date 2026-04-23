@@ -155,7 +155,7 @@
     <tr>
         <td>
             <span class="label">{{ $num++ }}. Serial Number:</span>
-            {{ $record->employee_id }}
+            {{ $record->employee->employee_id ?? 'N/A' }}
         </td>
         <td>
             <span class="label">{{ $num++ }}. Name:</span>
