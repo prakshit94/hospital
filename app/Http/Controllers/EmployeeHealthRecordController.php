@@ -66,9 +66,15 @@ class EmployeeHealthRecordController extends Controller
 
     public function create(): View
     {
-        return view('health-records.create', [
-            'record' => new EmployeeHealthRecord()
-        ]);
+        $record = new EmployeeHealthRecord();
+
+        // Pre-fill next Employee No from the active session company
+        $companyId = session('current_company_id');
+        if ($companyId) {
+            $record->employee_id = $this->generateNextEmployeeId((int) $companyId);
+        }
+
+        return view('health-records.create', ['record' => $record]);
     }
 
     private function getValidationRules(): array
@@ -76,7 +82,7 @@ class EmployeeHealthRecordController extends Controller
         return [
             'company_id' => 'nullable|exists:companies,id',
             'company_name' => 'required|string|max:255',
-            'employee_id' => 'required|string|max:255',
+            'employee_id' => 'nullable|string|max:255',
             'full_name' => 'required|string|max:255',
             'gender' => 'required|in:male,female,other',
             'dob' => 'required|date|before:today',
@@ -228,14 +234,33 @@ class EmployeeHealthRecordController extends Controller
 
         return DB::transaction(function () use ($validated, $request) {
             $validated['created_by'] = auth()->id();
-            
+
+            $companyId = $validated['company_id'] ?? null;
+            $resolvedCompany = null;
+
             if (session()->has('current_company_id') && !isset($validated['company_id'])) {
                 $validated['company_id'] = session('current_company_id');
                 $validated['company_name'] = session('current_company_name');
+                $companyId = $validated['company_id'];
+                $resolvedCompany = \App\Models\Company::find($companyId);
             } elseif (isset($validated['company_id'])) {
-                $company = \App\Models\Company::find($validated['company_id']);
-                if ($company) $validated['company_name'] = $company->name;
+                $resolvedCompany = \App\Models\Company::find($validated['company_id']);
+                if ($resolvedCompany) $validated['company_name'] = $resolvedCompany->name;
             }
+
+            // Auto-generate Employee No if blank OR if prefix doesn't match the selected company
+            if (empty($validated['employee_id'])) {
+                // Blank — generate from the selected company
+                $validated['employee_id'] = $this->generateNextEmployeeId($companyId);
+            } elseif ($resolvedCompany && $resolvedCompany->code) {
+                // Has a value — verify prefix matches the selected company's code
+                $expectedPrefix = strtoupper($resolvedCompany->code) . '-';
+                if (!str_starts_with(strtoupper($validated['employee_id']), $expectedPrefix)) {
+                    // Prefix mismatch (stale auto-fill from a different company) — regenerate
+                    $validated['employee_id'] = $this->generateNextEmployeeId($companyId);
+                }
+            }
+
             // Calculate BMI if height and weight are provided
             if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
                 $heightInMeters = $validated['height'] / 100;
@@ -270,7 +295,7 @@ class EmployeeHealthRecordController extends Controller
             );
 
             $msg = "Health record for '{$record->full_name}' has been successfully stored.";
-            
+
             if ($request->ajax()) {
                 session()->flash('status', $msg);
                 return response()->json([
@@ -671,9 +696,26 @@ class EmployeeHealthRecordController extends Controller
             return response()->json(['next_id' => '']);
         }
 
+        return response()->json(['next_id' => $this->generateNextEmployeeId($companyId)]);
+    }
+
+    /**
+     * Generate the next sequential Employee No for a given company.
+     * Used by both the AJAX endpoint and the store() fallback.
+     */
+    private function generateNextEmployeeId(?int $companyId): string
+    {
+        if (!$companyId) {
+            return '';
+        }
+
+        $company = Company::find($companyId);
+        if (!$company || !$company->code) {
+            return '';
+        }
+
         $prefix = strtoupper($company->code) . '-';
-        
-        // Find the latest record for this company with an ID matching the prefix
+
         $latestRecord = EmployeeHealthRecord::where('company_id', $companyId)
             ->where('employee_id', 'like', $prefix . '%')
             ->orderByRaw('LENGTH(employee_id) DESC')
@@ -681,21 +723,16 @@ class EmployeeHealthRecordController extends Controller
             ->first();
 
         if (!$latestRecord) {
-            return response()->json(['next_id' => $prefix . '001']);
+            return $prefix . '001';
         }
 
-        // Extract the number from the latest ID (e.g., GIL-005 -> 5)
-        $currentId = $latestRecord->employee_id;
-        $numberPart = substr($currentId, strlen($prefix));
-        
+        $numberPart = substr($latestRecord->employee_id, strlen($prefix));
+
         if (is_numeric($numberPart)) {
-            $nextNumber = (int)$numberPart + 1;
-            $nextId = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-        } else {
-            // Fallback if the format is weird
-            $nextId = $prefix . '001';
+            return $prefix . str_pad((int) $numberPart + 1, 3, '0', STR_PAD_LEFT);
         }
 
-        return response()->json(['next_id' => $nextId]);
+        return $prefix . '001';
     }
 }
+
