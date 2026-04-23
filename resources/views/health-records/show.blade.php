@@ -19,7 +19,7 @@
                         <span class="ui-chip !bg-primary/5 !text-primary uppercase text-[10px] tracking-widest font-black italic">{{ $record->status }} Record</span>
                     </div>
                     <h1 class="hero-title">{{ $record->full_name }}</h1>
-                    <p class="hero-copy">ID: {{ $record->employee_id }} | Company: {{ $record->company_name }} | Exam Date: {{ $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A' }}</p>
+                    <p class="hero-copy">ID: {{ $record->employee->employee_id ?? 'N/A' }} | Company: {{ $record->company_name }} | Exam Date: {{ $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A' }}</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <x-ui.button variant="secondary" href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="gap-2">
@@ -326,6 +326,49 @@
                                 @endif
                             </div>
                         </div>
+                    </div>
+                </x-ui.card>
+
+                <!-- Medical History Tracking -->
+                <x-ui.card class="border-primary/20 bg-primary/[0.02]">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-kicker">Longitudinal Tracking</div>
+                            <h2 class="section-title text-base">Checkup History</h2>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <div class="shrink-0 mt-1">
+                                <div class="size-2.5 rounded-full bg-primary ring-4 ring-primary/10"></div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-black text-primary leading-tight">Current Examination</p>
+                                <p class="mt-0.5 text-[10px] text-muted-foreground font-bold italic">{{ $record->examination_date->format('d M, Y') }}</p>
+                            </div>
+                        </div>
+                        
+                        @forelse($history as $past)
+                            <div class="flex gap-3 relative group">
+                                <!-- Timeline line -->
+                                <div class="absolute left-[5px] top-4 bottom-[-16px] w-[1px] bg-border group-last:hidden"></div>
+                                
+                                <div class="shrink-0 mt-1 relative z-10">
+                                    <div class="size-2.5 rounded-full bg-border group-hover:bg-primary transition-colors"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <a href="{{ route('health-records.show', $past->uuid) }}" class="text-xs font-bold text-foreground hover:text-primary transition-colors block leading-tight">
+                                        Medical Checkup
+                                    </a>
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{{ $past->examination_date->format('d M, Y') }}</span>
+                                        <span class="text-[9px] font-black uppercase {{ strtolower($past->health_status) === 'fit' ? 'text-emerald-500' : 'text-danger' }}">{{ $past->health_status }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-xs text-muted-foreground italic pl-5">No previous records found.</p>
+                        @endforelse
                     </div>
                 </x-ui.card>
 

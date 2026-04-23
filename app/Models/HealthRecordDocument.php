@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class HealthRecordDocument extends Model
 {
     protected $fillable = [
-        'health_record_id',
+        'health_checkup_id',
         'original_name',
         'path',
         'mime_type',
@@ -15,9 +15,9 @@ class HealthRecordDocument extends Model
         'uploaded_by',
     ];
 
-    public function healthRecord()
+    public function checkup()
     {
-        return $this->belongsTo(EmployeeHealthRecord::class, 'health_record_id');
+        return $this->belongsTo(HealthCheckup::class, 'health_checkup_id');
     }
 
     public function uploader()

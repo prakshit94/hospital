@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Company;
 use App\Models\User;
-use App\Models\EmployeeHealthRecord;
 use Database\Seeders\AccessControlSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -89,9 +88,9 @@ class ApiEndpointsTest extends TestCase
     public function test_api_health_record_bulk_delete(): void
     {
         $company = Company::factory()->create();
-        $records = EmployeeHealthRecord::factory()->count(2)->create([
-            'company_id' => $company->id,
-            'company_name' => $company->name,
+        $employee = \App\Models\Employee::factory()->create(['company_id' => $company->id]);
+        $records = \App\Models\HealthCheckup::factory()->count(2)->create([
+            'employee_id' => $employee->id,
             'created_by' => $this->admin->id,
         ]);
         $ids = $records->pluck('id')->toArray();
@@ -104,7 +103,7 @@ class ApiEndpointsTest extends TestCase
 
         $response->assertOk();
         foreach ($ids as $id) {
-            $this->assertSoftDeleted('employee_health_records', ['id' => $id]);
+            $this->assertSoftDeleted('health_checkups', ['id' => $id]);
         }
     }
 

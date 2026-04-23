@@ -111,22 +111,22 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('permission:health_records.view')->group(function () {
-        Route::get('health-records/{health_record}/print', [EmployeeHealthRecordController::class, 'print'])->name('health-records.print');
-        Route::get('health-records/{health_record}/print-form32', [EmployeeHealthRecordController::class, 'printForm32'])->name('health-records.print-form32');
-        Route::get('health-records/{health_record}/print-form33', [EmployeeHealthRecordController::class, 'printForm33'])->name('health-records.print-form33');
-        Route::get('health-records/{health_record}/print-all', [EmployeeHealthRecordController::class, 'printAll'])->name('health-records.print-all');
+        Route::get('health-records/{record}/print', [EmployeeHealthRecordController::class, 'print'])->name('health-records.print');
+        Route::get('health-records/{record}/print-form32', [EmployeeHealthRecordController::class, 'printForm32'])->name('health-records.print-form32');
+        Route::get('health-records/{record}/print-form33', [EmployeeHealthRecordController::class, 'printForm33'])->name('health-records.print-form33');
+        Route::get('health-records/{record}/print-all', [EmployeeHealthRecordController::class, 'printAll'])->name('health-records.print-all');
         Route::get('health-records', [EmployeeHealthRecordController::class, 'index'])->name('health-records.index');
-        Route::get('health-records/{health_record}', [EmployeeHealthRecordController::class, 'show'])->name('health-records.show');
+        Route::get('health-records/{record}', [EmployeeHealthRecordController::class, 'show'])->name('health-records.show');
         Route::post('health-records/bulk-action', [EmployeeHealthRecordController::class, 'bulkAction'])->name('health-records.bulk-action');
     });
 
     Route::middleware('permission:health_records.update')->group(function () {
-        Route::get('health-records/{health_record}/edit', [EmployeeHealthRecordController::class, 'edit'])->name('health-records.edit');
-        Route::match(['put', 'patch'], 'health-records/{health_record}', [EmployeeHealthRecordController::class, 'update'])->name('health-records.update');
+        Route::get('health-records/{record}/edit', [EmployeeHealthRecordController::class, 'edit'])->name('health-records.edit');
+        Route::match(['put', 'patch'], 'health-records/{record}', [EmployeeHealthRecordController::class, 'update'])->name('health-records.update');
     });
 
     Route::middleware('permission:health_records.delete')->group(function () {
-        Route::delete('health-records/{health_record}', [EmployeeHealthRecordController::class, 'destroy'])->name('health-records.destroy');
+        Route::delete('health-records/{record}', [EmployeeHealthRecordController::class, 'destroy'])->name('health-records.destroy');
         Route::post('health-records/{uuid}/restore', [EmployeeHealthRecordController::class, 'restore'])->name('health-records.restore');
         Route::delete('health-records/{uuid}/force', [EmployeeHealthRecordController::class, 'forceDelete'])->name('health-records.force-delete');
     });

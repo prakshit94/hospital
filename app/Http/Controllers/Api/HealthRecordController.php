@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmployeeHealthRecord;
+use App\Models\Employee;
+use App\Models\HealthCheckup;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -17,27 +18,30 @@ class HealthRecordController extends Controller
         $this->authorizePermission('health_records.view');
 
         $perPage = $request->integer('per_page', 15);
-        $query = EmployeeHealthRecord::query()->with(['creator', 'company']);
+        $query = HealthCheckup::query()->with(['employee.company', 'creator']);
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->whereHas('employee', function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                   ->orWhere('employee_id', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
                   ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('company_id')) {
-            $query->where('company_id', $request->company_id);
+            $query->whereHas('employee', function ($q) use ($request) {
+                $q->where('company_id', $request->company_id);
+            });
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->whereHas('employee', function ($q) use ($request) {
+                $q->where('status', $request->status);
+            });
         }
 
-        $records = $query->latest()->paginate($perPage);
+        $records = $query->latest('examination_date')->paginate($perPage);
 
         return response()->json([
             'status' => 'success',
@@ -58,34 +62,51 @@ class HealthRecordController extends Controller
         $validated = $validator->validated();
 
         return DB::transaction(function () use ($validated) {
-            $validated['created_by'] = auth()->id();
+            // 1. Find or Create Employee
+            $employee = Employee::updateOrCreate(
+                [
+                    'company_id' => $validated['company_id'],
+                    'employee_id' => $validated['employee_id']
+                ],
+                [
+                    'full_name' => $validated['full_name'],
+                    'gender' => $validated['gender'],
+                    'dob' => $validated['dob'],
+                    'mobile' => $validated['mobile'],
+                    'email' => $validated['email'],
+                    'blood_group' => $validated['blood_group'],
+                    'status' => $validated['status'],
+                ]
+            );
+
+            // 2. Create Health Checkup
+            $checkupData = collect($validated)->except([
+                'company_id', 'employee_id', 'full_name', 'gender', 'dob', 'mobile', 'email', 
+                'blood_group', 'status'
+            ])->toArray();
+
+            $checkupData['employee_id'] = $employee->id;
+            $checkupData['created_by'] = auth()->id();
             
-            if (isset($validated['company_id'])) {
-                $company = \App\Models\Company::find($validated['company_id']);
-                if ($company) {
-                    $validated['company_name'] = $company->name;
-                }
-            }
-
             // Calculate BMI
-            if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
-                $heightInMeters = $validated['height'] / 100;
-                $validated['bmi'] = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            if (($checkupData['height'] ?? 0) > 0 && ($checkupData['weight'] ?? 0) > 0) {
+                $heightInMeters = $checkupData['height'] / 100;
+                $checkupData['bmi'] = round($checkupData['weight'] / ($heightInMeters * $heightInMeters), 2);
             }
 
-            $record = EmployeeHealthRecord::create($validated);
+            $checkup = HealthCheckup::create($checkupData);
 
             ActivityLogService::logWithChanges(
                 auth()->user(),
-                $record,
-                'health_record.created',
-                "API: Created health record for: {$record->full_name} ({$record->company_name})"
+                $checkup,
+                'health_checkup.created.api',
+                "API: Created health checkup for: {$employee->full_name}"
             );
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Health record created successfully.',
-                'data' => $record
+                'message' => 'Health checkup recorded successfully.',
+                'data' => $checkup->load('employee.company')
             ], 201);
         });
     }
@@ -94,9 +115,9 @@ class HealthRecordController extends Controller
     {
         $this->authorizePermission('health_records.view');
 
-        $record = EmployeeHealthRecord::where('id', $id)
+        $record = HealthCheckup::where('id', $id)
             ->orWhere('uuid', $id)
-            ->with(['creator', 'updater', 'company'])
+            ->with(['employee.company', 'creator', 'updater'])
             ->firstOrFail();
 
         return response()->json([
@@ -109,8 +130,9 @@ class HealthRecordController extends Controller
     {
         $this->authorizePermission('health_records.update');
 
-        $record = EmployeeHealthRecord::where('id', $id)
+        $record = HealthCheckup::where('id', $id)
             ->orWhere('uuid', $id)
+            ->with('employee')
             ->firstOrFail();
 
         $validator = Validator::make($request->all(), array_merge($this->getValidationRules(), [
@@ -124,36 +146,44 @@ class HealthRecordController extends Controller
         $validated = $validator->validated();
 
         return DB::transaction(function () use ($validated, $record) {
-            $validated['updated_by'] = auth()->id();
+            // Update Employee
+            $record->employee->update([
+                'full_name' => $validated['full_name'],
+                'gender' => $validated['gender'],
+                'dob' => $validated['dob'],
+                'mobile' => $validated['mobile'],
+                'email' => $validated['email'],
+                'blood_group' => $validated['blood_group'],
+                'status' => $validated['status'] ?? $record->employee->status,
+            ]);
 
-            if (isset($validated['company_id'])) {
-                $company = \App\Models\Company::find($validated['company_id']);
-                if ($company) {
-                    $validated['company_name'] = $company->name;
-                }
-            }
+            // Update Checkup
+            $checkupData = collect($validated)->except([
+                'company_id', 'employee_id', 'full_name', 'gender', 'dob', 'mobile', 'email', 
+                'blood_group', 'status'
+            ])->toArray();
+
+            $checkupData['updated_by'] = auth()->id();
 
             // Calculate BMI
-            if (($validated['height'] ?? 0) > 0 && ($validated['weight'] ?? 0) > 0) {
-                $heightInMeters = $validated['height'] / 100;
-                $validated['bmi'] = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            if (($checkupData['height'] ?? 0) > 0 && ($checkupData['weight'] ?? 0) > 0) {
+                $heightInMeters = $checkupData['height'] / 100;
+                $checkupData['bmi'] = round($checkupData['weight'] / ($heightInMeters * $heightInMeters), 2);
             }
 
-            $record->fill($validated);
+            $record->update($checkupData);
 
             ActivityLogService::logWithChanges(
                 auth()->user(),
                 $record,
-                'health_record.updated',
-                "API: Updated health record for: {$record->full_name} ({$record->company_name})"
+                'health_checkup.updated.api',
+                "API: Updated health checkup for: {$record->employee->full_name}"
             );
-
-            $record->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Health record updated successfully.',
-                'data' => $record
+                'message' => 'Health checkup updated successfully.',
+                'data' => $record->load('employee.company')
             ]);
         });
     }
@@ -162,22 +192,23 @@ class HealthRecordController extends Controller
     {
         $this->authorizePermission('health_records.delete');
 
-        $record = EmployeeHealthRecord::where('id', $id)
+        $record = HealthCheckup::where('id', $id)
             ->orWhere('uuid', $id)
+            ->with('employee')
             ->firstOrFail();
 
         ActivityLogService::log(
             auth()->user(),
-            'health_record.deleted.api',
+            'health_checkup.deleted.api',
             $record,
-            "API: Deleted health record for: {$record->full_name}"
+            "API: Deleted health checkup for: {$record->employee->full_name}"
         );
 
         $record->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Health record deleted successfully.',
+            'message' => 'Health checkup deleted successfully.',
         ]);
     }
 
@@ -186,7 +217,7 @@ class HealthRecordController extends Controller
         $request->validate([
             'action' => 'required|string|in:delete,restore,force-delete',
             'ids' => 'required|array',
-            'ids.*' => 'required', // Could be UUID or ID
+            'ids.*' => 'required',
         ]);
 
         $action = $request->input('action');
@@ -202,7 +233,7 @@ class HealthRecordController extends Controller
 
         try {
             DB::transaction(function () use ($action, $ids) {
-                $query = EmployeeHealthRecord::withTrashed()
+                $query = HealthCheckup::withTrashed()
                     ->where(function($q) use ($ids) {
                         $q->whereIn('id', $ids)->orWhereIn('uuid', $ids);
                     });
@@ -210,15 +241,15 @@ class HealthRecordController extends Controller
                 switch ($action) {
                     case 'delete':
                         $query->delete();
-                        ActivityLogService::log(auth()->user(), 'health_record.bulk_deleted.api', null, "API: Bulk deleted " . count($ids) . " health records.");
+                        ActivityLogService::log(auth()->user(), 'health_checkup.bulk_deleted.api', null, "API: Bulk deleted " . count($ids) . " health checkups.");
                         break;
                     case 'restore':
                         $query->restore();
-                        ActivityLogService::log(auth()->user(), 'health_record.bulk_restored.api', null, "API: Bulk restored " . count($ids) . " health records.");
+                        ActivityLogService::log(auth()->user(), 'health_checkup.bulk_restored.api', null, "API: Bulk restored " . count($ids) . " health checkups.");
                         break;
                     case 'force-delete':
                         $query->forceDelete();
-                        ActivityLogService::log(auth()->user(), 'health_record.bulk_permanently_deleted.api', null, "API: Bulk permanently deleted " . count($ids) . " health records.");
+                        ActivityLogService::log(auth()->user(), 'health_checkup.bulk_permanently_deleted.api', null, "API: Bulk permanently deleted " . count($ids) . " health checkups.");
                         break;
                 }
             });
@@ -239,24 +270,25 @@ class HealthRecordController extends Controller
     {
         $this->authorizePermission('health_records.update');
 
-        $record = EmployeeHealthRecord::withTrashed()
+        $record = HealthCheckup::withTrashed()
             ->where('id', $id)
             ->orWhere('uuid', $id)
+            ->with('employee')
             ->firstOrFail();
 
         $record->restore();
 
         ActivityLogService::log(
             auth()->user(),
-            'health_record.restored.api',
+            'health_checkup.restored.api',
             $record,
-            "API: Restored health record for: {$record->full_name}"
+            "API: Restored health checkup for: {$record->employee->full_name}"
         );
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Health record restored successfully.',
-            'data' => $record
+            'message' => 'Health checkup restored successfully.',
+            'data' => $record->load('employee.company')
         ]);
     }
 
@@ -264,23 +296,24 @@ class HealthRecordController extends Controller
     {
         $this->authorizePermission('health_records.delete');
 
-        $record = EmployeeHealthRecord::withTrashed()
+        $record = HealthCheckup::withTrashed()
             ->where('id', $id)
             ->orWhere('uuid', $id)
+            ->with('employee')
             ->firstOrFail();
 
         ActivityLogService::log(
             auth()->user(),
-            'health_record.permanently_deleted.api',
+            'health_checkup.permanently_deleted.api',
             $record,
-            "API: Permanently deleted health record for: {$record->full_name}"
+            "API: Permanently deleted health checkup for: {$record->employee->full_name}"
         );
 
         $record->forceDelete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Health record permanently deleted successfully.',
+            'message' => 'Health checkup permanently deleted successfully.',
         ]);
     }
 
@@ -302,6 +335,7 @@ class HealthRecordController extends Controller
             'mobile' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'blood_group' => 'nullable|string|max:10',
+            'examination_date' => 'required|date',
             'height' => 'nullable|numeric|between:0,300',
             'weight' => 'nullable|numeric|between:0,600',
             'bp_systolic' => 'nullable|integer|between:0,400',
@@ -309,12 +343,12 @@ class HealthRecordController extends Controller
             'heart_rate' => 'nullable|integer|between:0,300',
             'temperature' => 'nullable|numeric|between:0,120',
             'spo2' => 'nullable|integer|between:0,100',
-            'medical_history' => 'nullable|string|max:2000',
-            'current_medication' => 'nullable|string|max:2000',
-            'allergies' => 'nullable|string|max:1000',
-            'physical_exam' => 'nullable|string|max:2000',
-            'diagnosis' => 'nullable|string|max:2000',
-            'advice' => 'nullable|string|max:2000',
+            'medical_history' => 'nullable|string|max:5000',
+            'current_medication' => 'nullable|string|max:5000',
+            'allergies' => 'nullable|string|max:5000',
+            'physical_exam' => 'nullable|string|max:5000',
+            'diagnosis' => 'nullable|string|max:5000',
+            'advice' => 'nullable|string|max:5000',
             'status' => 'required|in:active,inactive',
         ];
     }

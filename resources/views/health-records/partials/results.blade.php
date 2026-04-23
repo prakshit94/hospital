@@ -175,7 +175,7 @@
                     </td>
                     <td data-label="Company & ID">
                         <div class="table-primary">{{ $record->company_name }}</div>
-                        <div class="mt-0.5 text-xs text-muted-foreground">ID: {{ $record->employee_id ?? 'N/A' }}</div>
+                        <div class="mt-0.5 text-xs text-muted-foreground">ID: {{ $record->employee->employee_id ?? 'N/A' }}</div>
                     </td>
                     <td data-label="Vitals">
                         <div class="space-y-1">

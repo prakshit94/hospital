@@ -93,8 +93,10 @@
                 <div class="metric-icon group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 {{ $index === 0 ? 'bg-emerald-500/10 text-emerald-600' : ($index === 1 ? 'bg-blue-500/10 text-blue-600' : 'bg-slate-500/10 text-slate-600') }}">
                     @if($stat['label'] === 'Companies')
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    @elseif($stat['label'] === 'Health Records')
+                    @elseif($stat['label'] === 'Total Checkups')
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    @elseif($stat['label'] === 'Employees')
+                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                     @elseif($stat['label'] === 'Users')
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     @else
@@ -178,7 +180,7 @@
                                 <div class="text-sm font-bold text-foreground truncate max-w-[120px]">{{ $company->name }}</div>
                             </div>
                             <div class="px-2 py-1 rounded-md bg-secondary text-[10px] font-black text-muted-foreground group-hover:bg-emerald-500/10 group-hover:text-emerald-600 transition-colors">
-                                {{ $company->health_records_count }} Records
+                                {{ $company->health_checkups_count }} Records
                             </div>
                         </div>
                     @endforeach
