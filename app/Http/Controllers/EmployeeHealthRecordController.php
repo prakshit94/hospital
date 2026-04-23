@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\EmployeeHealthRecord;
 use App\Models\ActivityLog;
 use App\Services\ActivityLogService;
+use App\Models\Company;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class EmployeeHealthRecordController extends Controller
 {
@@ -656,5 +657,45 @@ class EmployeeHealthRecordController extends Controller
         return redirect()
             ->route('health-records.index', ['status' => 'deleted'])
             ->with('status', 'Health record permanently deleted successfully.');
+    }
+
+    public function getNextEmployeeId(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $companyId = $request->get('company_id');
+        if (!$companyId) {
+            return response()->json(['error' => 'Company ID is required'], 400);
+        }
+
+        $company = Company::find($companyId);
+        if (!$company || !$company->code) {
+            return response()->json(['next_id' => '']);
+        }
+
+        $prefix = strtoupper($company->code) . '-';
+        
+        // Find the latest record for this company with an ID matching the prefix
+        $latestRecord = EmployeeHealthRecord::where('company_id', $companyId)
+            ->where('employee_id', 'like', $prefix . '%')
+            ->orderByRaw('LENGTH(employee_id) DESC')
+            ->orderBy('employee_id', 'desc')
+            ->first();
+
+        if (!$latestRecord) {
+            return response()->json(['next_id' => $prefix . '001']);
+        }
+
+        // Extract the number from the latest ID (e.g., GIL-005 -> 5)
+        $currentId = $latestRecord->employee_id;
+        $numberPart = substr($currentId, strlen($prefix));
+        
+        if (is_numeric($numberPart)) {
+            $nextNumber = (int)$numberPart + 1;
+            $nextId = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        } else {
+            // Fallback if the format is weird
+            $nextId = $prefix . '001';
+        }
+
+        return response()->json(['next_id' => $nextId]);
     }
 }

@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
 
     // Health Records Module
     Route::middleware('permission:health_records.create')->group(function () {
+        Route::get('health-records/next-employee-id', [EmployeeHealthRecordController::class, 'getNextEmployeeId'])->name('health-records.next-id');
         Route::get('health-records/create', [EmployeeHealthRecordController::class, 'create'])->name('health-records.create');
         Route::post('health-records', [EmployeeHealthRecordController::class, 'store'])->name('health-records.store');
     });
