@@ -181,4 +181,9 @@ class EmployeeHealthRecord extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(HealthRecordDocument::class, 'health_record_id');
+    }
 }

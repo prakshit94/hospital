@@ -14,7 +14,7 @@
         </div>
 
         <!-- Form -->
-        <form action="{{ route('health-records.update', $record->uuid) }}" method="POST" class="rounded-[2.5rem] border border-border bg-card p-10 shadow-sm">
+        <form action="{{ route('health-records.update', $record->uuid) }}" method="POST" enctype="multipart/form-data" class="rounded-[2.5rem] border border-border bg-card p-10 shadow-sm">
             @csrf
             @method('PUT')
 

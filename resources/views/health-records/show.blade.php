@@ -220,6 +220,69 @@
                         </div>
                     </div>
                 </x-ui.card>
+
+                <!-- 17. Documents -->
+                <x-ui.card>
+                    <div class="section-header">
+                        <div>
+                            <div class="section-kicker">Section 17</div>
+                            <h2 class="section-title text-base">Documents</h2>
+                        </div>
+                        <a href="{{ route('health-records.edit', $record->uuid) }}#document_upload"
+                           class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4-5 4 5"/></svg>
+                            Upload More
+                        </a>
+                    </div>
+
+                    @if($record->documents->isEmpty())
+                        <div class="flex flex-col items-center justify-center py-10 text-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-10 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <p class="text-sm text-muted-foreground font-medium">No documents uploaded yet.</p>
+                            <a href="{{ route('health-records.edit', $record->uuid) }}#document_upload"
+                               class="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline">
+                                Upload first document →
+                            </a>
+                        </div>
+                    @else
+                        <ul class="divide-y divide-border">
+                            @foreach($record->documents as $doc)
+                                @php
+                                    $ext   = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
+                                    $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                                    $isPdf = $ext === 'pdf';
+                                    $iconColor = $isPdf ? 'text-red-400' : ($isImg ? 'text-blue-400' : 'text-teal-400');
+                                @endphp
+                                <li class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary/40 {{ $iconColor }}">
+                                            @if($isPdf)
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                            @elseif($isImg)
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                            @else
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                            @endif
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-sm font-semibold text-foreground truncate">{{ $doc->original_name }}</p>
+                                            <p class="text-[10px] text-muted-foreground font-medium mt-0.5">
+                                                {{ strtoupper($ext) }} &bull; {{ $doc->formatted_size }} &bull; {{ $doc->created_at->format('d/m/Y') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ Storage::url($doc->path) }}" target="_blank"
+                                       class="shrink-0 inline-flex items-center gap-1 rounded-lg border border-border bg-secondary/30 px-3 py-1.5 text-xs font-bold text-foreground transition hover:bg-primary hover:text-white hover:border-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        View
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </x-ui.card>
             </div>
 
             <!-- Side Cards -->
@@ -248,6 +311,19 @@
                             <div class="detail-value">
                                 <div class="font-black text-sm">Dr. {{ $record->doctor_name }}</div>
                                 <div class="text-[10px] text-muted-foreground font-bold mt-0.5">{{ $record->doctor_qualification }}</div>
+                            </div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Documents</div>
+                            <div class="detail-value">
+                                @if($record->documents->isEmpty())
+                                    <span class="text-xs text-muted-foreground">None uploaded</span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-600 text-xs font-bold">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        {{ $record->documents->count() }} {{ Str::plural('file', $record->documents->count()) }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>

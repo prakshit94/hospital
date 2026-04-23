@@ -632,40 +632,156 @@
             </div>
         </div>
     </div>
+
+    <!-- 17. Documents -->
+    <div class="rounded-[2.5rem] border border-border bg-card p-8 shadow-sm space-y-6">
+        <div class="flex items-center gap-3 border-b border-border/50 pb-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/10 text-teal-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-foreground">17. Documents</h3>
+                <p class="text-xs text-muted-foreground mt-0.5">Upload reports, lab results, X-rays or any relevant files (PDF, DOC, JPG, PNG — max 10 MB each)</p>
+            </div>
+        </div>
+
+        {{-- Existing documents (edit mode) --}}
+        @if(isset($record) && $record->exists && $record->relationLoaded('documents') && $record->documents->count())
+            <div class="space-y-2">
+                <p class="text-sm font-bold text-foreground/70">Uploaded Documents</p>
+                <ul class="divide-y divide-border rounded-2xl border border-border overflow-hidden">
+                    @foreach($record->documents as $doc)
+                        <li class="flex items-center justify-between gap-4 px-4 py-3 bg-secondary/10 hover:bg-secondary/20 transition">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="text-sm font-medium text-foreground truncate">{{ $doc->original_name }}</span>
+                                <span class="text-xs text-muted-foreground shrink-0">{{ $doc->formatted_size }}</span>
+                            </div>
+                            <a href="{{ Storage::url($doc->path) }}" target="_blank"
+                               class="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                View
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- Upload input --}}
+        <div class="space-y-3">
+            <label for="document_upload" class="text-sm font-bold text-foreground/80">
+                {{ isset($record) && $record->exists ? 'Add More Documents' : 'Select Documents' }}
+            </label>
+
+            <div id="doc-drop-zone"
+                 class="relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/10 px-6 py-10 text-center transition hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                 onclick="document.getElementById('document_upload').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-10 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4-5 4 5"/>
+                </svg>
+                <div>
+                    <p class="text-sm font-semibold text-foreground">Click to browse or drag &amp; drop files here</p>
+                    <p class="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX, JPG, JPEG, PNG — max 10 MB per file</p>
+                </div>
+                <input type="file" id="document_upload" name="documents[]" multiple
+                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                       class="sr-only"
+                       onchange="handleDocumentFiles(this.files)">
+            </div>
+
+            {{-- Preview list of selected files --}}
+            <ul id="doc-preview-list" class="space-y-2 hidden"></ul>
+
+            @error('documents')   <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+            @error('documents.*') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+        </div>
+    </div>
 </div>
 
 <script>
   (function() {
+    /* ── BMI calculator ── */
     const heightInput = document.getElementById('Height');
     const weightInput = document.getElementById('Weight');
     const bmiInput = document.getElementById('BMI');
 
     window.calculateBMI = function() {
       if (!heightInput || !weightInput || !bmiInput) return;
-      
       const height = parseFloat(heightInput.value);
       const weight = parseFloat(weightInput.value);
-
       if (height > 0 && weight > 0) {
         const heightInMeters = height / 100;
-        const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
-        bmiInput.value = bmi;
+        bmiInput.value = (weight / (heightInMeters * heightInMeters)).toFixed(2);
       } else {
         bmiInput.value = '';
       }
     };
 
-    if(heightInput && weightInput) {
+    if (heightInput && weightInput) {
         heightInput.addEventListener('input', window.calculateBMI);
         weightInput.addEventListener('input', window.calculateBMI);
     }
 
+    /* ── Company name sync ── */
     const companySelect = document.getElementById('company_id');
     const companyNameInput = document.getElementById('company_name');
-    if(companySelect && companyNameInput) {
+    if (companySelect && companyNameInput) {
         companySelect.addEventListener('change', function() {
             companyNameInput.value = this.options[this.selectedIndex].text;
         });
     }
+
+    /* ── Document drop zone ── */
+    const zone = document.getElementById('doc-drop-zone');
+    if (zone) {
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            zone.classList.add('border-primary', 'bg-primary/10');
+        });
+        zone.addEventListener('dragleave', function() {
+            zone.classList.remove('border-primary', 'bg-primary/10');
+        });
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            zone.classList.remove('border-primary', 'bg-primary/10');
+            const input = document.getElementById('document_upload');
+            const dt = new DataTransfer();
+            if (input.files) Array.from(input.files).forEach(f => dt.items.add(f));
+            Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            handleDocumentFiles(input.files);
+        });
+    }
+
+    /* ── File preview list ── */
+    window.handleDocumentFiles = function(files) {
+        const list = document.getElementById('doc-preview-list');
+        if (!list) return;
+        list.innerHTML = '';
+        if (!files || files.length === 0) { list.classList.add('hidden'); return; }
+        list.classList.remove('hidden');
+        const maxBytes = 10 * 1024 * 1024;
+        Array.from(files).forEach(function(file) {
+            const size = file.size >= 1048576
+                ? (file.size / 1048576).toFixed(1) + ' MB'
+                : (file.size / 1024).toFixed(1) + ' KB';
+            const tooLarge = file.size > maxBytes;
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-sm ' +
+                (tooLarge ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-secondary/20 border border-border text-foreground');
+            li.innerHTML =
+                '<div class="flex items-center gap-2 min-w-0">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+                '<span class="truncate font-medium">' + file.name + '</span>' +
+                '</div>' +
+                '<span class="shrink-0 text-xs font-semibold">' + size + (tooLarge ? ' — too large' : '') + '</span>';
+            list.appendChild(li);
+        });
+    };
   })();
 </script>

@@ -17,7 +17,7 @@ class EmployeeHealthRecordController extends Controller
     public function index(Request $request): View
     {
         $perPage = max(5, min(100, (int) $request->integer('per_page', 10)));
-        $query = EmployeeHealthRecord::query()->with('creator');
+        $query = EmployeeHealthRecord::query()->with('creator')->withCount('documents');
 
         if (session()->has('current_company_id')) {
             $query->where('company_id', session('current_company_id'));
@@ -245,6 +245,22 @@ class EmployeeHealthRecordController extends Controller
 
             $record = EmployeeHealthRecord::create($validated);
 
+            // Handle multiple document uploads
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $file) {
+                    if ($file->isValid()) {
+                        $path = $file->store("health-record-documents/{$record->uuid}", 'public');
+                        $record->documents()->create([
+                            'original_name' => $file->getClientOriginalName(),
+                            'path'          => $path,
+                            'mime_type'     => $file->getMimeType(),
+                            'size'          => $file->getSize(),
+                            'uploaded_by'   => auth()->id(),
+                        ]);
+                    }
+                }
+            }
+
             ActivityLogService::logWithChanges(
                 auth()->user(),
                 $record,
@@ -257,8 +273,8 @@ class EmployeeHealthRecordController extends Controller
             if ($request->ajax()) {
                 session()->flash('status', $msg);
                 return response()->json([
-                    'status' => 'success',
-                    'message' => $msg,
+                    'status'   => 'success',
+                    'message'  => $msg,
                     'redirect' => route('health-records.show', $record->uuid)
                 ]);
             }
@@ -269,6 +285,8 @@ class EmployeeHealthRecordController extends Controller
 
     public function show(EmployeeHealthRecord $healthRecord): View
     {
+        $healthRecord->loadMissing('documents');
+
         $activities = ActivityLog::query()
             ->with('causer')
             ->where('subject_type', $healthRecord->getMorphClass())
@@ -278,13 +296,14 @@ class EmployeeHealthRecordController extends Controller
             ->get();
 
         return view('health-records.show', [
-            'record' => $healthRecord,
+            'record'     => $healthRecord,
             'activities' => $activities
         ]);
     }
 
     public function edit(EmployeeHealthRecord $healthRecord): View
     {
+        $healthRecord->loadMissing('documents');
         return view('health-records.edit', ['record' => $healthRecord]);
     }
 
@@ -318,13 +337,29 @@ class EmployeeHealthRecordController extends Controller
 
             $healthRecord->save();
 
+            // Handle additional document uploads
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $file) {
+                    if ($file->isValid()) {
+                        $path = $file->store("health-record-documents/{$healthRecord->uuid}", 'public');
+                        $healthRecord->documents()->create([
+                            'original_name' => $file->getClientOriginalName(),
+                            'path'          => $path,
+                            'mime_type'     => $file->getMimeType(),
+                            'size'          => $file->getSize(),
+                            'uploaded_by'   => auth()->id(),
+                        ]);
+                    }
+                }
+            }
+
             $msg = "Health record for '{$healthRecord->full_name}' has been updated.";
             
             if ($request->ajax()) {
                 session()->flash('status', $msg);
                 return response()->json([
-                    'status' => 'success',
-                    'message' => $msg,
+                    'status'   => 'success',
+                    'message'  => $msg,
                     'redirect' => route('health-records.show', $healthRecord->uuid)
                 ]);
             }

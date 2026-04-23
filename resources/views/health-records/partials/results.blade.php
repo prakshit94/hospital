@@ -150,6 +150,7 @@
                 <th>Company & ID</th>
                 <th>Vitals</th>
                 <th>BMI</th>
+                <th>Docs</th>
                 <th>Status</th>
                 <th class="text-right">Actions</th>
             </tr>
@@ -195,6 +196,17 @@
                             </span>
                         @else
                             <span class="ui-chip-muted">N/A</span>
+                        @endif
+                    </td>
+                    <td data-label="Docs">
+                        @if(($record->documents_count ?? 0) > 0)
+                            <a href="{{ route('health-records.show', $record->uuid) }}#documents"
+                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-500/10 text-teal-600 text-xs font-bold transition hover:bg-teal-500/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                {{ $record->documents_count }}
+                            </a>
+                        @else
+                            <span class="text-xs text-muted-foreground/50">—</span>
                         @endif
                     </td>
                     <td data-label="Status">
@@ -291,7 +303,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8">
+                    <td colspan="9">
                         <div class="empty-state">No health records matched the current filters.</div>
                     </td>
                 </tr>
