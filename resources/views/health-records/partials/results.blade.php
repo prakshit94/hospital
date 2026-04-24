@@ -157,6 +157,12 @@
         </thead>
         <tbody>
             @forelse($records as $record)
+                @php
+                    $previousRecord = \App\Models\HealthCheckup::where('employee_id', $record->employee_id)
+                        ->where('examination_date', '<', $record->examination_date)
+                        ->orderBy('examination_date', 'desc')
+                        ->first();
+                @endphp
                 <tr class="group transition hover:bg-secondary/20 {{ $record->trashed() ? 'opacity-70 grayscale-[0.3]' : '' }}">
                     <td>
                         <input type="checkbox" class="ui-checkbox row-checkbox" value="{{ $record->id }}" x-model="selected" @change="selectAll = selected.length === allIds().length">
@@ -168,7 +174,9 @@
                                 {{ strtoupper(substr($record->full_name, 0, 1)) }}
                             </div>
                             <div>
-                                <div class="table-primary">{{ $record->full_name }}</div>
+                                <a href="{{ route('health-records.show', $record->uuid) }}" class="table-primary hover:text-primary transition-colors cursor-pointer block">
+                                    {{ $record->full_name }}
+                                </a>
                                 <div class="mt-0.5 text-xs text-muted-foreground">{{ ucfirst($record->gender) }}, {{ $record->blood_group ?? 'N/A' }}</div>
                             </div>
                         </div>
@@ -178,25 +186,74 @@
                         <div class="mt-0.5 text-xs text-muted-foreground">ID: {{ $record->employee->employee_id ?? 'N/A' }}</div>
                     </td>
                     <td data-label="Vitals">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold uppercase text-muted-foreground/60 w-8">BP:</span>
-                                <span class="font-medium text-xs">{{ $record->bp_systolic ?? '--' }}/{{ $record->bp_diastolic ?? '--' }}</span>
+                        <div class="flex flex-col gap-2 py-1">
+                            {{-- BP Comparison --}}
+                            <div class="flex flex-col">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">BP (Sys/Dia)</span>
+                                    @if($previousRecord && $record->bp_systolic && $previousRecord->bp_systolic)
+                                        @php $bpDiff = $record->bp_systolic - $previousRecord->bp_systolic; @endphp
+                                        @if($bpDiff > 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
+                                        @elseif($bpDiff < 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
+                                        @endif
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->bp_systolic ?? '--').'/'.($previousRecord->bp_diastolic ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ ($record->bp_systolic ?? '--').'/'.($record->bp_diastolic ?? '--') }}</span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold uppercase text-muted-foreground/60 w-8">HR:</span>
-                                <span class="font-medium text-xs">{{ $record->heart_rate ?? '--' }} bpm</span>
+                            {{-- HR Comparison --}}
+                            <div class="flex flex-col">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Heart Rate</span>
+                                    @if($previousRecord && $record->heart_rate && $previousRecord->heart_rate)
+                                        @php $hrDiff = $record->heart_rate - $previousRecord->heart_rate; @endphp
+                                        @if($hrDiff > 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
+                                        @elseif($hrDiff < 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
+                                        @endif
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->heart_rate ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ $record->heart_rate ?? '--' }} <span class="text-[9px] font-medium text-muted-foreground/40 uppercase">bpm</span></span>
+                                </div>
                             </div>
                         </div>
                     </td>
                     <td data-label="BMI">
-                        @if($record->bmi)
-                            <span class="ui-chip {{ $record->bmi >= 18.5 && $record->bmi <= 24.9 ? '!bg-emerald-500/10 !text-emerald-600' : '!bg-amber-500/10 !text-amber-600' }}">
-                                {{ $record->bmi }}
-                            </span>
-                        @else
-                            <span class="ui-chip-muted">N/A</span>
-                        @endif
+                        <div class="flex flex-col gap-2 py-1">
+                            {{-- Weight Comparison --}}
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">Weight</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->weight ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ $record->weight ?? '--' }} <span class="text-[9px] font-medium text-muted-foreground/40 uppercase">kg</span></span>
+                                </div>
+                            </div>
+                            {{-- BMI Comparison --}}
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">BMI</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->bmi ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    @if($record->bmi)
+                                        <span class="ui-chip !text-[10px] !px-1.5 !py-0.5 {{ $record->bmi >= 18.5 && $record->bmi <= 24.9 ? '!bg-emerald-500/10 !text-emerald-600' : '!bg-amber-500/10 !text-amber-600' }}">
+                                            {{ $record->bmi }}
+                                        </span>
+                                    @else
+                                        <span class="ui-chip-muted !text-[10px]">N/A</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </td>
                     <td data-label="Docs">
                         @if(($record->documents_count ?? 0) > 0)
@@ -232,6 +289,13 @@
                                         <circle cx="12" cy="12" r="3"/>
                                     </svg>
                                     View Details
+                                </a>
+
+                                <a href="{{ route('health-records.create', ['prefill' => $record->employee->uuid]) }}" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M12 5v14m-7-7h14"/>
+                                    </svg>
+                                    New Examination
                                 </a>
 
                                 @if(!$record->trashed())
