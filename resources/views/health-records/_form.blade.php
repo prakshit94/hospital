@@ -1,4 +1,4 @@
-@php $labelCounter = 1; @endphp
+@php $labelCounter = 1; $prefillEmployee = $prefillEmployee ?? null; @endphp
 <div class="space-y-10">
     <!-- 2. Employee Information -->
     <div class="rounded-[2.5rem] border border-border bg-card p-8 shadow-sm space-y-6">
@@ -15,7 +15,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Employee No</label>
                 <div class="relative">
-                    <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $record->employee->employee_id ?? $record->employee_id) }}"
+                    <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $prefillEmployee?->employee_id ?? $record->employee?->employee_id ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('employee_id') border-red-500 @enderror">
                     <div id="employee_id_loading" class="absolute right-3 top-1/2 -translate-y-1/2 hidden text-primary">
                         <svg class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -32,27 +32,27 @@
 
             <div class="space-y-2 lg:col-span-1">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Employee Name <span class="text-red-500">*</span></label>
-                <input type="text" name="full_name" value="{{ old('full_name', $record->full_name) }}" required
+                <input type="text" name="full_name" value="{{ old('full_name', $prefillEmployee?->full_name ?? $record->full_name ?? '') }}" required
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('full_name') border-red-500 @enderror">
                 @error('full_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Father's Name</label>
-                <input type="text" name="father_name" value="{{ old('father_name', $record->father_name) }}"
+                <input type="text" name="father_name" value="{{ old('father_name', $prefillEmployee?->father_name ?? $record->father_name ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Date of Birth <span class="text-red-500">*</span></label>
-                <input type="date" name="dob" value="{{ old('dob', $record->dob ? $record->dob->format('Y-m-d') : '') }}" required
+                <input type="date" name="dob" value="{{ old('dob', $prefillEmployee?->dob?->format('Y-m-d') ?? ($record->dob ? $record->dob->format('Y-m-d') : '')) }}" required
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('dob') border-red-500 @enderror">
                 @error('dob') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Department</label>
-                <input type="text" name="department" value="{{ old('department', $record->department) }}"
+                <input type="text" name="department" value="{{ old('department', $prefillEmployee?->department ?? $record->department ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
@@ -60,50 +60,54 @@
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Sex <span class="text-red-500">*</span></label>
                 <select name="gender" required
                         class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('gender') border-red-500 @enderror">
-                    <option value="male" {{ old('gender', $record->gender) == 'male' ? 'selected' : '' }}>Male</option>
-                    <option value="female" {{ old('gender', $record->gender) == 'female' ? 'selected' : '' }}>Female</option>
-                    <option value="other" {{ old('gender', $record->gender) == 'other' ? 'selected' : '' }}>Other</option>
+                    <option value="">Select Sex</option>
+                    @php $currentGender = old('gender', $prefillEmployee?->gender ?? $record->gender); @endphp
+                    <option value="male" {{ $currentGender == 'male' ? 'selected' : '' }}>Male</option>
+                    <option value="female" {{ $currentGender == 'female' ? 'selected' : '' }}>Female</option>
+                    <option value="other" {{ $currentGender == 'other' ? 'selected' : '' }}>Other</option>
                 </select>
                 @error('gender') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Joining Date</label>
-                <input type="date" name="joining_date" value="{{ old('joining_date', $record->joining_date ? $record->joining_date->format('Y-m-d') : '') }}"
+                <input type="date" name="joining_date" value="{{ old('joining_date', $prefillEmployee?->joining_date?->format('Y-m-d') ?? ($record->joining_date ? $record->joining_date->format('Y-m-d') : '')) }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Identification Mark</label>
-                <input type="text" name="identification_mark" value="{{ old('identification_mark', $record->identification_mark) }}"
+                <input type="text" name="identification_mark" value="{{ old('identification_mark', $prefillEmployee?->identification_mark ?? $record->identification_mark ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Habit (H/O Habit)</label>
-                <input type="text" name="habits" value="{{ old('habits', $record->habits) }}"
+                <input type="text" name="habits" value="{{ old('habits', $prefillEmployee?->habits ?? $record->habits ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Marital Status</label>
                 <select name="marital_status" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
-                    <option value="Single" {{ old('marital_status', $record->marital_status) == 'Single' ? 'selected' : '' }}>Single</option>
-                    <option value="Married" {{ old('marital_status', $record->marital_status) == 'Married' ? 'selected' : '' }}>Married</option>
-                    <option value="Unmarried" {{ old('marital_status', $record->marital_status) == 'Unmarried' ? 'selected' : '' }}>Unmarried</option>
-                    <option value="NA" {{ old('marital_status', $record->marital_status) == 'NA' ? 'selected' : '' }}>NA</option>
+                    <option value="">Select Marital Status</option>
+                    @php $currentMarital = old('marital_status', $prefillEmployee?->marital_status ?? $record->marital_status); @endphp
+                    <option value="Single" {{ $currentMarital == 'Single' ? 'selected' : '' }}>Single</option>
+                    <option value="Married" {{ $currentMarital == 'Married' ? 'selected' : '' }}>Married</option>
+                    <option value="Unmarried" {{ $currentMarital == 'Unmarried' ? 'selected' : '' }}>Unmarried</option>
+                    <option value="NA" {{ $currentMarital == 'NA' ? 'selected' : '' }}>NA</option>
                 </select>
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Designation</label>
-                <input type="text" name="designation" value="{{ old('designation', $record->designation) }}"
+                <input type="text" name="designation" value="{{ old('designation', $prefillEmployee?->designation ?? $record->designation ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Husband's Name</label>
-                <input type="text" name="husband_name" value="{{ old('husband_name', $record->husband_name) }}"
+                <input type="text" name="husband_name" value="{{ old('husband_name', $prefillEmployee?->husband_name ?? $record->husband_name ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
@@ -114,7 +118,7 @@
                     <option value="">Select Company</option>
                     @foreach($globalCompanies as $company)
                         <option value="{{ $company->id }}" 
-                                {{ old('company_id', $record->company_id ?? session('current_company_id')) == $company->id ? 'selected' : '' }}>
+                                {{ old('company_id', $prefillEmployee?->company_id ?? $record->company_id ?? session('current_company_id')) == $company->id ? 'selected' : '' }}>
                             {{ $company->name }}
                         </option>
                     @endforeach
@@ -125,25 +129,25 @@
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Dependents</label>
-                <input type="text" name="dependent" value="{{ old('dependent', $record->dependent) }}"
+                <input type="text" name="dependent" value="{{ old('dependent', $prefillEmployee?->dependent ?? $record->dependent ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2 lg:col-span-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Previous Occupational History</label>
-                <input type="text" name="prev_occ_history" value="{{ old('prev_occ_history', $record->prev_occ_history) }}"
+                <input type="text" name="prev_occ_history" value="{{ old('prev_occ_history', $prefillEmployee?->prev_occ_history ?? $record->prev_occ_history ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Mobile Number</label>
-                <input type="text" name="mobile" value="{{ old('mobile', $record->mobile) }}"
+                <input type="text" name="mobile" value="{{ old('mobile', $prefillEmployee?->mobile ?? $record->mobile ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Email</label>
-                <input type="email" name="email" value="{{ old('email', $record->email) }}"
+                <input type="email" name="email" value="{{ old('email', $prefillEmployee?->email ?? $record->email ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
@@ -152,14 +156,14 @@
                 <select name="blood_group" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                     <option value="">Select Blood Group</option>
                     @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bg)
-                        <option value="{{ $bg }}" {{ old('blood_group', $record->blood_group) == $bg ? 'selected' : '' }}>{{ $bg }}</option>
+                        <option value="{{ $bg }}" {{ old('blood_group', $prefillEmployee?->blood_group ?? $record->blood_group) == $bg ? 'selected' : '' }}>{{ $bg }}</option>
                     @endforeach
                 </select>
             </div>
 
             <div class="space-y-2 lg:col-span-3">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Address</label>
-                <input type="text" name="address" value="{{ old('address', $record->address) }}"
+                <input type="text" name="address" value="{{ old('address', $prefillEmployee?->address ?? $record->address ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>
@@ -179,47 +183,47 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Temperature (F)</label>
-                <input type="number" step="0.1" name="temperature" value="{{ old('temperature', $record->temperature) }}"
+                <input type="number" step="0.1" name="temperature" value="{{ old('temperature', $record->temperature ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Height (cm)</label>
-                <input type="number" step="0.1" name="height" id="Height" value="{{ old('height', $record->height) }}"
+                <input type="number" step="0.1" name="height" id="Height" value="{{ old('height', $record->height ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Chest Before Breathing (cm)</label>
-                <input type="text" name="chest_before" value="{{ old('chest_before', $record->chest_before) }}"
+                <input type="text" name="chest_before" value="{{ old('chest_before', $record->chest_before ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Pulse Rate (bpm)</label>
-                <input type="number" name="heart_rate" value="{{ old('heart_rate', $record->heart_rate) }}"
+                <input type="number" name="heart_rate" value="{{ old('heart_rate', $record->heart_rate ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Weight (kg)</label>
-                <input type="number" step="0.1" name="weight" id="Weight" value="{{ old('weight', $record->weight) }}"
+                <input type="number" step="0.1" name="weight" id="Weight" value="{{ old('weight', $record->weight ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Chest After Breathing (cm)</label>
-                <input type="text" name="chest_after" value="{{ old('chest_after', $record->chest_after) }}"
+                <input type="text" name="chest_after" value="{{ old('chest_after', $record->chest_after ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Blood Pressure (BP)</label>
                 <div class="flex items-center gap-2">
-                    <input type="number" name="bp_systolic" value="{{ old('bp_systolic', $record->bp_systolic) }}" placeholder="Sys"
+                    <input type="number" name="bp_systolic" value="{{ old('bp_systolic', $record->bp_systolic ?? '') }}" placeholder="Sys"
                            class="w-1/2 rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                     <span class="text-muted-foreground">/</span>
-                    <input type="number" name="bp_diastolic" value="{{ old('bp_diastolic', $record->bp_diastolic) }}" placeholder="Dia"
+                    <input type="number" name="bp_diastolic" value="{{ old('bp_diastolic', $record->bp_diastolic ?? '') }}" placeholder="Dia"
                            class="w-1/2 rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             </div>
@@ -232,13 +236,13 @@
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. SpO₂ (%)</label>
-                <input type="number" name="spo2" value="{{ old('spo2', $record->spo2) }}"
+                <input type="number" name="spo2" value="{{ old('spo2', $record->spo2 ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Respiration Rate</label>
-                <input type="text" name="respiration_rate" value="{{ old('respiration_rate', $record->respiration_rate) }}"
+                <input type="text" name="respiration_rate" value="{{ old('respiration_rate', $record->respiration_rate ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>
@@ -262,17 +266,17 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Specs</label>
-                        <input type="text" name="right_eye_specs" value="{{ old('right_eye_specs', $record->right_eye_specs ?? 'Normal') }}"
+                        <input type="text" name="right_eye_specs" value="{{ old('right_eye_specs', $record->right_eye_specs ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Near Vision</label>
-                        <input type="text" name="near_vision_right" value="{{ old('near_vision_right', $record->near_vision_right ?? 'N/6') }}"
+                        <input type="text" name="near_vision_right" value="{{ old('near_vision_right', $record->near_vision_right ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Distant Vision</label>
-                        <input type="text" name="distant_vision_right" value="{{ old('distant_vision_right', $record->distant_vision_right ?? '6/6') }}"
+                        <input type="text" name="distant_vision_right" value="{{ old('distant_vision_right', $record->distant_vision_right ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                 </div>
@@ -283,24 +287,24 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Specs</label>
-                        <input type="text" name="left_eye_specs" value="{{ old('left_eye_specs', $record->left_eye_specs ?? 'Normal') }}"
+                        <input type="text" name="left_eye_specs" value="{{ old('left_eye_specs', $record->left_eye_specs ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Near Vision</label>
-                        <input type="text" name="near_vision_left" value="{{ old('near_vision_left', $record->near_vision_left ?? 'N/6') }}"
+                        <input type="text" name="near_vision_left" value="{{ old('near_vision_left', $record->near_vision_left ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-muted-foreground uppercase">Distant Vision</label>
-                        <input type="text" name="distant_vision_left" value="{{ old('distant_vision_left', $record->distant_vision_left ?? '6/6') }}"
+                        <input type="text" name="distant_vision_left" value="{{ old('distant_vision_left', $record->distant_vision_left ?? '') }}"
                                class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                     </div>
                 </div>
             </div>
             <div class="space-y-2 md:col-span-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Colour Vision</label>
-                <input type="text" name="colour_vision" value="{{ old('colour_vision', $record->colour_vision ?? 'Normal') }}"
+                <input type="text" name="colour_vision" value="{{ old('colour_vision', $record->colour_vision ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>
@@ -321,7 +325,7 @@
             @foreach(['eye' => 'Eye', 'nose' => 'Nose', 'ear' => 'Ear', 'conjunctiva' => 'Conjunctiva', 'tongue' => 'Tongue', 'nails' => 'Nails', 'throat' => 'Throat', 'skin' => 'Skin', 'teeth' => 'Teeth', 'pefr' => 'PEFR', 'eczema' => 'Eczema', 'cyanosis' => 'Cyanosis', 'jaundice' => 'Jaundice', 'anaemia' => 'Anaemia', 'oedema' => 'Oedema', 'clubbing' => 'Clubbing', 'allergy_status' => 'Allergy'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'Normal') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -343,7 +347,7 @@
             @foreach(['hypertension' => 'Hypertension', 'diabetes' => 'Diabetes', 'dyslipidemia' => 'Dyslipidemia', 'radiation_effect' => 'Radiation Effect', 'vertigo' => 'Vertigo', 'tuberculosis' => 'Tuberculosis', 'thyroid_disorder' => 'Thyroid Disorder', 'epilepsy' => 'Epilepsy', 'asthma' => 'Bronchial Asthma (Br_Asthma)', 'heart_disease' => 'Heart Disease'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'No') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -364,11 +368,11 @@
         <div class="grid grid-cols-1 gap-6">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Past History</label>
-                <textarea name="past_history" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('past_history', $record->past_history) }}</textarea>
+                <textarea name="past_history" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('past_history', $record->past_history ?? '') }}</textarea>
             </div>
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Present Complaint</label>
-                <textarea name="present_complain" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('present_complain', $record->present_complain) }}</textarea>
+                <textarea name="present_complain" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('present_complain', $record->present_complain ?? '') }}</textarea>
             </div>
         </div>
     </div>
@@ -388,7 +392,7 @@
             @foreach(['family_father' => 'Father', 'family_mother' => 'Mother', 'family_brother' => 'Brother', 'family_sister' => 'Sister'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'NAD') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -410,7 +414,7 @@
             @foreach(['resp_system' => 'Respiratory System', 'genito_urinary' => 'Genito Urinary System', 'cvs' => 'CVS (Cardiovascular System)', 'cns' => 'CNS (Central Nervous System)', 'per_abdomen' => 'Per Abdomen', 'ent' => 'ENT'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'Normal') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -432,7 +436,7 @@
             @foreach(['pft' => 'PFT (Pulmonary Function Test)', 'xray_chest' => 'X-Ray Chest', 'vertigo_test' => 'Vertigo Test', 'audiometry' => 'Audiometry', 'ecg' => 'ECG'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key) }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -471,7 +475,7 @@
             ] as $key => $label)
                 <div class="space-y-1">
                     <label class="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key) }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2 px-4 text-xs transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -502,7 +506,7 @@
             ] as $key => $label)
                 <div class="space-y-1">
                     <label class="text-[10px] font-black text-muted-foreground uppercase tracking-wider">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key) }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2 px-4 text-xs transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -524,6 +528,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Health Status</label>
                 <select name="health_status" class="w-full rounded-xl border-border bg-background py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary/20">
+                    <option value="">Select Health Status</option>
                     <option value="Fit" {{ old('health_status', $record->health_status) == 'Fit' ? 'selected' : '' }}>Fit</option>
                     <option value="Unfit" {{ old('health_status', $record->health_status) == 'Unfit' ? 'selected' : '' }}>Unfit</option>
                     <option value="Fit with Restrictions" {{ old('health_status', $record->health_status) == 'Fit with Restrictions' ? 'selected' : '' }}>Fit with Restrictions</option>
@@ -546,22 +551,22 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Doctor Name</label>
-                <input type="text" name="doctor_name" value="{{ old('doctor_name', $record->doctor_name) }}"
+                <input type="text" name="doctor_name" value="{{ old('doctor_name', $record->doctor_name ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Qualification</label>
-                <input type="text" name="doctor_qualification" value="{{ old('doctor_qualification', $record->doctor_qualification) }}"
+                <input type="text" name="doctor_qualification" value="{{ old('doctor_qualification', $record->doctor_qualification ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Doctor Signature</label>
-                <input type="text" name="doctor_signature" value="{{ old('doctor_signature', $record->doctor_signature) }}" placeholder="e.g. Digitally Signed"
+                <input type="text" name="doctor_signature" value="{{ old('doctor_signature', $record->doctor_signature ?? '') }}" placeholder="e.g. Digitally Signed"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Seal of Doctor</label>
-                <input type="text" name="doctor_seal" value="{{ old('doctor_seal', $record->doctor_seal) }}"
+                <input type="text" name="doctor_seal" value="{{ old('doctor_seal', $record->doctor_seal ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>
@@ -581,12 +586,12 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Job Restriction</label>
-                <input type="text" name="job_restriction" value="{{ old('job_restriction', $record->job_restriction) }}"
+                <input type="text" name="job_restriction" value="{{ old('job_restriction', $record->job_restriction ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Doctor Remarks</label>
-                <textarea name="doctor_remarks" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('doctor_remarks', $record->doctor_remarks) }}</textarea>
+                <textarea name="doctor_remarks" rows="2" class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">{{ old('doctor_remarks', $record->doctor_remarks ?? '') }}</textarea>
             </div>
         </div>
     </div>
@@ -605,7 +610,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Reviewed By</label>
-                <input type="text" name="reviewed_by" value="{{ old('reviewed_by', $record->reviewed_by) }}"
+                <input type="text" name="reviewed_by" value="{{ old('reviewed_by', $record->reviewed_by ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             
@@ -620,19 +625,19 @@
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Hazardous Process</label>
-                <input type="text" name="hazardous_process" value="{{ old('hazardous_process', $record->hazardous_process) }}"
+                <input type="text" name="hazardous_process" value="{{ old('hazardous_process', $record->hazardous_process ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Dangerous Operation</label>
-                <input type="text" name="dangerous_operation" value="{{ old('dangerous_operation', $record->dangerous_operation) }}"
+                <input type="text" name="dangerous_operation" value="{{ old('dangerous_operation', $record->dangerous_operation ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Materials Exposed</label>
-                <input type="text" name="materials_exposed" value="{{ old('materials_exposed', $record->materials_exposed) }}"
+                <input type="text" name="materials_exposed" value="{{ old('materials_exposed', $record->materials_exposed ?? '') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>

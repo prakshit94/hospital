@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('health_record_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('health_record_id')->constrained('employee_health_records')->onDelete('cascade');
-            $table->string('original_name');       // Original filename shown to user
-            $table->string('path');                // Storage path (relative to storage/app/public)
+            $table->foreignId('health_checkup_id')->constrained('health_checkups')->onDelete('cascade');
+            $table->string('original_name');
+            $table->string('path');
             $table->string('mime_type')->nullable();
-            $table->unsignedBigInteger('size')->nullable(); // File size in bytes
+            $table->unsignedBigInteger('size')->nullable();
             $table->foreignId('uploaded_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

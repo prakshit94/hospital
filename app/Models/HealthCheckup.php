@@ -165,97 +165,97 @@ class HealthCheckup extends Model
     // Accessors for backward compatibility with views
     public function getFullNameAttribute()
     {
-        return $this->employee->full_name ?? 'N/A';
+        return $this->attributes['full_name'] ?? $this->employee?->full_name;
     }
 
     public function getCompanyIdAttribute()
     {
-        return $this->employee->company_id ?? null;
+        return $this->attributes['company_id'] ?? $this->employee?->company_id;
     }
 
     public function getCompanyNameAttribute()
     {
-        return $this->employee->company->name ?? 'N/A';
+        return $this->attributes['company_name'] ?? $this->employee?->company?->name;
     }
 
     public function getMobileAttribute()
     {
-        return $this->employee->mobile ?? 'N/A';
+        return $this->attributes['mobile'] ?? $this->employee?->mobile;
     }
 
     public function getGenderAttribute()
     {
-        return $this->employee->gender ?? 'N/A';
+        return $this->attributes['gender'] ?? $this->employee?->gender;
     }
 
     public function getDobAttribute()
     {
-        return $this->employee->dob ?? null;
+        return $this->attributes['dob'] ?? $this->employee?->dob;
     }
 
     public function getFatherNameAttribute()
     {
-        return $this->employee->father_name ?? 'N/A';
+        return $this->attributes['father_name'] ?? $this->employee?->father_name;
     }
 
     public function getJoiningDateAttribute()
     {
-        return $this->employee->joining_date ?? null;
+        return $this->attributes['joining_date'] ?? $this->employee?->joining_date;
     }
 
     public function getAddressAttribute()
     {
-        return $this->employee->address ?? 'N/A';
+        return $this->attributes['address'] ?? $this->employee?->address;
     }
 
     public function getEmailAttribute()
     {
-        return $this->employee->email ?? 'N/A';
+        return $this->attributes['email'] ?? $this->employee?->email;
     }
 
     public function getBloodGroupAttribute()
     {
-        return $this->employee->blood_group ?? 'N/A';
+        return $this->attributes['blood_group'] ?? $this->employee?->blood_group;
     }
 
     public function getDepartmentAttribute()
     {
-        return $this->employee->department ?? 'N/A';
+        return $this->attributes['department'] ?? $this->employee?->department;
     }
 
     public function getDesignationAttribute()
     {
-        return $this->employee->designation ?? 'N/A';
+        return $this->attributes['designation'] ?? $this->employee?->designation;
     }
 
     public function getIdentificationMarkAttribute()
     {
-        return $this->employee->identification_mark ?? 'N/A';
+        return $this->attributes['identification_mark'] ?? $this->employee?->identification_mark;
     }
 
     public function getHabitsAttribute()
     {
-        return $this->employee->habits ?? 'N/A';
+        return $this->attributes['habits'] ?? $this->employee?->habits;
     }
 
     public function getMaritalStatusAttribute()
     {
-        return $this->employee->marital_status ?? 'N/A';
+        return $this->attributes['marital_status'] ?? $this->employee?->marital_status;
     }
 
     public function getHusbandNameAttribute()
     {
-        return $this->employee->husband_name ?? 'N/A';
+        return $this->attributes['husband_name'] ?? $this->employee?->husband_name;
     }
 
     public function getDependentAttribute()
     {
-        return $this->employee->dependent ?? 'N/A';
+        return $this->attributes['dependent'] ?? $this->employee?->dependent;
     }
 
     public function getPrevOccHistoryAttribute()
     {
-        return $this->employee->prev_occ_history ?? 'N/A';
+        return $this->attributes['prev_occ_history'] ?? $this->employee?->prev_occ_history;
     }
 
     public function getStatusAttribute()

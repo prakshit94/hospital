@@ -127,6 +127,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('permission:health_records.delete')->group(function () {
         Route::delete('health-records/{record}', [EmployeeHealthRecordController::class, 'destroy'])->name('health-records.destroy');
+        Route::delete('health-records/documents/{document}', [EmployeeHealthRecordController::class, 'deleteDocument'])->name('health-records.documents.destroy');
         Route::post('health-records/{uuid}/restore', [EmployeeHealthRecordController::class, 'restore'])->name('health-records.restore');
         Route::delete('health-records/{uuid}/force', [EmployeeHealthRecordController::class, 'forceDelete'])->name('health-records.force-delete');
     });

@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use App\Models\HealthRecordDocument;
 use Illuminate\View\View;
 
 class EmployeeHealthRecordController extends Controller
@@ -79,20 +81,24 @@ class EmployeeHealthRecordController extends Controller
         return view('health-records.index', compact('records', 'companies'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $record = new HealthCheckup();
-        $employee = new Employee();
+        $prefillEmployee = null;
 
-        // Pre-fill next Employee No from the active session company if creating new
-        $companyId = session('current_company_id');
-        if ($companyId) {
-            $employee->employee_id = $this->generateNextEmployeeId((int) $companyId);
+        // Support pre-filling for existing employees (Quick Action from show page)
+        // Uses ?prefill=<employee_uuid> — single param avoids HTML &amp; encoding bugs
+        if ($request->filled('prefill')) {
+            $prefillEmployee = Employee::where('uuid', $request->prefill)->first();
+
+            if ($prefillEmployee) {
+                $record->setRelation('employee', $prefillEmployee);
+            }
         }
 
         return view('health-records.create', [
-            'record' => $record,
-            'employee' => $employee
+            'record'          => $record,
+            'prefillEmployee' => $prefillEmployee,
         ]);
     }
 
@@ -116,6 +122,9 @@ class EmployeeHealthRecordController extends Controller
             'joining_date' => 'nullable|date',
             'department' => 'nullable|string|max:255',
             'designation' => 'nullable|string|max:255',
+            'habits' => 'nullable|string|max:1000',
+            'dependent' => 'nullable|string|max:255',
+            'prev_occ_history' => 'nullable|string|max:2000',
             'status' => 'required|in:active,inactive',
 
             // Checkup Vitals
@@ -249,7 +258,18 @@ class EmployeeHealthRecordController extends Controller
         $validated = $request->validate($this->getValidationRules());
 
         return DB::transaction(function () use ($validated, $request) {
-            // 1. Find or Create Employee
+            // 1. Check for potential duplicate ID with a different name
+            $existingEmployee = Employee::where('company_id', $validated['company_id'])
+                ->where('employee_id', $validated['employee_id'])
+                ->first();
+
+            if ($existingEmployee && strtolower(trim($existingEmployee->full_name)) !== strtolower(trim($validated['full_name']))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'employee_id' => ["The Employee ID '{$validated['employee_id']}' is already assigned to '{$existingEmployee->full_name}'. Please use a different ID or ensure the name matches."]
+                ]);
+            }
+
+            // 2. Find or Create Employee
             $employee = Employee::updateOrCreate(
                 [
                     'company_id' => $validated['company_id'],
@@ -270,6 +290,9 @@ class EmployeeHealthRecordController extends Controller
                     'joining_date' => $validated['joining_date'],
                     'department' => $validated['department'],
                     'designation' => $validated['designation'],
+                    'habits' => $validated['habits'] ?? null,
+                    'dependent' => $validated['dependent'] ?? null,
+                    'prev_occ_history' => $validated['prev_occ_history'] ?? null,
                     'status' => $validated['status'],
                 ]
             );
@@ -278,7 +301,8 @@ class EmployeeHealthRecordController extends Controller
             $checkupData = collect($validated)->except([
                 'company_id', 'employee_id', 'full_name', 'gender', 'dob', 'mobile', 'email', 
                 'blood_group', 'father_name', 'marital_status', 'husband_name', 'address', 
-                'identification_mark', 'joining_date', 'department', 'designation', 'status'
+                'identification_mark', 'joining_date', 'department', 'designation', 
+                'habits', 'dependent', 'prev_occ_history', 'status'
             ])->toArray();
 
             $checkupData['employee_id'] = $employee->id;
@@ -347,11 +371,14 @@ class EmployeeHealthRecordController extends Controller
             ->take(10)
             ->get();
 
+        $previousRecord = $history->first();
+
         return view('health-records.show', [
-            'record'     => $record,
-            'employee'   => $record->employee,
-            'history'    => $history,
-            'activities' => $activities
+            'record'         => $record,
+            'employee'       => $record->employee,
+            'history'        => $history,
+            'previousRecord' => $previousRecord,
+            'activities'     => $activities
         ]);
     }
 
@@ -369,32 +396,54 @@ class EmployeeHealthRecordController extends Controller
         $validated = $request->validate($this->getValidationRules());
 
         return DB::transaction(function () use ($validated, $request, $record) {
-            // 1. Update Employee Info
-            $record->employee->update([
-                'full_name' => $validated['full_name'],
-                'gender' => $validated['gender'],
-                'dob' => $validated['dob'],
-                'mobile' => $validated['mobile'],
-                'email' => $validated['email'],
-                'blood_group' => $validated['blood_group'],
-                'father_name' => $validated['father_name'],
-                'marital_status' => $validated['marital_status'],
-                'husband_name' => $validated['husband_name'],
-                'address' => $validated['address'],
-                'identification_mark' => $validated['identification_mark'],
-                'joining_date' => $validated['joining_date'],
-                'department' => $validated['department'],
-                'designation' => $validated['designation'],
-                'status' => $validated['status'],
-            ]);
+            // 1. Check for potential duplicate ID with a different name (if ID/Company changed)
+            $existingEmployee = Employee::where('company_id', $validated['company_id'])
+                ->where('employee_id', $validated['employee_id'])
+                ->first();
+
+            if ($existingEmployee && $existingEmployee->id !== $record->employee_id && strtolower(trim($existingEmployee->full_name)) !== strtolower(trim($validated['full_name']))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'employee_id' => ["The Employee ID '{$validated['employee_id']}' is already assigned to '{$existingEmployee->full_name}'."]
+                ]);
+            }
+
+            // 2. Find or Create Employee (handles cases where ID or Company might have changed)
+            $employee = Employee::updateOrCreate(
+                [
+                    'company_id' => $validated['company_id'],
+                    'employee_id' => $validated['employee_id']
+                ],
+                [
+                    'full_name' => $validated['full_name'],
+                    'gender' => $validated['gender'],
+                    'dob' => $validated['dob'],
+                    'mobile' => $validated['mobile'],
+                    'email' => $validated['email'],
+                    'blood_group' => $validated['blood_group'],
+                    'father_name' => $validated['father_name'],
+                    'marital_status' => $validated['marital_status'],
+                    'husband_name' => $validated['husband_name'],
+                    'address' => $validated['address'],
+                    'identification_mark' => $validated['identification_mark'],
+                    'joining_date' => $validated['joining_date'],
+                    'department' => $validated['department'],
+                    'designation' => $validated['designation'],
+                    'habits' => $validated['habits'] ?? null,
+                    'dependent' => $validated['dependent'] ?? null,
+                    'prev_occ_history' => $validated['prev_occ_history'] ?? null,
+                    'status' => $validated['status'],
+                ]
+            );
 
             // 2. Update Checkup Details
             $checkupData = collect($validated)->except([
                 'company_id', 'employee_id', 'full_name', 'gender', 'dob', 'mobile', 'email', 
                 'blood_group', 'father_name', 'marital_status', 'husband_name', 'address', 
-                'identification_mark', 'joining_date', 'department', 'designation', 'status'
+                'identification_mark', 'joining_date', 'department', 'designation', 
+                'habits', 'dependent', 'prev_occ_history', 'status'
             ])->toArray();
 
+            $checkupData['employee_id'] = $employee->id; // Link to the resolved employee
             $checkupData['updated_by'] = auth()->id();
 
             // Calculate BMI
@@ -629,20 +678,39 @@ class EmployeeHealthRecordController extends Controller
     /**
      * Get the next available employee ID for a company.
      */
-    public function getNextEmployeeId(Request $request)
+    public function getNextEmployeeId(Request $request): JsonResponse
     {
         $companyId = $request->query('company_id');
+        
         if (!$companyId) {
             return response()->json(['next_id' => '']);
         }
 
-        $lastEmployee = \App\Models\Employee::where('company_id', $companyId)
-            ->where('employee_id', 'REGEXP', '^[0-9]+$')
-            ->orderByRaw('CAST(employee_id AS UNSIGNED) DESC')
-            ->first();
+        return response()->json([
+            'next_id' => $this->generateNextEmployeeId((int) $companyId)
+        ]);
+    }
+    /**
+     * Delete a specific document.
+     */
+    public function deleteDocument(HealthRecordDocument $document): RedirectResponse
+    {
+        try {
+            $recordUuid = $document->checkup->uuid;
 
-        $nextId = $lastEmployee ? (int) $lastEmployee->employee_id + 1 : 1;
+            // Delete the file from storage
+            if ($document->path && Storage::exists($document->path)) {
+                Storage::delete($document->path);
+            }
 
-        return response()->json(['next_id' => (string) $nextId]);
+            // Delete from database
+            $document->delete();
+
+            return redirect()->route('health-records.show', $recordUuid)
+                ->with('status', 'Document deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error deleting document: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete document.');
+        }
     }
 }
