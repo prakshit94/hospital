@@ -200,40 +200,49 @@
     .hr-comp-curr { font-size: 16px; font-weight: 700; color: #4F46E5; }
 
     /* ── Timeline ────────────────────────────────────────────── */
-    .hr-tl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .hr-tl-current {
-        background: #4F46E5;
-        border-radius: 14px;
-        padding: 14px;
-        color: white;
+    .hr-arrow-timeline {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-top: 10px;
     }
-    .hr-tl-micro  { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; opacity: .6; margin-bottom: 4px; }
-    .hr-tl-date   { font-size: 13px; font-weight: 700; }
-    .hr-tl-badge  {
-        font-size: 10px;
-        background: rgba(255,255,255,.15);
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 7px;
-        margin-top: 8px;
-    }
-    .hr-tl-past {
-        background: #FAFAFA;
-        border: 1px solid #F0F0F0;
-        border-radius: 14px;
-        padding: 14px;
+    .hr-arrow-item {
+        position: relative;
+        padding: 10px 24px 10px 32px;
+        background: #F1F5F9;
+        color: #64748B;
+        font-size: 11.5px;
+        font-weight: 700;
         text-decoration: none;
-        display: block;
+        white-space: nowrap;
+        clip-path: polygon(calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%, 0% 0%);
         transition: all .15s;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    .hr-tl-past:hover { background: white; border-color: #C7D2FE; box-shadow: 0 2px 12px rgba(79,70,229,.08); }
-    .hr-tl-date-past { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #94A3B8; margin-bottom: 4px; }
-    .hr-tl-label { font-size: 13px; font-weight: 600; color: #0F172A; }
-    .hr-tl-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-    .hr-tl-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .hr-tl-dot-fit { background: #10B981; }
-    .hr-tl-dot-unfit { background: #EF4444; }
-    .hr-tl-status-txt { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #94A3B8; }
+    .hr-arrow-item:first-child {
+        padding-left: 20px;
+        clip-path: polygon(calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 0% 50%, 0% 0%);
+        border-radius: 12px 0 0 12px;
+    }
+    .hr-arrow-item:last-child {
+        clip-path: polygon(100% 0%, 100% 50%, 100% 100%, 0% 100%, 12px 50%, 0% 0%);
+        border-radius: 0 12px 12px 0;
+    }
+    .hr-arrow-item.active {
+        background: #4F46E5;
+        color: white;
+        z-index: 10;
+    }
+    .hr-arrow-item:hover:not(.active) {
+        background: #E2E8F0;
+        color: #1E293B;
+    }
+    .hr-arrow-dot { width: 6px; height: 6px; border-radius: 50%; }
 
     /* ── Detail Grid ─────────────────────────────────────────── */
     .hr-detail-grid {
@@ -553,8 +562,30 @@
         {{-- Left Column --}}
         <div class="hr-left">
 
-            {{-- 1. Longitudinal Comparison --}}
-            @if($previousRecord)
+            {{-- 1. Checkup History (Arrow Timeline) --}}
+            <div class="hr-card">
+                <div class="hr-sec-header" style="margin-bottom:10px">
+                    <div>
+                        <div class="hr-sec-kicker">Chronological Journey</div>
+                        <div class="hr-sec-title">Checkup History</div>
+                    </div>
+                </div>
+                <div class="hr-arrow-timeline">
+                    @php
+                        // Merge current and past checkups, sort by date desc
+                        $allExams = $history->push($record)->sortBy('examination_date');
+                    @endphp
+                    @foreach($allExams as $exam)
+                        <a href="{{ route('health-records.show', $exam->uuid) }}" 
+                           class="hr-arrow-item {{ $exam->uuid === $record->uuid ? 'active' : '' }}">
+                            <span class="hr-arrow-dot {{ strtolower($exam->health_status) === 'fit' ? 'hr-tl-dot-fit' : 'hr-tl-dot-unfit' }}" style="{{ $exam->uuid === $record->uuid ? 'background:white' : '' }}"></span>
+                            {{ $exam->examination_date->format('d M, Y') }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- 2. Longitudinal Comparison --}}
             <div class="hr-card hr-card-indigo">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap">
                     <div style="display:flex;align-items:center;gap:12px">
@@ -565,18 +596,20 @@
                         </div>
                         <div>
                             <div class="hr-sec-title">Longitudinal Health Comparison</div>
-                            <div class="hr-sec-kicker" style="margin-bottom:0">Current vs. previous — {{ $previousRecord->examination_date->format('d/m/Y') }}</div>
+                            <div class="hr-sec-kicker" style="margin-bottom:0">
+                                Current vs. previous — {{ $previousRecord ? $previousRecord->examination_date->format('d/m/Y') : 'NA' }}
+                            </div>
                         </div>
                     </div>
-                    <a href="#full-history" class="hr-sec-link">View all {{ $history->count() + 1 }} records</a>
                 </div>
+
                 <div class="hr-comp-grid">
                     @php
                         $comparisonVitals = [
-                            ['label' => 'Weight',      'current' => $record->weight,      'prev' => $previousRecord->weight,      'unit' => 'kg'],
-                            ['label' => 'BMI',         'current' => $record->bmi,         'prev' => $previousRecord->bmi,         'unit' => ''],
-                            ['label' => 'BP (Sys/Dia)','current' => ($record->bp_systolic ?? '--') . '/' . ($record->bp_diastolic ?? '--'), 'prev' => ($previousRecord->bp_systolic ?? '--') . '/' . ($previousRecord->bp_diastolic ?? '--'), 'unit' => ''],
-                            ['label' => 'Heart Rate',  'current' => $record->heart_rate,  'prev' => $previousRecord->heart_rate,  'unit' => 'bpm'],
+                            ['label' => 'Weight',      'current' => $record->weight,      'prev' => $previousRecord?->weight ?? 'NA',      'unit' => 'kg'],
+                            ['label' => 'BMI',         'current' => $record->bmi,         'prev' => $previousRecord?->bmi ?? 'NA',         'unit' => ''],
+                            ['label' => 'BP (Sys/Dia)','current' => ($record->bp_systolic ?? '--') . '/' . ($record->bp_diastolic ?? '--'), 'prev' => $previousRecord ? ($previousRecord->bp_systolic ?? '--') . '/' . ($previousRecord->bp_diastolic ?? '--') : 'NA', 'unit' => ''],
+                            ['label' => 'Heart Rate',  'current' => $record->heart_rate,  'prev' => $previousRecord?->heart_rate ?? 'NA',  'unit' => 'bpm'],
                         ];
                     @endphp
                     @foreach($comparisonVitals as $vital)
@@ -585,7 +618,7 @@
                         <div class="hr-comp-row">
                             <div class="hr-comp-side">
                                 <p class="hr-comp-micro">Prev</p>
-                                <p class="hr-comp-prev">{{ $vital['prev'] ?? '--' }}</p>
+                                <p class="hr-comp-prev">{{ $vital['prev'] ?? 'NA' }}</p>
                             </div>
                             <div style="width:22px;display:flex;align-items:center;justify-content:center">
                                 @php
@@ -609,39 +642,6 @@
                         </div>
                     </div>
                     @endforeach
-                </div>
-            </div>
-            @endif
-
-            {{-- 2. Checkup History Timeline --}}
-            <div class="hr-card" id="full-history">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Longitudinal Timeline</div>
-                        <div class="hr-sec-title">Checkup History</div>
-                    </div>
-                </div>
-                <div class="hr-tl-grid">
-                    <div class="hr-tl-current">
-                        <p class="hr-tl-micro">Current Exam</p>
-                        <p class="hr-tl-date">{{ $record->examination_date->format('d M, Y') }}</p>
-                        <span class="hr-tl-badge">ID: {{ $record->id }}</span>
-                    </div>
-                    @foreach($history->take(3) as $past)
-                    <a href="{{ route('health-records.show', $past->uuid) }}" class="hr-tl-past">
-                        <p class="hr-tl-date-past">{{ $past->examination_date->format('d M, Y') }}</p>
-                        <p class="hr-tl-label">Medical Checkup</p>
-                        <div class="hr-tl-status">
-                            <span class="hr-tl-dot {{ strtolower($past->health_status) === 'fit' ? 'hr-tl-dot-fit' : 'hr-tl-dot-unfit' }}"></span>
-                            <span class="hr-tl-status-txt">{{ $past->health_status }}</span>
-                        </div>
-                    </a>
-                    @endforeach
-                    @if($history->count() > 3)
-                    <div style="border:1px dashed #E2E8F0;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:14px">
-                        <p style="font-size:11px;font-weight:700;color:#94A3B8;text-align:center">+{{ $history->count() - 3 }} more records</p>
-                    </div>
-                    @endif
                 </div>
             </div>
 

@@ -371,7 +371,10 @@ class EmployeeHealthRecordController extends Controller
             ->take(10)
             ->get();
 
-        $previousRecord = $history->first();
+        $previousRecord = HealthCheckup::where('employee_id', $record->employee_id)
+            ->where('examination_date', '<', $record->examination_date)
+            ->orderBy('examination_date', 'desc')
+            ->first();
 
         return view('health-records.show', [
             'record'         => $record,
