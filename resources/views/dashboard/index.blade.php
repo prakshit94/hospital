@@ -179,8 +179,19 @@
                                 </div>
                                 <div class="text-sm font-bold text-foreground truncate max-w-[120px]">{{ $company->name }}</div>
                             </div>
-                            <div class="px-2 py-1 rounded-md bg-secondary text-[10px] font-black text-muted-foreground group-hover:bg-emerald-500/10 group-hover:text-emerald-600 transition-colors">
-                                {{ $company->health_checkups_count }} Records
+                            <div class="flex items-center gap-2">
+                                <!-- Export Actions (Visible on Hover) -->
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('companies.export', [$company->id, 'format' => 'excel']) }}" title="Export Excel" class="p-1 rounded-md hover:bg-emerald-500/10 text-emerald-600 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                                    </a>
+                                    <a href="{{ route('companies.export', [$company->id, 'format' => 'pdf']) }}" title="Export PDF" class="p-1 rounded-md hover:bg-rose-500/10 text-rose-600 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h1a2 2 0 0 1 0 4h-1v-4Z"/><path d="M17 15h-3v4"/><path d="M14 17h2"/><circle cx="12" cy="17" r="2"/></svg>
+                                    </a>
+                                </div>
+                                <div class="px-2 py-1 rounded-md bg-secondary text-[10px] font-black text-muted-foreground group-hover:bg-emerald-500/10 group-hover:text-emerald-600 transition-colors">
+                                    {{ $company->health_checkups_count }} Records
+                                </div>
                             </div>
                         </div>
                     @endforeach

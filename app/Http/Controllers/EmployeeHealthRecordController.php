@@ -19,6 +19,21 @@ use Illuminate\View\View;
 class EmployeeHealthRecordController extends Controller
 {
     /**
+     * Toggle employee active status.
+     */
+    public function toggleStatus(Employee $employee)
+    {
+        $employee->status = $employee->status === 'active' ? 'inactive' : 'active';
+        $employee->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Employee status updated to {$employee->status}.",
+            'new_status' => $employee->status
+        ]);
+    }
+
+    /**
      * Display a listing of health checkups.
      */
     public function index(Request $request): View
@@ -652,6 +667,182 @@ class EmployeeHealthRecordController extends Controller
         }
 
         return back()->withErrors(['error' => 'Failed to generate combined PDF report.']);
+    }
+
+    /**
+     * Handle bulk actions for health records.
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|string|in:delete,restore,force-delete,print,export',
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+        ]);
+
+        $action = $request->input('action');
+        $ids = $request->input('ids');
+
+        if ($action === 'print') {
+            return $this->handleBulkPrint($request);
+        }
+
+        if ($action === 'export') {
+            return $this->handleBulkExport($request);
+        }
+
+        return DB::transaction(function () use ($action, $ids) {
+            $query = HealthCheckup::withTrashed()->whereIn('id', $ids);
+            
+            switch ($action) {
+                case 'delete':
+                    $query->delete();
+                    $message = count($ids) . ' records moved to trash.';
+                    break;
+                case 'restore':
+                    $query->restore();
+                    $message = count($ids) . ' records restored.';
+                    break;
+                case 'force-delete':
+                    $query->forceDelete();
+                    $message = count($ids) . ' records permanently deleted.';
+                    break;
+                default:
+                    return response()->json(['status' => 'error', 'message' => 'Invalid action.'], 400);
+            }
+            
+            return response()->json(['status' => 'success', 'message' => $message]);
+        });
+    }
+
+    /**
+     * Handle bulk printing of medical reports.
+     */
+    protected function handleBulkPrint(Request $request)
+    {
+        $ids = $request->input('ids');
+        $formType = $request->input('form_type', 'medical_report');
+        
+        $records = HealthCheckup::with(['employee.company'])->whereIn('id', $ids)->get();
+        
+        $view = match($formType) {
+            'form32' => 'health-records.bulk_print_form32',
+            'form33' => 'health-records.bulk_print_form33',
+            default => 'health-records.bulk_print',
+        };
+        
+        $paper = $formType === 'form32' ? 'landscape' : 'portrait';
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, compact('records'))
+            ->setPaper('a4', $paper)
+            ->setOption(['isRemoteEnabled' => true]);
+            
+        return $pdf->download("Bulk_{$formType}_" . date('Ymd_His') . ".pdf");
+    }
+
+    /**
+     * Handle bulk export of employee data grouped by company.
+     */
+    protected function handleBulkExport(Request $request)
+    {
+        $ids = $request->input('ids');
+        $format = $request->input('format', 'excel');
+
+        $records = HealthCheckup::with(['employee.company'])
+            ->whereIn('id', $ids)
+            ->whereHas('employee', function($q) {
+                $q->where('status', 'active');
+            })
+            ->get()
+            ->groupBy(function($r) {
+                return $r->employee->company->name ?? 'Unknown Company';
+            });
+
+        if ($records->isEmpty()) {
+            return back()->with('error', 'No active employee health records found in the selection.');
+        }
+
+        return $this->generateExportResponse($records, $format);
+    }
+
+    /**
+     * Export all employees for a specific company.
+     */
+    public function exportByCompany(Request $request, Company $company)
+    {
+        $format = $request->query('format', 'excel');
+
+        // Query Employees directly to ensure all active employees are included,
+        // even if they haven't had a health checkup yet.
+        $employees = Employee::with(['company'])
+            ->where('company_id', $company->id)
+            ->where('status', 'active')
+            ->get();
+
+        if ($employees->isEmpty()) {
+            return back()->with('error', 'No active employees found for this company.');
+        }
+
+        // Group by company name to match the expected structure of generateExportResponse
+        $records = $employees->groupBy(function($e) {
+            return $e->company->name ?? 'Unknown Company';
+        });
+
+        return $this->generateExportResponse($records, $format);
+    }
+
+    /**
+     * Generate the export response (PDF or CSV).
+     */
+    protected function generateExportResponse($records, $format)
+    {
+        if ($format === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.export_pdf', compact('records'))
+                ->setPaper('a4', 'landscape')
+                ->setOption(['isRemoteEnabled' => true]);
+            return $pdf->download('Employees_Export_' . date('Ymd_His') . '.pdf');
+        }
+
+        // Default to CSV for Excel
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="Employees_Export_' . date('Ymd_His') . '.csv"',
+        ];
+
+        return response()->streamDownload(function () use ($records) {
+            $handle = fopen('php://output', 'w');
+            
+            foreach ($records as $companyName => $companyRecords) {
+                // Top Row: Company Name
+                fputcsv($handle, [$companyName]);
+                // Header Row
+                fputcsv($handle, ['SR NO', 'EMP NO', 'NAME', 'AGE/SEX', 'DEPARTMENT']);
+                
+                $srNo = 1;
+                foreach ($companyRecords as $record) {
+                    // Handle both HealthCheckup and Employee models
+                    $employee = ($record instanceof \App\Models\Employee) ? $record : $record->employee;
+                    
+                    if (!$employee) continue;
+
+                    $age = $employee->dob ? \Carbon\Carbon::parse($employee->dob)->age : 'N/A';
+                    $sex = strtoupper(substr($employee->gender ?? '', 0, 1));
+                    
+                    fputcsv($handle, [
+                        $srNo++,
+                        $employee->employee_id,
+                        $employee->full_name,
+                        "$age/$sex",
+                        $employee->department
+                    ]);
+                }
+                // Spacing between companies
+                fputcsv($handle, []);
+                fputcsv($handle, []);
+            }
+
+            fclose($handle);
+        }, 'Employees_Export_' . date('Ymd_His') . '.csv', $headers);
     }
 
     /**

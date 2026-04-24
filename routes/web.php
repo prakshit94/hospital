@@ -139,6 +139,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('permission:companies.view')->group(function () {
+        Route::post('employees/{employee}/toggle-status', [EmployeeHealthRecordController::class, 'toggleStatus'])->name('employees.toggle-status');
+        Route::get('companies/{company}/export', [EmployeeHealthRecordController::class, 'exportByCompany'])->name('companies.export');
         Route::post('companies/switch', [CompanyController::class, 'switch'])->name('companies.switch');
         Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
         Route::get('companies/{company}', [CompanyController::class, 'show'])->name('companies.show');

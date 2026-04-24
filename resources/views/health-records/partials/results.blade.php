@@ -55,6 +55,44 @@
             return;
         }
 
+        if (action === 'export') {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route('health-records.bulk-action') }}';
+            form.target = '_blank';
+            
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'export';
+            form.appendChild(actionInput);
+
+            const formatInput = document.createElement('input');
+            formatInput.type = 'hidden';
+            formatInput.name = 'format';
+            formatInput.value = formType; // reusing formType as format
+            form.appendChild(formatInput);
+            
+            this.selected.forEach(id => {
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'ids[]';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            return;
+        }
+
         let confirmMsg = 'Are you sure?';
         if (action === 'delete') confirmMsg = 'Move selected records to trash?';
         if (action === 'force-delete') confirmMsg = 'CRITICAL: PERMANENTLY delete selected records?';
@@ -111,6 +149,28 @@
                     <button type="button" @click="bulkAction('print', 'medical_report'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Medical Report</button>
                     <button type="button" @click="bulkAction('print', 'form32'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 32 (Register)</button>
                     <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 33 (Fitness)</button>
+                </div>
+            </div>
+
+            <div class="h-6 w-px bg-primary/20"></div>
+
+            <div class="relative flex" x-data="{ openExport: false }">
+                <button type="button" @click="openExport = !openExport" @click.away="openExport = false" class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 shadow-sm border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
+                    </svg>
+                    Export
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </button>
+                <div x-show="openExport" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-2 min-w-[220px] overflow-hidden rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
+                    <button type="button" @click="bulkAction('export', 'excel'); openExport = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-emerald-600 transition hover:bg-emerald-500/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        Excel / CSV Format
+                    </button>
+                    <button type="button" @click="bulkAction('export', 'pdf'); openExport = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-rose-600 transition hover:bg-rose-500/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h1a2 2 0 0 1 0 4h-1v-4Z"/><path d="M17 15h-3v4"/><path d="M14 17h2"/><circle cx="12" cy="17" r="2"/></svg>
+                        PDF Format
+                    </button>
                 </div>
             </div>
             
@@ -270,9 +330,43 @@
                         @if($record->trashed())
                             <span class="ui-status-danger px-2 py-1 uppercase text-[10px] tracking-wide font-bold">Deleted</span>
                         @else
-                            <span class="ui-chip !bg-primary/5 !text-primary uppercase text-[10px] tracking-wider font-bold">
-                                {{ $record->status }}
-                            </span>
+                            <div x-data="{ 
+                                status: '{{ $record->employee->status ?? 'active' }}',
+                                loading: false,
+                                async toggle() {
+                                    if (this.loading) return;
+                                    this.loading = true;
+                                    try {
+                                        const response = await fetch('{{ route('employees.toggle-status', $record->employee->uuid) }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json'
+                                            }
+                                        });
+                                        const data = await response.json();
+                                        if (data.status === 'success') {
+                                            this.status = data.new_status;
+                                        }
+                                    } catch (e) {
+                                        console.error('Toggle failed', e);
+                                    } finally {
+                                        this.loading = false;
+                                    }
+                                }
+                            }" class="flex items-center">
+                                <button type="button" @click="toggle" 
+                                    :class="status === 'active' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-slate-500/10 border-slate-500/20'"
+                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border transition-colors duration-200 ease-in-out focus:outline-none"
+                                    :disabled="loading">
+                                    <span class="sr-only">Toggle Status</span>
+                                    <span aria-hidden="true" 
+                                        :class="status === 'active' ? 'translate-x-4 bg-emerald-500' : 'translate-x-0 bg-slate-400'"
+                                        class="pointer-events-none inline-block size-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                                <span class="ml-2 text-[9px] font-black uppercase tracking-widest min-w-[50px]" :class="status === 'active' ? 'text-emerald-600' : 'text-slate-500'" x-text="status"></span>
+                            </div>
                         @endif
                     </td>
                     <td data-label="Actions" class="actions-cell">
