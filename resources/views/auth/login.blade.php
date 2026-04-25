@@ -18,8 +18,8 @@
             <div class="relative z-10 p-16 flex flex-col justify-between w-full">
                 <div>
                     {{-- Logo Container --}}
-                    <div class="mb-12 inline-flex items-center gap-4">
-                        <div class="h-14 w-14 bg-white rounded-2xl p-2 shadow-2xl shadow-emerald-500/20 flex items-center justify-center">
+                    <div class="mb-12 inline-flex items-center gap-6">
+                        <div class="h-20 w-20 bg-white rounded-[24px] p-3 shadow-2xl shadow-emerald-500/30 flex items-center justify-center">
                             <img src="{{ asset('logo.png') }}" alt="Logo" class="h-full w-full object-contain">
                         </div>
                         <div class="flex flex-col">
@@ -83,7 +83,7 @@
                     
                     <div class="relative z-10">
                         <div class="text-center mb-10">
-                            <div class="lg:hidden mx-auto mb-6 h-16 w-16 bg-white rounded-2xl p-2 shadow-xl flex items-center justify-center">
+                            <div class="mx-auto mb-6 h-24 w-24 bg-white rounded-[28px] p-4 shadow-xl flex items-center justify-center border border-slate-100">
                                 <img src="{{ asset('logo.png') }}" alt="Logo" class="h-full w-full object-contain">
                             </div>
                             <h2 class="text-3xl font-extrabold text-slate-900 font-['Sora'] tracking-tight">Welcome Back</h2>
