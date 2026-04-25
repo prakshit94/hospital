@@ -37,16 +37,12 @@
 >
     <div class="relative z-10 flex h-24 items-center border-b border-sidebar-border/40 px-6">
         <a href="/dashboard" class="flex min-w-0 flex-1 items-center gap-4" :class="sidebarCollapsed ? 'justify-center' : ''" @click="closeMobileMenu()">
-            <div class="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-primary text-white shadow-[0_16px_32px_-20px_color-mix(in_oklab,var(--primary)_60%,transparent)]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
-                    <path d="M21 10h-1V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1Z"/>
-                    <path d="M12 6v4"/>
-                    <path d="M10 8h4"/>
-                    <path d="M10 22V15a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7"/>
-                </svg>
+            <div class="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white shadow-[0_16px_32px_-20px_rgba(0,0,0,0.1)] p-1.5 border border-slate-100 overflow-hidden">
+                <img src="{{ asset('logo.png') }}" alt="Logo" class="h-full w-full object-contain">
             </div>
             <div x-show="!sidebarCollapsed" class="overflow-hidden space-y-0.5">
-                <div class="font-heading text-xl font-black leading-none tracking-tight text-foreground">{{ config('enterprise-ui.workspace_name', 'Workspace') }}</div>
+                <div class="font-heading text-xl font-black leading-none tracking-tight text-foreground">{{ config('enterprise-ui.workspace_name', 'Divit Hospital') }}</div>
+                <div class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600">Enterprise Access</div>
             </div>
         </a>
         <button

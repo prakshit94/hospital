@@ -11,7 +11,7 @@
     <section class="hero-panel overflow-hidden relative">
         <!-- Abstract background decoration -->
         <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] xl:items-center relative z-10">
 
@@ -90,7 +90,7 @@
     <section class="metric-grid mt-6">
         @foreach($stats as $index => $stat)
             <div class="metric-card group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500">
-                <div class="metric-icon group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 {{ $index === 0 ? 'bg-emerald-500/10 text-emerald-600' : ($index === 1 ? 'bg-blue-500/10 text-blue-600' : 'bg-slate-500/10 text-slate-600') }}">
+                <div class="metric-icon group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 {{ $index === 0 ? 'bg-emerald-500/10 text-emerald-600' : ($index === 1 ? 'bg-teal-500/10 text-teal-600' : 'bg-slate-500/10 text-slate-600') }}">
                     @if($stat['label'] === 'Companies')
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                     @elseif($stat['label'] === 'Total Checkups')
@@ -212,7 +212,7 @@
                 <div class="space-y-4">
                     @foreach($activities->take(5) as $activity)
                         <div class="relative pl-6 pb-4 border-l border-border/50 last:border-0 last:pb-0">
-                            <div class="absolute left-[-5px] top-0 size-2.5 rounded-full bg-border border-2 border-card transition-colors {{ str_contains($activity->action, 'created') ? 'bg-emerald-500' : (str_contains($activity->action, 'deleted') ? 'bg-rose-500' : 'bg-blue-500') }}"></div>
+                            <div class="absolute left-[-5px] top-0 size-2.5 rounded-full bg-border border-2 border-card transition-colors {{ str_contains($activity->action, 'created') ? 'bg-emerald-500' : (str_contains($activity->action, 'deleted') ? 'bg-rose-500' : 'bg-teal-500') }}"></div>
                             <div class="text-xs font-bold text-foreground leading-tight">{{ $activity->description ?: $activity->getActionLabel() }}</div>
                             <div class="mt-1 text-[10px] text-muted-foreground">{{ $activity->created_at?->diffForHumans() }}</div>
                         </div>
