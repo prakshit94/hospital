@@ -111,7 +111,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" />
                                         </svg>
                                     </div>
-                                    <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
+                                    <input id="email" name="email" type="email" value="{{ old('email', request()->cookie('remembered_email')) }}" required autofocus
                                         class="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-slate-900 text-sm focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all duration-300 outline-none"
                                         placeholder="admin@divit.hospital">
                                 </div>
@@ -137,7 +137,7 @@
                             <div class="flex items-center justify-between">
                                 <label class="flex items-center gap-3 cursor-pointer group">
                                     <div class="relative flex items-center">
-                                        <input type="checkbox" name="remember" class="peer h-5 w-5 opacity-0 absolute cursor-pointer">
+                                        <input type="checkbox" name="remember" id="remember" value="1" @checked(old('remember')) class="peer h-5 w-5 opacity-0 absolute cursor-pointer">
                                         <div class="h-5 w-5 border-2 border-slate-200 rounded-lg peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all"></div>
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-white absolute left-0.5.5 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none ml-[3px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
