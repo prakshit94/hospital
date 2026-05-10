@@ -126,7 +126,7 @@
                     <th>{{ $num++ }}. Weight</th><td>{{ $record->weight }} kg</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. BMI</th><td>{{ $record->bmi }}</td>
+                    <th>{{ $num++ }}. BMI</th><td>{{ $record->bmi }} kg/m²</td>
                     <th>{{ $num++ }}. Chest (Before)</th><td>{{ $record->chest_before }} cm</td>
                     <th>{{ $num++ }}. Chest (After)</th><td>{{ $record->chest_after }} cm</td>
                 </tr>
@@ -136,8 +136,8 @@
                     <th>{{ $num++ }}. Pulse Rate</th><td>{{ $record->heart_rate }} bpm</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. SpO₂</th><td>{{ $record->spo2 }} %</td>
-                    <th>{{ $num++ }}. Resp. Rate</th><td>{{ $record->respiration_rate }}</td>
+                    <th>{{ $num++ }}. SpO<sub>2</sub></th><td>{{ $record->spo2 }} %</td>
+                    <th>{{ $num++ }}. Resp. Rate</th><td>{{ $record->respiration_rate }} breaths/min</td>
                     <td colspan="2"></td>
                 </tr>
             </table>
@@ -185,7 +185,7 @@
                     <th>{{ $num++ }}. Teeth</th><td>{{ $record->teeth }}</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. PEFR</th><td>{{ $record->pefr }}</td>
+                    <th>{{ $num++ }}. PEFR</th><td>{{ $record->pefr }} L/min</td>
                     <th>{{ $num++ }}. Eczema</th><td>{{ $record->eczema }}</td>
                     <th>{{ $num++ }}. Cyanosis</th><td>{{ $record->cyanosis }}</td>
                 </tr>
@@ -286,29 +286,29 @@
             <div class="section-title">{{ $sectionNum++ }}. Laboratory Tests</div>
             <table>
                 <tr>
-                    <th>{{ $num++ }}. HB</th><td>{{ $record->hb }}</td>
-                    <th>{{ $num++ }}. WBC TC</th><td>{{ $record->wbc_tc }}</td>
+                    <th>{{ $num++ }}. HB</th><td>{{ $record->hb }} g/dL</td>
+                    <th>{{ $num++ }}. WBC TC</th><td>{{ $record->wbc_tc }} cells/uL</td>
                     <th>{{ $num++ }}. Parasite (MP)</th><td>{{ $record->parasite_dc }}</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. RBC</th><td>{{ $record->rbc }}</td>
-                    <th>{{ $num++ }}. Platelet</th><td>{{ $record->platelet }}</td>
-                    <th>{{ $num++ }}. ESR</th><td>{{ $record->esr }}</td>
+                    <th>{{ $num++ }}. RBC</th><td>{{ $record->rbc }} million/uL</td>
+                    <th>{{ $num++ }}. Platelet</th><td>{{ $record->platelet }} lakh/uL</td>
+                    <th>{{ $num++ }}. ESR</th><td>{{ $record->esr }} mm/hr</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. FBS</th><td>{{ $record->fbs }}</td>
-                    <th>{{ $num++ }}. PP2BS</th><td>{{ $record->pp2bs }}</td>
-                    <th>{{ $num++ }}. SGPT</th><td>{{ $record->sgpt }}</td>
+                    <th>{{ $num++ }}. FBS</th><td>{{ $record->fbs }} mg/dL</td>
+                    <th>{{ $num++ }}. PP2BS</th><td>{{ $record->pp2bs }} mg/dL</td>
+                    <th>{{ $num++ }}. SGPT</th><td>{{ $record->sgpt }} U/L</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. Creatinine</th><td>{{ $record->s_creatinine }}</td>
-                    <th>{{ $num++ }}. RBS</th><td>{{ $record->rbs }}</td>
-                    <th>{{ $num++ }}. Cholesterol</th><td>{{ $record->s_chol }}</td>
+                    <th>{{ $num++ }}. Creatinine</th><td>{{ $record->s_creatinine }} mg/dL</td>
+                    <th>{{ $num++ }}. RBS</th><td>{{ $record->rbs }} mg/dL</td>
+                    <th>{{ $num++ }}. Cholesterol</th><td>{{ $record->s_chol }} mg/dL</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. TRG</th><td>{{ $record->s_trg }}</td>
-                    <th>{{ $num++ }}. HDL</th><td>{{ $record->s_hdl }}</td>
-                    <th>{{ $num++ }}. LDL</th><td>{{ $record->s_ldl }}</td>
+                    <th>{{ $num++ }}. TRG</th><td>{{ $record->s_trg }} mg/dL</td>
+                    <th>{{ $num++ }}. HDL</th><td>{{ $record->s_hdl }} mg/dL</td>
+                    <th>{{ $num++ }}. LDL</th><td>{{ $record->s_ldl }} mg/dL</td>
                 </tr>
                 <tr>
                     <th>{{ $num++ }}. C/H Ratio</th><td colspan="5">{{ $record->ch_ratio }}</td>
@@ -326,11 +326,11 @@
                 </tr>
                 <tr>
                     <th>{{ $num++ }}. Sugar</th><td>{{ $record->urine_sugar }}</td>
-                    <th>{{ $num++ }}. Pus Cells</th><td>{{ $record->urine_pus_cell }}</td>
-                    <th>{{ $num++ }}. RBC</th><td>{{ $record->urine_rbc }}</td>
+                    <th>{{ $num++ }}. Pus Cells</th><td>{{ $record->urine_pus_cell }} cells/hpf</td>
+                    <th>{{ $num++ }}. RBC</th><td>{{ $record->urine_rbc }} cells/hpf</td>
                 </tr>
                 <tr>
-                    <th>{{ $num++ }}. EpiCell</th><td>{{ $record->urine_epi_cell }}</td>
+                    <th>{{ $num++ }}. EpiCell</th><td>{{ $record->urine_epi_cell }} cells/hpf</td>
                     <th>{{ $num++ }}. Crystals</th><td>{{ $record->urine_crystal }}</td>
                     <td colspan="2"></td>
                 </tr>
