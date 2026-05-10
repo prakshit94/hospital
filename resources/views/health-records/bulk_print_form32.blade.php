@@ -78,19 +78,16 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 8mm 8mm 8mm 8mm;
+                margin: 6mm;
             }
 
-            html {
-                width: 277mm;
+            html, body {
                 margin: 0;
                 padding: 0;
             }
 
             body {
-                width: 277mm;
-                margin: 0;
-                padding: 0;
+                zoom: 0.72;
                 font-size: 6.5pt;
                 line-height: 1.1;
                 -webkit-print-color-adjust: exact;
@@ -120,8 +117,8 @@
             .main-table td {
                 padding: 1px !important;
                 border: 1px solid #000 !important;
-                word-break: break-word !important;
-                overflow-wrap: break-word !important;
+                word-break: break-all !important;
+                overflow-wrap: anywhere !important;
                 white-space: normal !important;
                 overflow: hidden !important;
                 vertical-align: top !important;
@@ -164,18 +161,21 @@
             /* Override inline styles on divs inside cells */
             .main-table td div {
                 margin-top: 1px !important;
-                padding-top: 1px !important;
+                padding-top: 0px !important;
                 font-size: 5.5pt !important;
             }
 
             /* ── NOTE ───────────────────────────────────────────────────── */
-            .note { margin-top: 3px; font-size: 5.5pt; }
+            .note { margin-top: 2px; font-size: 5.5pt; page-break-before: avoid; }
 
             /* Prevent page breaks inside table rows */
             table, tr, td, th { page-break-inside: avoid !important; }
 
             /* Label font inside print */
             .label { font-size: 5.5pt !important; }
+
+            /* Page break between records */
+            .page-break { page-break-after: always; }
         }
     </style>
 </head>
