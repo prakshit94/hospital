@@ -175,13 +175,14 @@ table, tr, td {
         <td class="lbl">4. Sex :</td> 
         <td class="val">: {{ ucfirst($record->gender ?? '-') }}</td>
     </tr>
-    <tr>
-        <td class="lbl">5. Residence :</td> 
-        <td class="val">: {{ $record->address ?? '-' }}</td>
-    </tr>
+    
     <tr>
         <td class="lbl">6. Date of birth, if available :</td> 
         <td class="val">: {{ $dob }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">5. Residence :</td> 
+        <td class="val">: {{ $record->address ?? '-' }}</td>
     </tr>
     <!-- <tr>
         <td class="lbl">7. Name & address of the factory :</td> 
@@ -233,7 +234,7 @@ table, tr, td {
         <table class="sig-section">
             <tr>
                 <td class="sig-box">
-                    Signature or left hand thumb<br>
+                    Signature / left hand thumb<br>
                     impression of the person examined : 
                     <!-- <div style="margin-top: 50px;">_________________________</div> -->
                 </td>
