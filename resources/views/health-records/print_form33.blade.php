@@ -7,14 +7,16 @@
 <style>
 @page {
     size: A4;
-    margin: 10mm; /* reduced margins to gain space */
+    margin: 8mm; /* Reduced slightly to ensure single-page fit */
 }
 
 body {
     font-family: "Times New Roman", serif;
-    font-size: 14px; /* slightly bigger */
+    font-size: 13px; /* Slightly reduced from 14px */
     color: #000;
-    line-height: 1.35; /* tighter to save space */
+    line-height: 1.2; /* Tightened to save vertical space */
+    margin: 0;
+    padding: 0;
 }
 
 .page {
@@ -24,41 +26,41 @@ body {
 /* Header */
 .header {
     text-align: center;
-    margin-bottom: 10px; /* reduced */
+    margin-bottom: 5px;
 }
 
 .header h1 {
-    font-size: 22px;
+    font-size: 18px; /* Optimized size */
     margin: 0;
     text-transform: uppercase;
 }
 
 .rule-ref {
-    font-size: 14px;
-    margin-bottom: 2px;
+    font-size: 12px;
+    margin-bottom: 1px;
 }
 
 .subtitle {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
 }
 
 .issued-by {
-    font-size: 14px;
-    margin-top: 5px;
+    font-size: 12px;
+    margin-top: 2px;
 }
 
 /* Table */
 .details-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 
 .details-table td {
-    padding: 3px 0;
+    padding: 1px 0; /* Minimal padding */
     vertical-align: top;
-    font-size: 15px;
+    font-size: 13.5px;
 }
 
 .lbl {
@@ -68,51 +70,50 @@ body {
 .val {
     width: 55%;
     font-weight: bold;
-    font-size: 15px;
+    font-size: 13.5px;
 }
 
 /* Certificate Text */
 .cert-text {
-    margin: 10px 0;
+    margin: 6px 0; /* Reduced margin */
     text-align: justify;
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 14px; /* Reduced from 16px to prevent overflow */
+    line-height: 1.3;
 }
 
 /* Signature Section */
 .sig-section {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 .sig-box {
     width: 50%;
     vertical-align: top;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .stamp-area {
-    /* border: 1px solid #000000ff; */
-    padding: 8px;
-    min-height: 65px;
+    padding: 5px;
+    min-height: 50px; /* Reduced from 65px */
     width: 85%;
-    font-size: 13px;
-    margin-top: 5px;
+    font-size: 12px;
+    margin-top: 3px;
 }
 
 /* Extension Table */
 .ext-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .ext-table th,
 .ext-table td {
     border: 1px solid #000;
-    padding: 5px;
+    padding: 4px;
     text-align: left;
-    font-size: 14px; /* ✅ updated to match document */
+    font-size: 12px; /* Standardized for fit */
 }
 
 .ext-table th {
@@ -122,9 +123,9 @@ body {
 
 /* Footer */
 .footer-note {
-    margin-top: 8px;
-    font-size: 13px;
-    line-height: 1.35;
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.2;
 }
 
 /* Strike */
@@ -136,6 +137,7 @@ body {
 /* Prevent page break */
 .page {
     page-break-after: avoid;
+    overflow: hidden;
 }
 
 table, tr, td {
@@ -184,10 +186,6 @@ table, tr, td {
         <td class="lbl">5. Residence :</td> 
         <td class="val">: {{ $record->address ?? '-' }}</td>
     </tr>
-    <!-- <tr>
-        <td class="lbl">7. Name & address of the factory :</td> 
-        <td class="val">: {{ $record->company_name }}</td>
-    </tr> -->
 
     <tr>
     <td class="lbl">7. Name & address of the factory :</td>
@@ -226,7 +224,7 @@ table, tr, td {
             In my opinion he/she is unfit for employment in the said manufacturing process/operation for the reason <strong>{{ !$isFit ? ($record->doctor_remarks ?? ' ') : ' ' }}</strong>. He/She is referred for further examination to the Certifying Surgeon. 
         </div>
 
-        <div class="cert-text" style="text-align: center;">
+        <div class="cert-text" style="text-align: center; margin: 4px 0;">
     The serial number of previous certificate is 
     <strong>{{ $record->prev_cert_no ?? '........................................' }}</strong>.
 </div>
@@ -236,7 +234,6 @@ table, tr, td {
                 <td class="sig-box">
                     Signature / left hand thumb<br>
                     impression of the person examined : 
-                    <!-- <div style="margin-top: 50px;">_________________________</div> -->
                 </td>
                 <td class="sig-box">
                     Signature of the Factory Medical Officer : 
@@ -267,23 +264,20 @@ table, tr, td {
     </thead>
     <tbody>
         <tr>
-            <!-- Date of Examination -->
-            <td height="80px">
+            <!-- Reduced height to 50px to ensure single page fit -->
+            <td height="50px">
                 {{ optional($record->examination_date)->format('d-m-Y') }}
             </td>
 
-            <!-- Fit / Unfit -->
             <td>
                 {{ $record->health_status ?? 'Fit' }}<br>
                 {{ $record->job_restriction ?? '' }}
             </td>
 
-            <!-- Symptoms -->
             <td>
                 {{ $record->present_complain ?? $record->diagnosis ?? '' }}
             </td>
 
-            <!-- Doctor Signature -->
             <td>
                 Dr. {{ $record->doctor_name ?? '' }}<br>
                 {{ $record->doctor_qualification ?? '' }}<br>
