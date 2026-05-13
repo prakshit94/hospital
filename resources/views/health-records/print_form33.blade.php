@@ -7,16 +7,14 @@
 <style>
 @page {
     size: A4;
-    margin: 8mm; /* Reduced slightly to ensure single-page fit */
+    margin: 8mm;
 }
 
 body {
     font-family: "Times New Roman", serif;
-    font-size: 13px; /* Slightly reduced from 14px */
+    font-size: 13px;
     color: #000;
-    line-height: 1.2; /* Tightened to save vertical space */
-    margin: 0;
-    padding: 0;
+    line-height: 1.25;
 }
 
 .page {
@@ -26,18 +24,18 @@ body {
 /* Header */
 .header {
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 }
 
 .header h1 {
-    font-size: 18px; /* Optimized size */
+    font-size: 20px;
     margin: 0;
     text-transform: uppercase;
 }
 
 .rule-ref {
-    font-size: 12px;
-    margin-bottom: 1px;
+    font-size: 13px;
+    margin-bottom: 2px;
 }
 
 .subtitle {
@@ -46,21 +44,21 @@ body {
 }
 
 .issued-by {
-    font-size: 12px;
-    margin-top: 2px;
+    font-size: 13px;
+    margin-top: 3px;
 }
 
 /* Table */
 .details-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 .details-table td {
-    padding: 1px 0; /* Minimal padding */
+    padding: 2px 0;
     vertical-align: top;
-    font-size: 13.5px;
+    font-size: 13px;
 }
 
 .lbl {
@@ -70,15 +68,15 @@ body {
 .val {
     width: 55%;
     font-weight: bold;
-    font-size: 13.5px;
+    font-size: 13px;
 }
 
 /* Certificate Text */
 .cert-text {
-    margin: 6px 0; /* Reduced margin */
+    margin: 6px 0;
     text-align: justify;
-    font-size: 14px; /* Reduced from 16px to prevent overflow */
-    line-height: 1.3;
+    font-size: 13px;
+    line-height: 1.35;
 }
 
 /* Signature Section */
@@ -94,18 +92,18 @@ body {
 }
 
 .stamp-area {
-    padding: 5px;
-    min-height: 50px; /* Reduced from 65px */
+    padding: 6px;
+    min-height: 50px;
     width: 85%;
     font-size: 12px;
-    margin-top: 3px;
+    margin-top: 4px;
 }
 
 /* Extension Table */
 .ext-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
 .ext-table th,
@@ -113,7 +111,7 @@ body {
     border: 1px solid #000;
     padding: 4px;
     text-align: left;
-    font-size: 12px; /* Standardized for fit */
+    font-size: 13px;
 }
 
 .ext-table th {
@@ -123,9 +121,9 @@ body {
 
 /* Footer */
 .footer-note {
-    margin-top: 5px;
-    font-size: 11px;
-    line-height: 1.2;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.3;
 }
 
 /* Strike */
@@ -137,7 +135,7 @@ body {
 /* Prevent page break */
 .page {
     page-break-after: avoid;
-    overflow: hidden;
+    page-break-before: avoid;
 }
 
 table, tr, td {
@@ -224,7 +222,7 @@ table, tr, td {
             In my opinion he/she is unfit for employment in the said manufacturing process/operation for the reason <strong>{{ !$isFit ? ($record->doctor_remarks ?? ' ') : ' ' }}</strong>. He/She is referred for further examination to the Certifying Surgeon. 
         </div>
 
-        <div class="cert-text" style="text-align: center; margin: 4px 0;">
+        <div class="cert-text" style="text-align: center;">
     The serial number of previous certificate is 
     <strong>{{ $record->prev_cert_no ?? '........................................' }}</strong>.
 </div>
@@ -264,20 +262,23 @@ table, tr, td {
     </thead>
     <tbody>
         <tr>
-            <!-- Reduced height to 50px to ensure single page fit -->
-            <td height="50px">
+            <!-- Date of Examination -->
+            <td height="60px">
                 {{ optional($record->examination_date)->format('d-m-Y') }}
             </td>
 
+            <!-- Fit / Unfit -->
             <td>
                 {{ $record->health_status ?? 'Fit' }}<br>
                 {{ $record->job_restriction ?? '' }}
             </td>
 
+            <!-- Symptoms -->
             <td>
                 {{ $record->present_complain ?? $record->diagnosis ?? '' }}
             </td>
 
+            <!-- Doctor Signature -->
             <td>
                 Dr. {{ $record->doctor_name ?? '' }}<br>
                 {{ $record->doctor_qualification ?? '' }}<br>

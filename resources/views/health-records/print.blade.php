@@ -14,7 +14,7 @@
         .report-title { text-align: center; background: #f1f3f5; padding: 5px; margin-bottom: 8px; border: 1px solid #ced4da; border-radius: 4px; }
         .report-title h2 { margin: 0; font-size: 12px; text-transform: uppercase; color: #111; font-weight: 800; }
         
-        .section { margin-bottom: 8px; }
+        .section { margin-bottom: 8px; page-break-inside: avoid; }
         .section-title { background: #e9ecef; padding: 2px 10px; font-weight: bold; font-size: 9.5px; border-left: 4px solid #111; margin-bottom: 4px; text-transform: uppercase; color: #000; letter-spacing: 0.2px; }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 4px; table-layout: fixed; }
@@ -34,6 +34,9 @@
         .fit-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-weight: bold; text-transform: uppercase; font-size: 8.5px; }
         .fit-badge-fit { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .fit-badge-unfit { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Sections that must start on page 2 */
+        .page-two-start { page-break-before: always; }
     </style>
 </head>
 <body>
@@ -72,7 +75,7 @@
             </tr>
             <tr>
                 <th>{{ $num++ }}. Full Name</th><td><strong>{{ strtoupper($record->full_name) }}</strong></td>
-                <th>{{ $num++ }}. Father’s Name</th><td>{{ $record->father_name }}</td>
+                <th>{{ $num++ }}. Father's Name</th><td>{{ $record->father_name }}</td>
             </tr>
             <tr>
                 <th>{{ $num++ }}. DOB</th><td>{{ $formatDate($record->dob) }}</td>
@@ -172,8 +175,6 @@
         </table>
     </div>
 
-    <div class="page-break"></div>
-
     <!-- 5. Local Examination -->
     <div class="section">
         <div class="section-title">{{ $sectionNum++ }}. Local Examination</div>
@@ -243,8 +244,8 @@
         </table>
     </div>
 
-    <!-- 7. Family History -->
-    <div class="section">
+    <!-- 7. Family History — starts page 2 -->
+    <div class="section page-two-start">
         <div class="section-title">{{ $sectionNum++ }}. Family History</div>
         <table>
             <tr>
