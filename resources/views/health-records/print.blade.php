@@ -300,14 +300,14 @@
         <div class="section-title">{{ $sectionNum++ }}. Laboratory Tests</div>
         <table>
             <tr>
-                <th>{{ $num++ }}. HB</th><td>{{ $record->hb }} g/dL</td>
-                <th>{{ $num++ }}. WBC TC</th><td>{{ $record->wbc_tc }} cells/uL</td>
+                <th>{{ $num++ }}. HB</th><td>{{ $record->hb }} %</td>
+                <th>{{ $num++ }}. WBC TC</th><td>{{ $record->wbc_tc }} /cu mm</td>
                 <th>{{ $num++ }}. Parasite (MP)</th><td>{{ $record->parasite_dc }}</td>
             </tr>
             <tr>
-                <th>{{ $num++ }}. RBC</th><td>{{ $record->rbc }} million/uL</td>
-                <th>{{ $num++ }}. Platelet</th><td>{{ $record->platelet }} lakh/uL</td>
-                <th>{{ $num++ }}. ESR</th><td>{{ $record->esr }} mm/hr</td>
+                <th>{{ $num++ }}. RBC</th><td>{{ $record->rbc }} mill/c.mm</td>
+                <th>{{ $num++ }}. Platelet</th><td>{{ $record->platelet }} /cu mm</td>
+                <th>{{ $num++ }}. ESR</th><td>{{ $record->esr }} mm</td>
             </tr>
             <tr>
                 <th>{{ $num++ }}. FBS</th><td>{{ $record->fbs }} mg/dL</td>
@@ -341,11 +341,11 @@
             </tr>
             <tr>
                 <th>{{ $num++ }}. Sugar</th><td>{{ $record->urine_sugar }}</td>
-                <th>{{ $num++ }}. Pus Cells</th><td>{{ $record->urine_pus_cell }} cells/hpf</td>
-                <th>{{ $num++ }}. RBC</th><td>{{ $record->urine_rbc }} cells/hpf</td>
+                <th>{{ $num++ }}. Pus Cells</th><td>{{ $record->urine_pus_cell }} /h.p.f</td>
+                <th>{{ $num++ }}. RBC</th><td>{{ $record->urine_rbc }} </td>
             </tr>
             <tr>
-                <th>{{ $num++ }}. EpiCell</th><td>{{ $record->urine_epi_cell }} cells/hpf</td>
+                <th>{{ $num++ }}. EpiCell</th><td>{{ $record->urine_epi_cell }} /h.p.f</td>
                 <th>{{ $num++ }}. Crystals</th><td>{{ $record->urine_crystal }}</td>
                 <td colspan="2"></td>
             </tr>
