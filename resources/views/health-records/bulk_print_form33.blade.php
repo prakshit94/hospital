@@ -159,7 +159,7 @@ table, tr, td {
             <table class="details-table">
         <tr>
             <td class="lbl">1. Serial number in the register of adult workers :</td>
-            <td class="val">: {{ $record->employee_id }}</td>
+            <td class="val">: {{ $record->employee->employee_id ?? 'N/A' }}</td>
         </tr>
         <tr>
             <td class="lbl">2. Name of the person examined :</td>
@@ -173,13 +173,14 @@ table, tr, td {
             <td class="lbl">4. Sex :</td>
             <td class="val">: {{ ucfirst($record->gender ?? '-') }}</td>
         </tr>
-        <tr>
-            <td class="lbl">5. Residence :</td>
-            <td class="val">: {{ $record->address ?? '-' }}</td>
-        </tr>
+        
         <tr>
             <td class="lbl">6. Date of birth, if available :</td>
             <td class="val">: {{ $dob }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">5. Residence :</td>
+            <td class="val">: {{ $record->address ?? '-' }}</td>
         </tr>
 
         <tr>
@@ -227,7 +228,7 @@ table, tr, td {
             <table class="sig-section">
                 <tr>
                     <td class="sig-box">
-                        Signature or left hand thumb<br>
+                        Signature / left hand thumb<br>
                         impression of the person examined :
                     </td>
                     <td class="sig-box">

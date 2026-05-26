@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AccessControlSeeder::class,
             CompanySeeder::class,
-            EmployeeHealthRecordSeeder::class,
+            HealthCheckupSeeder::class,
         ]);
     }
 }

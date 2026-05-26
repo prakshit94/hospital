@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
-use App\Models\Permission;
-use App\Models\Role;
 use App\Models\User;
 use App\Models\Company;
-use App\Models\EmployeeHealthRecord;
+use App\Models\HealthCheckup;
+use App\Models\Employee;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -16,9 +15,9 @@ class DashboardController extends Controller
     {
         $stats = [
             ['label' => 'Companies', 'value' => number_format(Company::count()), 'change' => 'Active partners', 'trend' => 'up'],
-            ['label' => 'Health Records', 'value' => number_format(EmployeeHealthRecord::count()), 'change' => 'Total examinations', 'trend' => 'up'],
+            ['label' => 'Total Checkups', 'value' => number_format(HealthCheckup::count()), 'change' => 'Medical examinations', 'trend' => 'up'],
+            ['label' => 'Employees', 'value' => number_format(Employee::count()), 'change' => 'Total registered', 'trend' => 'up'],
             ['label' => 'Users', 'value' => number_format(User::count()), 'change' => 'System accounts', 'trend' => 'up'],
-            ['label' => 'Activities', 'value' => number_format(ActivityLog::count()), 'change' => 'Audit entries', 'trend' => 'up'],
         ];
 
         $activities = ActivityLog::query()
@@ -27,14 +26,14 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
-        $recentRecords = EmployeeHealthRecord::query()
-            ->with('creator')
+        $recentRecords = HealthCheckup::query()
+            ->with(['employee', 'creator'])
             ->latest()
             ->take(5)
             ->get();
 
         $companies = Company::query()
-            ->withCount('healthRecords')
+            ->withCount('healthCheckups')
             ->latest()
             ->take(5)
             ->get();

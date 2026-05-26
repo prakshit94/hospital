@@ -55,6 +55,44 @@
             return;
         }
 
+        if (action === 'export') {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route('health-records.bulk-action') }}';
+            form.target = '_blank';
+            
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+            
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'export';
+            form.appendChild(actionInput);
+
+            const formatInput = document.createElement('input');
+            formatInput.type = 'hidden';
+            formatInput.name = 'format';
+            formatInput.value = formType; // reusing formType as format
+            form.appendChild(formatInput);
+            
+            this.selected.forEach(id => {
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'ids[]';
+                idInput.value = id;
+                form.appendChild(idInput);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            return;
+        }
+
         let confirmMsg = 'Are you sure?';
         if (action === 'delete') confirmMsg = 'Move selected records to trash?';
         if (action === 'force-delete') confirmMsg = 'CRITICAL: PERMANENTLY delete selected records?';
@@ -113,6 +151,28 @@
                     <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 33 (Fitness)</button>
                 </div>
             </div>
+
+            <div class="h-6 w-px bg-primary/20"></div>
+
+            <div class="relative flex" x-data="{ openExport: false }">
+                <button type="button" @click="openExport = !openExport" @click.away="openExport = false" class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 shadow-sm border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
+                    </svg>
+                    Export
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </button>
+                <div x-show="openExport" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-2 min-w-[220px] overflow-hidden rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
+                    <button type="button" @click="bulkAction('export', 'excel'); openExport = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-emerald-600 transition hover:bg-emerald-500/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                        Excel / CSV Format
+                    </button>
+                    <button type="button" @click="bulkAction('export', 'pdf'); openExport = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-rose-600 transition hover:bg-rose-500/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h1a2 2 0 0 1 0 4h-1v-4Z"/><path d="M17 15h-3v4"/><path d="M14 17h2"/><circle cx="12" cy="17" r="2"/></svg>
+                        PDF Format
+                    </button>
+                </div>
+            </div>
             
             <div class="h-6 w-px bg-primary/20"></div>
 
@@ -157,6 +217,12 @@
         </thead>
         <tbody>
             @forelse($records as $record)
+                @php
+                    $previousRecord = \App\Models\HealthCheckup::where('employee_id', $record->employee_id)
+                        ->where('examination_date', '<', $record->examination_date)
+                        ->orderBy('examination_date', 'desc')
+                        ->first();
+                @endphp
                 <tr class="group transition hover:bg-secondary/20 {{ $record->trashed() ? 'opacity-70 grayscale-[0.3]' : '' }}">
                     <td>
                         <input type="checkbox" class="ui-checkbox row-checkbox" value="{{ $record->id }}" x-model="selected" @change="selectAll = selected.length === allIds().length">
@@ -168,35 +234,86 @@
                                 {{ strtoupper(substr($record->full_name, 0, 1)) }}
                             </div>
                             <div>
-                                <div class="table-primary">{{ $record->full_name }}</div>
+                                <a href="{{ route('health-records.show', $record->uuid) }}" class="table-primary hover:text-primary transition-colors cursor-pointer block">
+                                    {{ $record->full_name }}
+                                </a>
                                 <div class="mt-0.5 text-xs text-muted-foreground">{{ ucfirst($record->gender) }}, {{ $record->blood_group ?? 'N/A' }}</div>
                             </div>
                         </div>
                     </td>
                     <td data-label="Company & ID">
                         <div class="table-primary">{{ $record->company_name }}</div>
-                        <div class="mt-0.5 text-xs text-muted-foreground">ID: {{ $record->employee_id ?? 'N/A' }}</div>
+                        <div class="mt-0.5 text-xs text-muted-foreground">ID: {{ $record->employee->employee_id ?? 'N/A' }}</div>
                     </td>
                     <td data-label="Vitals">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold uppercase text-muted-foreground/60 w-8">BP:</span>
-                                <span class="font-medium text-xs">{{ $record->bp_systolic ?? '--' }}/{{ $record->bp_diastolic ?? '--' }}</span>
+                        <div class="flex flex-col gap-2 py-1">
+                            {{-- BP Comparison --}}
+                            <div class="flex flex-col">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">BP (Sys/Dia)</span>
+                                    @if($previousRecord && $record->bp_systolic && $previousRecord->bp_systolic)
+                                        @php $bpDiff = $record->bp_systolic - $previousRecord->bp_systolic; @endphp
+                                        @if($bpDiff > 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
+                                        @elseif($bpDiff < 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
+                                        @endif
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->bp_systolic ?? '--').'/'.($previousRecord->bp_diastolic ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ ($record->bp_systolic ?? '--').'/'.($record->bp_diastolic ?? '--') }}</span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold uppercase text-muted-foreground/60 w-8">HR:</span>
-                                <span class="font-medium text-xs">{{ $record->heart_rate ?? '--' }} bpm</span>
+                            {{-- HR Comparison --}}
+                            <div class="flex flex-col">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40">Heart Rate</span>
+                                    @if($previousRecord && $record->heart_rate && $previousRecord->heart_rate)
+                                        @php $hrDiff = $record->heart_rate - $previousRecord->heart_rate; @endphp
+                                        @if($hrDiff > 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m18 15-6-6-6 6"/></svg>
+                                        @elseif($hrDiff < 0)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-2.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="m6 9 6 6 6-6"/></svg>
+                                        @endif
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->heart_rate ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ $record->heart_rate ?? '--' }} <span class="text-[9px] font-medium text-muted-foreground/40 uppercase">bpm</span></span>
+                                </div>
                             </div>
                         </div>
                     </td>
                     <td data-label="BMI">
-                        @if($record->bmi)
-                            <span class="ui-chip {{ $record->bmi >= 18.5 && $record->bmi <= 24.9 ? '!bg-emerald-500/10 !text-emerald-600' : '!bg-amber-500/10 !text-amber-600' }}">
-                                {{ $record->bmi }}
-                            </span>
-                        @else
-                            <span class="ui-chip-muted">N/A</span>
-                        @endif
+                        <div class="flex flex-col gap-2 py-1">
+                            {{-- Weight Comparison --}}
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">Weight</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->weight ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    <span class="text-xs font-black text-foreground">{{ $record->weight ?? '--' }} <span class="text-[9px] font-medium text-muted-foreground/40 uppercase">kg</span></span>
+                                </div>
+                            </div>
+                            {{-- BMI Comparison --}}
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mb-0.5">BMI</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-muted-foreground/60">{{ $previousRecord ? ($previousRecord->bmi ?? '--') : 'NA' }}</span>
+                                    <div class="h-px w-2 bg-border/50"></div>
+                                    @if($record->bmi)
+                                        <span class="ui-chip !text-[10px] !px-1.5 !py-0.5 {{ $record->bmi >= 18.5 && $record->bmi <= 24.9 ? '!bg-emerald-500/10 !text-emerald-600' : '!bg-amber-500/10 !text-amber-600' }}">
+                                            {{ $record->bmi }}
+                                        </span>
+                                    @else
+                                        <span class="ui-chip-muted !text-[10px]">N/A</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </td>
                     <td data-label="Docs">
                         @if(($record->documents_count ?? 0) > 0)
@@ -213,9 +330,43 @@
                         @if($record->trashed())
                             <span class="ui-status-danger px-2 py-1 uppercase text-[10px] tracking-wide font-bold">Deleted</span>
                         @else
-                            <span class="ui-chip !bg-primary/5 !text-primary uppercase text-[10px] tracking-wider font-bold">
-                                {{ $record->status }}
-                            </span>
+                            <div x-data="{ 
+                                status: '{{ $record->employee->status ?? 'active' }}',
+                                loading: false,
+                                async toggle() {
+                                    if (this.loading) return;
+                                    this.loading = true;
+                                    try {
+                                        const response = await fetch('{{ route('employees.toggle-status', $record->employee->uuid) }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json'
+                                            }
+                                        });
+                                        const data = await response.json();
+                                        if (data.status === 'success') {
+                                            this.status = data.new_status;
+                                        }
+                                    } catch (e) {
+                                        console.error('Toggle failed', e);
+                                    } finally {
+                                        this.loading = false;
+                                    }
+                                }
+                            }" class="flex items-center">
+                                <button type="button" @click="toggle" 
+                                    :class="status === 'active' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-slate-500/10 border-slate-500/20'"
+                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border transition-colors duration-200 ease-in-out focus:outline-none"
+                                    :disabled="loading">
+                                    <span class="sr-only">Toggle Status</span>
+                                    <span aria-hidden="true" 
+                                        :class="status === 'active' ? 'translate-x-4 bg-emerald-500' : 'translate-x-0 bg-slate-400'"
+                                        class="pointer-events-none inline-block size-4 transform rounded-full shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                                <span class="ml-2 text-[9px] font-black uppercase tracking-widest min-w-[50px]" :class="status === 'active' ? 'text-emerald-600' : 'text-slate-500'" x-text="status"></span>
+                            </div>
                         @endif
                     </td>
                     <td data-label="Actions" class="actions-cell">
@@ -232,6 +383,13 @@
                                         <circle cx="12" cy="12" r="3"/>
                                     </svg>
                                     View Details
+                                </a>
+
+                                <a href="{{ route('health-records.create', ['prefill' => $record->employee->uuid]) }}" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M12 5v14m-7-7h14"/>
+                                    </svg>
+                                    New Examination
                                 </a>
 
                                 @if(!$record->trashed())

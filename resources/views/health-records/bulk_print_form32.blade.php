@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <title>Bulk Form 32</title>
     <style>
-        @page {
-            size: A4 landscape;
-            margin: 10mm;
-        }
+        /* ===== BASE STYLES (Screen) ===== */
+        * { box-sizing: border-box; }
 
         body {
             font-family: Arial, sans-serif;
@@ -17,125 +15,167 @@
             margin: 0;
             padding: 0;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
         }
-
         th, td {
             border: 1px solid #000;
             padding: 4px;
             vertical-align: top;
         }
-
         th {
             font-weight: bold;
             text-align: center;
             background-color: #f2f2f2;
         }
-
-        .no-border {
-            border: none;
-        }
-
-        .text-center {
-            text-align: center;
-        }
+        .no-border { border: none; }
+        .text-center { text-align: center; }
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
-
         .header h1 {
             margin: 0;
-            font-size: 14pt;
+            font-size: 13pt;
             text-transform: uppercase;
         }
-
+        .header h2 {
+            margin: 2px 0 0;
+            font-size: 11pt;
+        }
         .header p {
             margin: 2px 0;
-            font-size: 10pt;
+            font-size: 9pt;
         }
-
         .info-table td {
             border: none;
             padding: 2px 5px;
-        }
-
-        .label {
-            font-weight: bold;
-        }
-
-        .main-table thead th {
-            font-size: 8pt;
-        }
-
-        .main-table tbody td {
             font-size: 8.5pt;
         }
+        .label { font-weight: bold; }
 
-        .vision-table {
-            margin: 5px 0;
-        }
+        .main-table thead th { font-size: 7.5pt; }
+        .main-table tbody td { font-size: 8pt; }
 
+        .vision-table { margin: 4px 0; }
         .vision-table th, .vision-table td {
-            padding: 2px;
-            font-size: 8pt;
+            padding: 1px;
+            font-size: 7pt;
             text-align: center;
         }
-
-        .footer-section {
-            margin-top: 40px;
-        }
-
-        .signature-line {
-            border-top: 1px solid #000;
-            width: 45%;
-            text-align: center;
-            margin-top: 30px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
         .note {
-            font-size: 8pt;
-            margin-top: 10px;
+            font-size: 7.5pt;
+            margin-top: 8px;
         }
 
         .w-full { width: 100%; }
-
         .page-break { page-break-after: always; }
 
+        /* ===== PRINT STYLES ===== */
         @media print {
             @page {
                 size: A4 landscape;
                 margin: 6mm;
             }
 
-            table, tr, td, th {
-                page-break-inside: avoid !important;
+            html, body {
+                margin: 0;
+                padding: 0;
             }
 
-            .main-table,
-            .footer-section,
-            .note {
-                page-break-inside: avoid;
+            body {
+                zoom: 0.72;
+                font-size: 6.5pt;
+                line-height: 1.1;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
-            th, td {
-                padding: 3px !important;
+            /* Header tightening */
+            .header { margin-bottom: 3px; }
+            .header h1 { font-size: 9pt; margin: 0; }
+            .header h2 { font-size: 8pt; margin: 0; }
+            .header p  { font-size: 6pt; margin: 0; }
+
+            /* Info table */
+            .info-table { margin-bottom: 3px; width: 100%; }
+            .info-table td { padding: 0 4px !important; font-size: 6.5pt !important; }
+
+            /* ── MAIN TABLE ─────────────────────────────────────────────── */
+            .main-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                table-layout: fixed !important;
+                margin: 0 !important;
             }
 
-            .header {
-                margin-bottom: 8px;
+            /* All cells */
+            .main-table th,
+            .main-table td {
+                padding: 1px !important;
+                border: 1px solid #000 !important;
+                word-break: break-all !important;
+                overflow-wrap: anywhere !important;
+                white-space: normal !important;
+                overflow: hidden !important;
+                vertical-align: top !important;
+                font-size: 6pt !important;
+                line-height: 1.0 !important;
             }
 
-            .footer-section {
-                margin-top: 20px;
+            .main-table thead th {
+                font-size: 5.5pt !important;
+                background-color: #f2f2f2 !important;
+                text-align: center !important;
+                line-height: 1.0 !important;
             }
+
+            /* ── VISION TABLE (nested) ──────────────────────────────────── */
+            .vision-table {
+                margin: 0 !important;
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            .vision-table th, .vision-table td {
+                font-size: 5pt !important;
+                padding: 0px !important;
+                border: 1px solid #000 !important;
+                line-height: 1.0 !important;
+            }
+
+            /* ── NESTED DETAIL TABLE (inside symptoms cell) ─────────────── */
+            .main-table td table {
+                border-collapse: collapse !important;
+                margin: 0 !important;
+            }
+            .main-table td table td {
+                border: none !important;
+                padding: 0 !important;
+                font-size: 5pt !important;
+                line-height: 1.0 !important;
+            }
+
+            /* Override inline styles on divs inside cells */
+            .main-table td div {
+                margin-top: 1px !important;
+                padding-top: 0px !important;
+                font-size: 5.5pt !important;
+            }
+
+            /* ── NOTE ───────────────────────────────────────────────────── */
+            .note { margin-top: 2px; font-size: 5.5pt; page-break-before: avoid; }
+
+            /* Prevent page breaks inside table rows */
+            table, tr, td, th { page-break-inside: avoid !important; }
+
+            /* Label font inside print */
+            .label { font-size: 5.5pt !important; }
+
+            /* Page break between records */
+            .page-break { page-break-after: always; }
         }
     </style>
 </head>
@@ -152,7 +192,7 @@
         <tr>
             <td>
                 <span class="label">{{ $num++ }}. Serial Number:</span>
-                {{ $record->employee_id }}
+                {{ $record->employee->employee_id ?? 'N/A' }}
             </td>
             <td>
                 <span class="label">{{ $num++ }}. Name:</span>
@@ -187,29 +227,49 @@
         </table>
 
         <table class="main-table">
+            <colgroup>
+                <col style="width:4%">   {{-- 1  Department --}}
+                <col style="width:5%">   {{-- 2  Hazardous Process --}}
+                <col style="width:4%">   {{-- 3  Dangerous Operation --}}
+                <col style="width:4%">   {{-- 4  Job / Occupation --}}
+                <col style="width:5%">   {{-- 5  Raw Materials --}}
+                <col style="width:4%">   {{-- 6  Date Posting --}}
+                <col style="width:4%">   {{-- 7  Date Leaving --}}
+                <col style="width:4%">   {{-- 8  Reasons Discharge --}}
+                <col style="width:4%">   {{-- 9  Exam Date --}}
+                <col style="width:24%">  {{-- 10 Signs & Symptoms (biggest) --}}
+                <col style="width:8%">   {{-- 11 Tests & Results --}}
+                <col style="width:4%">   {{-- 12 Fit / Unfit --}}
+                <col style="width:5%">   {{-- 13 Period Withdrawal --}}
+                <col style="width:5%">   {{-- 14 Reasons Withdrawal --}}
+                <col style="width:5%">   {{-- 15 Date Declared Unfit --}}
+                <col style="width:5%">   {{-- 16 Date Fitness Cert --}}
+                <col style="width:6%">   {{-- 17 Signature --}}
+            </colgroup>
             <thead>
                 <tr>
-                    <th rowspan="2">Dept /<br>Works</th>
-                    <th rowspan="2">Hazardous<br>Process</th>
-                    <th rowspan="2">Dangerous<br>Operation</th>
-                    <th rowspan="2">Job<br>Nature</th>
-                    <th rowspan="2">Raw Materials /<br>By-products</th>
-                    <th rowspan="2">Date of<br>Posting</th>
-                    <th rowspan="2">Date of<br>Leave /<br>Transfer</th>
-                    <th rowspan="2">Reasons<br>for<br>Discharge</th>
-                    <th colspan="4">Medical Examination &amp; Results</th>
-                    <th colspan="4">If Declared Unfit</th>
-                    <th rowspan="2">Signature &amp; Date<br>Med. Officer /<br>Certifying Surgeon</th>
+                    <th rowspan="2">Department /
+                        Works</th>
+                    <th rowspan="2">Name Of<br>Hazardous Process</th>
+                    <th rowspan="2">Dangerous<br>Process /<br>Operation</th>
+                    <th rowspan="2">Nature of Job or<br>Occupation</th>
+                    <th rowspan="2">Raw<br>Materials,<br>Products or<br>By-products<br>likely to be<br>exposed to</th>
+                    <th rowspan="2">Date of Posting</th>
+                    <th rowspan="2">Date of leaving<br>/ transfer to or<br>transfer</th>
+                    <th rowspan="2">Reasons for<br>Discharge/<br>leaving or<br>transfer</th>
+                    <th colspan="4">Medical examination Results therefore</th>
+                    <th colspan="4">If declared unfit for work</th>
+                    <th rowspan="2">Signature<br>with date<br>of the<br>factory<br>Medical<br>Officer /<br>the<br>Certifying<br>Surgeon</th>
                 </tr>
                 <tr>
-                    <th>Exam<br>Date</th>
-                    <th>Signs &amp; Symptoms Observed</th>
-                    <th>Nature of Tests &amp; Results</th>
-                    <th>Fit /<br>Unfit</th>
-                    <th>Period<br>Temp.<br>Withdrawal</th>
-                    <th>Reasons<br>Withdrawal</th>
-                    <th>Date<br>Declared<br>Unfit</th>
-                    <th>Date<br>Fitness<br>Cert.</th>
+                    <th>Date</th>
+                    <th>Signs and<br>Symptoms<br>observed<br>during<br>Examination</th>
+                    <th>Nature of<br>Tests &amp;<br>Results<br>thereof</th>
+                    <th>Result Fit /<br>Unfit</th>
+                    <th>Period of<br>Temporary<br>Withdrawal from<br>that work</th>
+                    <th>Reasons for<br>such<br>withdrawal</th>
+                    <th>Date of<br>Declaring<br>him Unfit<br>for that<br>work</th>
+                    <th>Date of<br>issuing<br>Fitness<br>Certificate</th>
                 </tr>
             </thead>
             <tbody>

@@ -20,8 +20,13 @@ class Company extends Model
         'is_active',
     ];
 
-    public function healthRecords()
+    public function employees()
     {
-        return $this->hasMany(EmployeeHealthRecord::class);
+        return $this->hasMany(Employee::class);
+    }
+
+    public function healthCheckups()
+    {
+        return $this->hasManyThrough(HealthCheckup::class, Employee::class);
     }
 }
