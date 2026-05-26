@@ -87,11 +87,15 @@
             }
 
             body {
-                zoom: 0.72;
                 font-size: 6.5pt;
                 line-height: 1.1;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            /* zoom applied per-record so every page renders identically */
+            .record-wrapper {
+                zoom: 0.72;
             }
 
             /* Header tightening */
@@ -182,6 +186,7 @@
 <body>
     @foreach($records as $record)
         @php $num = 1; @endphp
+        <div class="record-wrapper">
         <div class="header">
             <h1>Form No. 32</h1>
             <p>(Prescribed under Rule 68-T and 102)</p>
@@ -383,6 +388,7 @@
             Note: 1. A separate page must be maintained for each worker.  2. A fresh entry must be made for each examination.
         </div>
 
+        </div>{{-- end .record-wrapper --}}
         @if(!$loop->last)
             <div class="page-break"></div>
         @endif
