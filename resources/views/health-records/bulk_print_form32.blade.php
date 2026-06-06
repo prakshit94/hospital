@@ -219,9 +219,9 @@
                      {{ $record->employee->employee_id ?? 'N/A' }}
                   </td>
                   <td>
-                     <span class="label">{{ $num++ }}. Name:</span>
-                     {{ $record->full_name }}
-                  </td>
+                      <span class="label">{{ $num++ }}. Name:</span>
+                      {{ $record->full_name }} {{ $record->father_name ?? '-' }}
+                   </td>
                </tr>
                <tr>
                   <td>
