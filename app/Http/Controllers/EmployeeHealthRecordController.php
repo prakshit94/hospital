@@ -538,7 +538,7 @@ class EmployeeHealthRecordController extends Controller
     }
 
     // PDF printing methods will now receive HealthCheckup instead of the old record
-    public function print(HealthCheckup $record)
+    public function print(Request $request, HealthCheckup $record)
     {
         $record->loadMissing(['employee.company']);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print', [
@@ -546,12 +546,20 @@ class EmployeeHealthRecordController extends Controller
             'employee' => $record->employee
         ]);
         
+        $filename = "Medical_Report_{$record->employee->employee_id}.pdf";
+        
+        if ($request->query('action') === 'stream') {
+            return $pdf->setPaper('a4')
+                       ->setOption(['isRemoteEnabled' => true])
+                       ->stream($filename);
+        }
+
         return $pdf->setPaper('a4')
                    ->setOption(['isRemoteEnabled' => true])
-                   ->download("Medical_Report_{$record->employee->employee_id}.pdf");
+                   ->download($filename);
     }
 
-    public function printForm32(HealthCheckup $record)
+    public function printForm32(Request $request, HealthCheckup $record)
     {
         $record->loadMissing(['employee.company']);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form32', [
@@ -559,12 +567,20 @@ class EmployeeHealthRecordController extends Controller
             'employee' => $record->employee
         ]);
         
+        $filename = "Form_32_{$record->employee->employee_id}.pdf";
+        
+        if ($request->query('action') === 'stream') {
+            return $pdf->setPaper('a4', 'landscape')
+                       ->setOption(['isRemoteEnabled' => true])
+                       ->stream($filename);
+        }
+
         return $pdf->setPaper('a4', 'landscape')
                    ->setOption(['isRemoteEnabled' => true])
-                   ->download("Form_32_{$record->employee->employee_id}.pdf");
+                   ->download($filename);
     }
 
-    public function printForm33(HealthCheckup $record)
+    public function printForm33(Request $request, HealthCheckup $record)
     {
         $record->loadMissing(['employee.company']);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('health-records.print_form33', [
@@ -572,12 +588,20 @@ class EmployeeHealthRecordController extends Controller
             'employee' => $record->employee
         ]);
         
+        $filename = "Form_33_{$record->employee->employee_id}.pdf";
+        
+        if ($request->query('action') === 'stream') {
+            return $pdf->setPaper('a4', 'portrait')
+                       ->setOption(['isRemoteEnabled' => true])
+                       ->stream($filename);
+        }
+
         return $pdf->setPaper('a4', 'portrait')
                    ->setOption(['isRemoteEnabled' => true])
-                   ->download("Form_33_{$record->employee->employee_id}.pdf");
+                   ->download($filename);
     }
 
-    public function printAll(HealthCheckup $record): \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse|RedirectResponse
+    public function printAll(Request $request, HealthCheckup $record): \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse|RedirectResponse
     {
         $record->loadMissing(['employee.company', 'documents']);
 
@@ -667,7 +691,13 @@ class EmployeeHealthRecordController extends Controller
         }
 
         if (file_exists($mergedPdfPath)) {
-            return response()->download($mergedPdfPath, "Complete_Report_{$record->employee->employee_id}.pdf")->deleteFileAfterSend(true);
+            $filename = "Complete_Report_{$record->employee->employee_id}.pdf";
+            if ($request->query('action') === 'stream') {
+                return response()->file($mergedPdfPath, [
+                    'Content-Disposition' => 'inline; filename="' . $filename . '"'
+                ])->deleteFileAfterSend(true);
+            }
+            return response()->download($mergedPdfPath, $filename)->deleteFileAfterSend(true);
         }
 
         return back()->withErrors(['error' => 'Failed to generate combined PDF report.']);
@@ -741,7 +771,13 @@ class EmployeeHealthRecordController extends Controller
             ->setPaper('a4', $paper)
             ->setOption(['isRemoteEnabled' => true]);
             
-        return $pdf->download("Bulk_{$formType}_" . date('Ymd_His') . ".pdf");
+        $filename = "Bulk_{$formType}_" . date('Ymd_His') . ".pdf";
+        
+        if ($request->input('stream') === 'true') {
+            return $pdf->stream($filename);
+        }
+            
+        return $pdf->download($filename);
     }
 
     /**

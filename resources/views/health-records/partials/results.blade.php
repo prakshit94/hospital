@@ -17,7 +17,7 @@
     bulkAction(action, formType = 'medical_report') {
         if (this.selected.length === 0) return;
         
-        if (action === 'print') {
+        if (action === 'print' || action === 'stream') {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '{{ route('health-records.bulk-action') }}';
@@ -32,8 +32,16 @@
             const actionInput = document.createElement('input');
             actionInput.type = 'hidden';
             actionInput.name = 'action';
-            actionInput.value = 'print';
+            actionInput.value = 'print'; // the route handler uses 'print' for both
             form.appendChild(actionInput);
+
+            if (action === 'stream') {
+                const streamInput = document.createElement('input');
+                streamInput.type = 'hidden';
+                streamInput.name = 'stream';
+                streamInput.value = 'true';
+                form.appendChild(streamInput);
+            }
 
             const typeInput = document.createElement('input');
             typeInput.type = 'hidden';
@@ -146,9 +154,23 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                 </button>
                 <div x-show="openPrint" x-cloak x-transition.opacity.duration.200ms class="absolute left-0 top-full z-20 mt-2 min-w-[220px] overflow-hidden rounded-2xl border border-border bg-popover p-1.5 shadow-xl">
-                    <button type="button" @click="bulkAction('print', 'medical_report'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Medical Report</button>
-                    <button type="button" @click="bulkAction('print', 'form32'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 32 (Register)</button>
-                    <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-foreground transition hover:bg-secondary hover:text-primary">Form 33 (Fitness)</button>
+                    <div class="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Medical Report</div>
+                    <div class="flex px-2 pb-2 gap-1.5">
+                        <button type="button" @click="bulkAction('stream', 'medical_report'); openPrint = false" class="flex-1 rounded-lg bg-primary/10 py-1.5 text-[10px] font-bold uppercase text-primary transition hover:bg-primary/20">Print</button>
+                        <button type="button" @click="bulkAction('print', 'medical_report'); openPrint = false" class="flex-1 rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</button>
+                    </div>
+                    
+                    <div class="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Form 32 (Register)</div>
+                    <div class="flex px-2 pb-2 gap-1.5">
+                        <button type="button" @click="bulkAction('stream', 'form32'); openPrint = false" class="flex-1 rounded-lg bg-emerald-500/10 py-1.5 text-[10px] font-bold uppercase text-emerald-600 transition hover:bg-emerald-500/20">Print</button>
+                        <button type="button" @click="bulkAction('print', 'form32'); openPrint = false" class="flex-1 rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</button>
+                    </div>
+                    
+                    <div class="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Form 33 (Fitness)</div>
+                    <div class="flex px-2 pb-1 gap-1.5">
+                        <button type="button" @click="bulkAction('stream', 'form33'); openPrint = false" class="flex-1 rounded-lg bg-blue-500/10 py-1.5 text-[10px] font-bold uppercase text-blue-600 transition hover:bg-blue-500/20">Print</button>
+                        <button type="button" @click="bulkAction('print', 'form33'); openPrint = false" class="flex-1 rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</button>
+                    </div>
                 </div>
             </div>
 
@@ -394,31 +416,29 @@
 
                                 @if(!$record->trashed())
                                     <div class="my-1 border-t border-border/50"></div>
-                                    <a href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
-                                        </svg>
-                                        Medical Report
-                                    </a>
-                                    <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500/10">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
-                                        </svg>
-                                        Print Form 32
-                                    </a>
-                                    <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-500/10">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-                                        </svg>
-                                        Print Form 33
-                                    </a>
-                                    <div class="my-1 border-t border-border/50"></div>
-                                    <a href="{{ route('health-records.print-all', $record->uuid) }}" target="_blank" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                            <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
-                                        </svg>
-                                        Print Complete Report
-                                    </a>
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Medical Report</div>
+                                    <div class="flex px-3 pb-2 gap-1.5">
+                                        <a href="{{ route('health-records.print', ['record' => $record->uuid, 'action' => 'stream']) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-primary/10 py-1.5 text-[10px] font-bold uppercase text-primary transition hover:bg-primary/20">Print</a>
+                                        <a href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</a>
+                                    </div>
+                                    
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Form 32 (Register)</div>
+                                    <div class="flex px-3 pb-2 gap-1.5">
+                                        <a href="{{ route('health-records.print-form32', ['record' => $record->uuid, 'action' => 'stream']) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-emerald-500/10 py-1.5 text-[10px] font-bold uppercase text-emerald-600 transition hover:bg-emerald-500/20">Print</a>
+                                        <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</a>
+                                    </div>
+                                    
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Form 33 (Fitness)</div>
+                                    <div class="flex px-3 pb-2 gap-1.5">
+                                        <a href="{{ route('health-records.print-form33', ['record' => $record->uuid, 'action' => 'stream']) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-blue-500/10 py-1.5 text-[10px] font-bold uppercase text-blue-600 transition hover:bg-blue-500/20">Print</a>
+                                        <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</a>
+                                    </div>
+                                    
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Complete Report</div>
+                                    <div class="flex px-3 pb-2 gap-1.5">
+                                        <a href="{{ route('health-records.print-all', ['record' => $record->uuid, 'action' => 'stream']) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-primary/10 py-1.5 text-[10px] font-bold uppercase text-primary transition hover:bg-primary/20">Print</a>
+                                        <a href="{{ route('health-records.print-all', $record->uuid) }}" target="_blank" class="flex-1 flex items-center justify-center rounded-lg bg-secondary py-1.5 text-[10px] font-bold uppercase text-foreground transition hover:bg-secondary/80">Download</a>
+                                    </div>
                                     <div class="my-1 border-t border-border/50"></div>
                                     <a href="{{ route('health-records.edit', $record->uuid) }}" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-secondary hover:text-primary">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
