@@ -386,7 +386,7 @@
                         <th>{{ $num++ }}. Past History</th><td colspan="3">{{ $record->past_history }}</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. Complaint</th><td colspan="3">{{ $record->present_complain }}</td>
+                        <th>{{ $num++ }}. Present Complaint</th><td colspan="3">{{ $record->present_complain }}</td>
                     </tr>
                 </table>
             </div>
@@ -465,14 +465,14 @@
                         <th>{{ $num++ }}. SGPT</th><td>{{ $record->sgpt }} U/L</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. Creatinine</th><td>{{ $record->s_creatinine }} mg/dL</td>
+                        <th>{{ $num++ }}. Creatinines.</th><td>{{ $record->s_creatinine }} mg/dL</td>
                         <th>{{ $num++ }}. RBS</th><td>{{ $record->rbs }} mg/dL</td>
-                        <th>{{ $num++ }}. Cholesterol</th><td>{{ $record->s_chol }} mg/dL</td>
+                        <th>{{ $num++ }}. Cholesterols.</th><td>{{ $record->s_chol }} mg/dL</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. TRG</th><td>{{ $record->s_trg }} mg/dL</td>
-                        <th>{{ $num++ }}. HDL</th><td>{{ $record->s_hdl }} mg/dL</td>
-                        <th>{{ $num++ }}. LDL</th><td>{{ $record->s_ldl }} mg/dL</td>
+                        <th>{{ $num++ }}. TRGS.</th><td>{{ $record->s_trg }} mg/dL</td>
+                        <th>{{ $num++ }}. HDLS.</th><td>{{ $record->s_hdl }} mg/dL</td>
+                        <th>{{ $num++ }}. LDLS.</th><td>{{ $record->s_ldl }} mg/dL</td>
                     </tr>
                 </table>
                 <table>
