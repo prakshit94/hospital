@@ -502,7 +502,7 @@
             @foreach(['family_father' => 'Father', 'family_mother' => 'Mother', 'family_brother' => 'Brother', 'family_sister' => 'Sister'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'NAD') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
