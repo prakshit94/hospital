@@ -482,7 +482,7 @@
             <tr>
                 <th>{{ $num++ }}. Sugar</th><td>{{ $record->urine_sugar }}</td>
                 <th>{{ $num++ }}. Pus Cells</th><td>{{ $record->urine_pus_cell }} /h.p.f</td>
-                <th>{{ $num++ }}. RBC</th><td>{{ $record->urine_rbc }}</td>
+                <th>{{ $num++ }}. UrineRBC</th><td>{{ $record->urine_rbc }}</td>
             </tr>
             <tr>
                 <th>{{ $num++ }}. EpiCell</th><td>{{ $record->urine_epi_cell }} /h.p.f</td>
