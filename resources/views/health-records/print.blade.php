@@ -362,6 +362,10 @@
                 <th>{{ $num++ }}. Br. Asthma</th><td>{{ $record->asthma }}</td>
             </tr>
         </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">{{ $sectionNum++ }}. Any History Of</div>
         <table>
             <tr>
                 <th>{{ $num++ }}. Heart Disease</th><td colspan="3">{{ $record->heart_disease }}</td>
@@ -370,7 +374,7 @@
                 <th>{{ $num++ }}. Past History</th><td colspan="3">{{ $record->past_history }}</td>
             </tr>
             <tr>
-                <th>{{ $num++ }}. Complaint</th><td colspan="3">{{ $record->present_complain }}</td>
+                <th>{{ $num++ }}. Present Complaint</th><td colspan="3">{{ $record->present_complain }}</td>
             </tr>
         </table>
     </div>
