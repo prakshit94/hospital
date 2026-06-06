@@ -282,7 +282,7 @@
                     </label>
                     <input type="text"
                            name="near_vision_right"
-                           value="{{ old('near_vision_right', $record->near_vision_right ?? '') }}"
+                           value="{{ old('near_vision_right', $record->near_vision_right ?? 'N/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
 
@@ -292,7 +292,7 @@
                     </label>
                     <input type="text"
                            name="distant_vision_right"
-                           value="{{ old('distant_vision_right', $record->distant_vision_right ?? '') }}"
+                           value="{{ old('distant_vision_right', $record->distant_vision_right ?? '6/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
             </div>
@@ -311,7 +311,7 @@
                     </label>
                     <input type="text"
                            name="near_vision_right_without"
-                           value="{{ old('near_vision_right_without', $record->near_vision_right_without ?? '') }}"
+                           value="{{ old('near_vision_right_without', $record->near_vision_right_without ?? 'N/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
 
@@ -321,7 +321,7 @@
                     </label>
                     <input type="text"
                            name="distant_vision_right_without"
-                           value="{{ old('distant_vision_right_without', $record->distant_vision_right_without ?? '') }}"
+                           value="{{ old('distant_vision_right_without', $record->distant_vision_right_without ?? '6/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
             </div>
@@ -347,7 +347,7 @@
                     </label>
                     <input type="text"
                            name="near_vision_left"
-                           value="{{ old('near_vision_left', $record->near_vision_left ?? '') }}"
+                           value="{{ old('near_vision_left', $record->near_vision_left ?? 'N/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
 
@@ -357,7 +357,7 @@
                     </label>
                     <input type="text"
                            name="distant_vision_left"
-                           value="{{ old('distant_vision_left', $record->distant_vision_left ?? '') }}"
+                           value="{{ old('distant_vision_left', $record->distant_vision_left ?? '6/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
             </div>
@@ -376,7 +376,7 @@
                     </label>
                     <input type="text"
                            name="near_vision_left_without"
-                           value="{{ old('near_vision_left_without', $record->near_vision_left_without ?? '') }}"
+                           value="{{ old('near_vision_left_without', $record->near_vision_left_without ?? 'N/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
 
@@ -386,7 +386,7 @@
                     </label>
                     <input type="text"
                            name="distant_vision_left_without"
-                           value="{{ old('distant_vision_left_without', $record->distant_vision_left_without ?? '') }}"
+                           value="{{ old('distant_vision_left_without', $record->distant_vision_left_without ?? '6/') }}"
                            class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
             </div>
