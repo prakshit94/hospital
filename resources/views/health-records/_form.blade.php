@@ -422,10 +422,20 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-            @foreach(['eye' => 'Eye', 'nose' => 'Nose', 'ear' => 'Ear', 'conjunctiva' => 'Conjunctiva', 'tongue' => 'Tongue', 'nails' => 'Nails', 'throat' => 'Throat', 'skin' => 'Skin', 'teeth' => 'Teeth', 'pefr' => 'PEFR', 'eczema' => 'Eczema', 'cyanosis' => 'Cyanosis', 'jaundice' => 'Jaundice', 'anaemia' => 'Anaemia', 'oedema' => 'Oedema', 'clubbing' => 'Clubbing', 'allergy_status' => 'Allergy'] as $key => $label)
+            @php
+                $localExamFields = [
+                    'eye' => ['Eye', 'Normal'], 'nose' => ['Nose', 'Normal'], 'ear' => ['Ear', 'Normal'],
+                    'conjunctiva' => ['Conjunctiva', 'Normal'], 'tongue' => ['Tongue', 'Normal'], 'nails' => ['Nails', 'Normal'],
+                    'throat' => ['Throat', 'Normal'], 'skin' => ['Skin', 'Normal'], 'teeth' => ['Teeth', 'Normal'],
+                    'pefr' => ['PEFR', 'Normal'], 'eczema' => ['Eczema', 'No'], 'cyanosis' => ['Cyanosis', 'No'],
+                    'jaundice' => ['Jaundice', 'No'], 'anaemia' => ['Anaemia', 'No'], 'oedema' => ['Oedema', 'No'],
+                    'clubbing' => ['Clubbing', 'No'], 'allergy_status' => ['Allergy', 'No']
+                ];
+            @endphp
+            @foreach($localExamFields as $key => $data)
                 <div class="space-y-2">
-                    <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
+                    <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $data[0] }}</label>
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? $data[1]) }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
@@ -447,7 +457,7 @@
             @foreach(['hypertension' => 'Hypertension', 'diabetes' => 'Diabetes', 'dyslipidemia' => 'Dyslipidemia', 'radiation_effect' => 'Radiation Effect', 'vertigo' => 'Vertigo', 'tuberculosis' => 'Tuberculosis', 'thyroid_disorder' => 'Thyroid Disorder', 'epilepsy' => 'Epilepsy', 'asthma' => 'Bronchial Asthma (Br_Asthma)', 'heart_disease' => 'Heart Disease'] as $key => $label)
                 <div class="space-y-2">
                     <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? 'No') }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
