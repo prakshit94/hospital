@@ -226,7 +226,7 @@
                 <div class="section-title">{{ $sectionNum++ }}. Physical Examination</div>
                 <table class="cols-6">
                     <tr>
-                        <th>{{ $num++ }}. Temprature</th><td>{{ $record->temperature }} °F</td>
+                        <th>{{ $num++ }}. Temperature</th><td>{{ $record->temperature }} °F</td>
                         <th>{{ $num++ }}. Height</th><td>{{ $record->height }} cm</td>
                         <th>{{ $num++ }}. Weight</th><td>{{ $record->weight }} kg</td>
                     </tr>
