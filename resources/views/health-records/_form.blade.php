@@ -130,6 +130,7 @@
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Dependents</label>
                 <input type="text" name="dependent" value="{{ old('dependent', $prefillEmployee?->dependent ?? $record->dependent ?? '') }}"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').split('').join('+')"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
 
