@@ -280,12 +280,11 @@ table, tr, td {
                         {{ optional($record->examination_date)->format('d-m-Y') }}
                     </td>
                     <td>
-                        {{ $record->health_status ?? 'Fit' }}<br>
-                        {{ $record->job_restriction ?? '' }}
+
                         
                         {{-- Preserves existing data exactly and prints the 6-month added date cleanly below --}}
                         @if($record->examination_date)
-                            <br>{{ $record->examination_date->addMonths(6)->format('d-m-Y') }}
+                        {{ $record->examination_date->addMonths(6)->format('d-m-Y') }}
                         @endif
                     </td>
                     <td>
