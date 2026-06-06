@@ -525,7 +525,7 @@
                 </td>
                 <td>
                     <div class="signature-line">Medical Officer Seal &amp; Signature</div>
-                    <div style="font-size:8px;margin-top:3px;">Dr. {{ $record->doctor_name }} | {{ $record->doctor_seal }}</div>
+                    <div style="font-size:8px;margin-top:3px;">Dr. {{ $record->doctor_name }} | {{ $record->doctor_qualification }} | {{ $record->doctor_seal }}</div>
                 </td>
             </tr>
         </table>

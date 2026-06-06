@@ -396,6 +396,7 @@
                   <td class="text-center">
                      <div style="font-weight:bold;">{{ $examDate }}</div>
                      <div>{{ $record->doctor_name ?? '-' }}</div>
+                     <div>{{ $record->doctor_qualification ?? '' }}</div>
                   </td>
                </tr>
             </tbody>
