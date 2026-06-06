@@ -314,13 +314,14 @@
 
                      {{-- ── Symptoms / Vitals / Examination (col 10 — widest) ── --}}
                      <td>
-                        <div><span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
-                        <div style="border-top:0.5px solid #000; margin-top:1px; padding-top:1px;">
-                           <div><span class="label">Ht:</span> {{ $record->height ?? '-' }}cm &nbsp;<span class="label">Wt:</span> {{ $record->weight ?? '-' }}kg</div>
-                           <div><span class="label">Chest:</span> {{ $record->chest_before ?? '-' }}/{{ $record->chest_after ?? '-' }}</div>
-                           <div><span class="label">Temp:</span> {{ $record->temperature ?? '-' }}°F &nbsp;<span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }}bpm</div>
-                           <div><span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}</div>
-                        </div>
+                        <div>• <span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
+                        <div>• <span class="label">Height:</span> {{ $record->height ?? '-' }} cm</div>
+                        <div>• <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg</div>
+                        <div>• <span class="label">Chest (Before/After):</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }} cm</div>
+                        <div>• <span class="label">Temperature:</span> {{ $record->temperature ?? '-' }} °F</div>
+                        <div>• <span class="label">Pulse:</span> {{ $record->heart_rate ?? '-' }} bpm</div>
+                        <div>• <span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }} mmHg</div>
+                        
                         <table class="vision-table">
                            <tr><th rowspan="2">Vision</th><th colspan="2">With Specs</th><th colspan="2">Without Specs</th></tr>
                            <tr><th>R</th><th>L</th><th>R</th><th>L</th></tr>
@@ -328,44 +329,25 @@
                            <tr><td>Dist</td><td>{{ $record->distant_vision_right ?? '-' }}</td><td>{{ $record->distant_vision_left ?? '-' }}</td><td>{{ $record->distant_vision_right_without ?? '-' }}</td><td>{{ $record->distant_vision_left_without ?? '-' }}</td></tr>
                            <tr><td>Colour</td><td colspan="4">{{ $record->colour_vision ?? '-' }}</td></tr>
                         </table>
-                        <div style="border-top:0.5px solid #000; margin-top:1px; padding-top:1px;">
-                           <table style="width:100%; border:none; border-collapse:collapse;">
-                              <tr>
-                                 <td style="border:none; padding:0; width:33%; vertical-align:top;">
-                                    <b>Ear:</b> {{ $record->ear ?? '-' }}<br>
-                                    <b>Throat:</b> {{ $record->throat ?? '-' }}<br>
-                                    <b>Nose:</b> {{ $record->nose ?? '-' }}<br>
-                                    <b>Eye:</b> {{ $record->eye ?? '-' }}<br>
-                                    <b>Conj:</b> {{ $record->conjunctiva ?? '-' }}
-                                 </td>
-                                 <td style="border:none; padding:0; width:33%; vertical-align:top;">
-                                    <b>Skin:</b> {{ $record->skin ?? '-' }}<br>
-                                    <b>Tongue:</b> {{ $record->tongue ?? '-' }}<br>
-                                    <b>Nails:</b> {{ $record->nails ?? '-' }}<br>
-                                    <b>Teeth:</b> {{ $record->teeth ?? '-' }}<br>
-                                    <b>Lymph:</b> {{ $record->lymphnode ?? '-' }}
-                                 </td>
-                                 <td style="border:none; padding:0; width:34%; vertical-align:top;">
-                                    <b>Cyan:</b> {{ $record->cyanosis ?? '-' }}<br>
-                                    <b>Jaund:</b> {{ $record->jaundice ?? '-' }}<br>
-                                    <b>Anae:</b> {{ $record->anaemia ?? '-' }}<br>
-                                    <b>Oede:</b> {{ $record->oedema ?? '-' }}<br>
-                                    <b>Club:</b> {{ $record->clubbing ?? '-' }}
-                                 </td>
-                              </tr>
-                           </table>
-                           <div><b>Allergy:</b> {{ $record->allergy_status ?? '-' }} | <b>PEFR:</b> {{ $record->pefr ?? '-' }} | <b>Eczema:</b> {{ $record->eczema ?? '-' }}</div>
-                           <div><b>CVS:</b> {{ $record->cvs ?? '-' }} | <b>CNS:</b> {{ $record->cns ?? '-' }} | <b>Abd:</b> {{ $record->per_abdomen ?? '-' }} | <b>Resp:</b> {{ $record->resp_system ?? '-' }} | <b>GU:</b> {{ $record->genito_urinary ?? '-' }}</div>
-                        </div>
+                        
+                        <div>• <span class="label">Ear:</span> {{ $record->ear ?? '-' }}</div>
+                        <div>• <span class="label">Throat:</span> {{ $record->throat ?? '-' }}</div>
+                        <div>• <span class="label">Nose:</span> {{ $record->nose ?? '-' }}</div>
+                        <div>• <span class="label">Eye:</span> {{ $record->eye ?? '-' }}</div>
+                        <div>• <span class="label">Conjunctiva:</span> {{ $record->conjunctiva ?? '-' }}</div>
+                        <div>• <span class="label">Skin:</span> {{ $record->skin ?? '-' }}</div>
+                        <div>• <span class="label">Tongue:</span> {{ $record->tongue ?? '-' }}</div>
+                        <div>• <span class="label">Nails:</span> {{ $record->nails ?? '-' }}</div>
+                        <div>• <span class="label">CVS:</span> {{ $record->cvs ?? '-' }}</div>
+                        <div>• <span class="label">Abdomen:</span> {{ $record->per_abdomen ?? '-' }}</div>
+                        <div>• <span class="label">CNS:</span> {{ $record->cns ?? '-' }}</div>
+                        <div>• <span class="label">Urine Albumin:</span> {{ $record->urine_albumin ?? '-' }}</div>
+                        <div>• <span class="label">Urine Sugar:</span> {{ $record->urine_sugar ?? '-' }}</div>
                      </td>
 
                      {{-- ── Tests & Results (col 11) ── --}}
-                     <td>
-                        <span class="label">HB:</span> {{ $record->hb ?? '-' }}<br>
-                        <span class="label">FBS:</span> {{ $record->fbs ?? '-' }}<br>
-                        <span class="label">U.Alb:</span> {{ $record->urine_albumin ?? '-' }}<br>
-                        <span class="label">U.Sug:</span> {{ $record->urine_sugar ?? '-' }}<br>
-                        <span class="label">X-Ray:</span> {{ $record->xray_chest ?? '-' }}
+                     <td class="text-center">
+                        <span class="label">{{ $status ?: '-' }}</span>
                      </td>
 
                      {{-- ── Fit / Unfit (col 12) ── --}}
