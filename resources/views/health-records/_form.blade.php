@@ -672,7 +672,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div class="space-y-2">
                 <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Doctor Name</label>
-                <input type="text" name="doctor_name" value="{{ old('doctor_name', $record->doctor_name ?? 'Dr. NILAY R. JAIN') }}"
+                <input type="text" name="doctor_name" value="{{ old('doctor_name', $record->doctor_name ?? 'NILAY R. JAIN') }}"
                        class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
             <div class="space-y-2">
