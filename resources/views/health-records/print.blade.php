@@ -211,20 +211,7 @@
         </table>
     </div>
 
-    {{-- 2. Occupational Details --}}
-    <div class="section">
-        <div class="section-title">{{ $sectionNum++ }}. Occupational Details</div>
-        <table>
-            <tr>
-                <th>{{ $num++ }}. Hazardous Process</th><td>{{ $record->hazardous_process ?? 'N/A' }}</td>
-                <th>{{ $num++ }}. Dangerous Operation</th><td>{{ $record->dangerous_operation ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <th>{{ $num++ }}. Materials Exposed</th><td>{{ $record->materials_exposed ?? 'N/A' }}</td>
-                <th>{{ $num++ }}. Prev. Occ. History</th><td>{{ $record->prev_occ_history }}</td>
-            </tr>
-        </table>
-    </div>
+
 
     {{-- 3. Physical Examination — 3 pairs per row, use cols-6 class --}}
     <div class="section">
