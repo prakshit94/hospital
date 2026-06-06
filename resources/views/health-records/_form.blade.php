@@ -521,10 +521,20 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach(['resp_system' => 'Respiratory System', 'genito_urinary' => 'Genito Urinary System', 'cvs' => 'CVS (Cardiovascular System)', 'cns' => 'CNS (Central Nervous System)', 'per_abdomen' => 'Per Abdomen', 'ent' => 'ENT'] as $key => $label)
+            @php
+                $systemicExamFields = [
+                    'resp_system' => ['Respiratory System', 'Normal'],
+                    'genito_urinary' => ['Genito Urinary System', 'Normal'],
+                    'cvs' => ['CVS (Cardiovascular System)', 'S1,S2-Normal,No Murmur'],
+                    'cns' => ['CNS (Central Nervous System)', 'Normal'],
+                    'per_abdomen' => ['Per Abdomen', 'Soft Spleen,Liver,Not Palpable'],
+                    'ent' => ['ENT', 'NAD']
+                ];
+            @endphp
+            @foreach($systemicExamFields as $key => $data)
                 <div class="space-y-2">
-                    <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $label }}</label>
-                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? '') }}"
+                    <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. {{ $data[0] }}</label>
+                    <input type="text" name="{{ $key }}" value="{{ old($key, $record->$key ?? $data[1]) }}"
                            class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
                 </div>
             @endforeach
