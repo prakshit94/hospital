@@ -186,8 +186,10 @@ table, tr, td {
         <tr>
         <td class="lbl">7. Name &amp; address of the factory :</td>
         <td class="val">
-            : {{ optional($record->company)->name ?? $record->company_name }}<br>
-            {{ optional($record->company)->address ?? '' }}
+            : {{ $record->company_name }}<br>
+            @if(optional($record->employee->company)->address)
+                &nbsp;&nbsp;{{ $record->employee->company->address }}
+            @endif
         </td>
     </tr>
 

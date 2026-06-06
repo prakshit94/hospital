@@ -247,6 +247,9 @@
                <td>
                   <span class="label">{{ $num++ }}. Company:</span>
                   {{ $record->company_name }}
+                  @if(optional($record->employee->company)->address)
+                      <br>{{ $record->employee->company->address }}
+                  @endif
                </td>
                <td>
                   <span class="label">{{ $num++ }}. Address:</span>

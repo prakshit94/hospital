@@ -180,7 +180,13 @@
                 <th>{{ $num++ }}. Mobile Number</th><td>{{ $record->mobile }}</td>
             </tr>
             <tr>
-                <th>{{ $num++ }}. Company Name & Address</th><td>{{ $record->company_name }}</td>
+                <th>{{ $num++ }}. Company Name & Address</th>
+                <td>
+                    {{ $record->company_name }}
+                    @if(optional($record->employee->company)->address)
+                        <br>{{ $record->employee->company->address }}
+                    @endif
+                </td>
                 <th>{{ $num++ }}. Department</th><td>{{ $record->department }}</td>
             </tr>
             <tr>
