@@ -523,7 +523,7 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             @php
                 $systemicExamFields = [
-                    'resp_system' => ['Respiratory System', 'Normal'],
+                    'resp_system' => ['Respiratory System', 'Air Entry Bilateral Equal, No Creps/Rhonchi'],
                     'genito_urinary' => ['Genito Urinary System', 'Normal'],
                     'cvs' => ['CVS (Cardiovascular System)', 'S1,S2-Normal,No Murmur'],
                     'cns' => ['CNS (Central Nervous System)', 'Normal'],
