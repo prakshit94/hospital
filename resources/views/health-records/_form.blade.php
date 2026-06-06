@@ -112,7 +112,7 @@
             </div>
 
             <div class="space-y-2">
-                <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Company Name <span class="text-red-500">*</span></label>
+                <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Company Name & Address <span class="text-red-500">*</span></label>
                 <select name="company_id" required id="company_id"
                         class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20 @error('company_id') border-red-500 @enderror">
                     <option value="">Select Company</option>

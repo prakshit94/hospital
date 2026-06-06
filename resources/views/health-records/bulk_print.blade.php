@@ -186,7 +186,7 @@
                         <th>{{ $num++ }}. Date of Exam</th><td>{{ $formatDate($record->examination_date) }}</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. Full Name</th><td><strong>{{ strtoupper($record->full_name) }}</strong></td>
+                        <th>{{ $num++ }}. Employee Name</th><td><strong>{{ strtoupper($record->full_name) }}</strong></td>
                         <th>{{ $num++ }}. Father's Name</th><td>{{ $record->father_name }}</td>
                     </tr>
                     <tr>
@@ -202,7 +202,7 @@
                         <th>{{ $num++ }}. Mobile</th><td>{{ $record->mobile }}</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. Company</th><td>{{ $record->company_name }}</td>
+                        <th>{{ $num++ }}. Company Name & Address</th><td>{{ $record->company_name }}</td>
                         <th>{{ $num++ }}. Department</th><td>{{ $record->department }}</td>
                     </tr>
                     <tr>
