@@ -190,7 +190,7 @@
                         <th>{{ $num++ }}. Father's Name</th><td>{{ $record->father_name }}</td>
                     </tr>
                     <tr>
-                        <th>{{ $num++ }}. DOB</th><td>{{ $formatDate($record->dob) }}</td>
+                        <th>{{ $num++ }}. Date Of Birth</th><td>{{ $formatDate($record->dob) }}</td>
                         <th>{{ $num++ }}. Age</th><td>{{ $getAge($record->dob) }} Years</td>
                     </tr>
                     <tr>
@@ -199,7 +199,7 @@
                     </tr>
                     <tr>
                         <th>{{ $num++ }}. Blood Group</th><td>{{ $record->blood_group }}</td>
-                        <th>{{ $num++ }}. Mobile</th><td>{{ $record->mobile }}</td>
+                        <th>{{ $num++ }}. Mobile Number</th><td>{{ $record->mobile }}</td>
                     </tr>
                     <tr>
                         <th>{{ $num++ }}. Company Name & Address</th><td>{{ $record->company_name }}</td>
@@ -230,7 +230,7 @@
                 <div class="section-title">{{ $sectionNum++ }}. Physical Examination</div>
                 <table class="cols-6">
                     <tr>
-                        <th>{{ $num++ }}. Temp</th><td>{{ $record->temperature }} °F</td>
+                        <th>{{ $num++ }}. Temprature</th><td>{{ $record->temperature }} °F</td>
                         <th>{{ $num++ }}. Height</th><td>{{ $record->height }} cm</td>
                         <th>{{ $num++ }}. Weight</th><td>{{ $record->weight }} kg</td>
                     </tr>
