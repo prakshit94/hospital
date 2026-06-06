@@ -341,11 +341,11 @@
                         <div><span class="label">BP:</span> {{ isset($record->bp_systolic) ? $record->bp_systolic.'/'.$record->bp_diastolic : '-' }}</div>
                      </div>
                      <table class="vision-table">
-                        <tr><th>Vision</th><th>R</th><th>L</th></tr>
-                        <tr><td>Specs</td><td>{{ $record->right_eye_specs ?? '-' }}</td><td>{{ $record->left_eye_specs ?? '-' }}</td></tr>
-                        <tr><td>Near</td><td>{{ $record->near_vision_right ?? '-' }}</td><td>{{ $record->near_vision_left ?? '-' }}</td></tr>
-                        <tr><td>Dist</td><td>{{ $record->distant_vision_right ?? '-' }}</td><td>{{ $record->distant_vision_left ?? '-' }}</td></tr>
-                        <tr><td>Colour</td><td colspan="2">{{ $record->colour_vision ?? '-' }}</td></tr>
+                        <tr><th rowspan="2">Vision</th><th colspan="2">With Specs</th><th colspan="2">Without Specs</th></tr>
+                        <tr><th>R</th><th>L</th><th>R</th><th>L</th></tr>
+                        <tr><td>Near</td><td>{{ $record->near_vision_right ?? '-' }}</td><td>{{ $record->near_vision_left ?? '-' }}</td><td>{{ $record->near_vision_right_without ?? '-' }}</td><td>{{ $record->near_vision_left_without ?? '-' }}</td></tr>
+                        <tr><td>Dist</td><td>{{ $record->distant_vision_right ?? '-' }}</td><td>{{ $record->distant_vision_left ?? '-' }}</td><td>{{ $record->distant_vision_right_without ?? '-' }}</td><td>{{ $record->distant_vision_left_without ?? '-' }}</td></tr>
+                        <tr><td>Colour</td><td colspan="4">{{ $record->colour_vision ?? '-' }}</td></tr>
                      </table>
                      <div style="border-top:0.5px solid #000; margin-top:1px; padding-top:1px;">
                         <table style="width:100%; border:none; border-collapse:collapse;">

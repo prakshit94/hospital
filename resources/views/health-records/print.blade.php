@@ -256,21 +256,64 @@
     {{-- 4. Vision Examination --}}
     <div class="section">
         <div class="section-title">{{ $sectionNum++ }}. Vision Examination</div>
+        <table style="width: 100%; border: none; margin-bottom: 3px;">
+            <tr>
+                <td style="width: 49%; padding: 0; vertical-align: top; border: none;">
+                    <table style="margin-bottom: 0;">
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#e9ecef; font-size: 10px;">RIGHT EYE</th>
+                        </tr>
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#f8f9fa;">With Specs</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 50%;">Near Vision</th><td>{{ $record->near_vision_right }}</td>
+                        </tr>
+                        <tr>
+                            <th>Distant Vision</th><td>{{ $record->distant_vision_right }}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#f8f9fa;">Without Specs</th>
+                        </tr>
+                        <tr>
+                            <th>Near Vision</th><td>{{ $record->near_vision_right_without }}</td>
+                        </tr>
+                        <tr>
+                            <th>Distant Vision</th><td>{{ $record->distant_vision_right_without }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="width: 2%; border: none;"></td>
+                <td style="width: 49%; padding: 0; vertical-align: top; border: none;">
+                    <table style="margin-bottom: 0;">
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#e9ecef; font-size: 10px;">LEFT EYE</th>
+                        </tr>
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#f8f9fa;">With Specs</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 50%;">Near Vision</th><td>{{ $record->near_vision_left }}</td>
+                        </tr>
+                        <tr>
+                            <th>Distant Vision</th><td>{{ $record->distant_vision_left }}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2" style="text-align:center; background-color:#f8f9fa;">Without Specs</th>
+                        </tr>
+                        <tr>
+                            <th>Near Vision</th><td>{{ $record->near_vision_left_without }}</td>
+                        </tr>
+                        <tr>
+                            <th>Distant Vision</th><td>{{ $record->distant_vision_left_without }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
         <table>
             <tr>
-                <th>{{ $num++ }}. Near Vision (R)</th><td>{{ $record->near_vision_right }}</td>
-                <th>{{ $num++ }}. Near Vision (L)</th><td>{{ $record->near_vision_left }}</td>
-            </tr>
-            <tr>
-                <th>{{ $num++ }}. Distant Vision (R)</th><td>{{ $record->distant_vision_right }}</td>
-                <th>{{ $num++ }}. Distant Vision (L)</th><td>{{ $record->distant_vision_left }}</td>
-            </tr>
-            <tr>
-                <th>{{ $num++ }}. Specs (R)</th><td>{{ $record->right_eye_specs }}</td>
-                <th>{{ $num++ }}. Specs (L)</th><td>{{ $record->left_eye_specs }}</td>
-            </tr>
-            <tr>
-                <th>{{ $num++ }}. Colour Vision</th><td colspan="3">{{ $record->colour_vision }}</td>
+                <th style="width: 19%;">{{ $num++ }}. Colour Vision</th><td>{{ $record->colour_vision }}</td>
             </tr>
         </table>
     </div>

@@ -741,16 +741,28 @@
                 <div class="hr-vision-grid">
                     <div class="hr-vision-box">
                         <p class="hr-vision-eye">Right Eye</p>
+                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 4px; margin-bottom: 2px;">With Specs</div>
                         <div class="hr-vision-row">
                             <span class="hr-vision-val">Distant: {{ $record->distant_vision_right ?? '--' }}</span>
                             <span class="hr-vision-val">Near: {{ $record->near_vision_right ?? '--' }}</span>
                         </div>
+                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 8px; margin-bottom: 2px;">Without Specs</div>
+                        <div class="hr-vision-row">
+                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_right_without ?? '--' }}</span>
+                            <span class="hr-vision-val">Near: {{ $record->near_vision_right_without ?? '--' }}</span>
+                        </div>
                     </div>
                     <div class="hr-vision-box">
                         <p class="hr-vision-eye">Left Eye</p>
+                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 4px; margin-bottom: 2px;">With Specs</div>
                         <div class="hr-vision-row">
                             <span class="hr-vision-val">Distant: {{ $record->distant_vision_left ?? '--' }}</span>
                             <span class="hr-vision-val">Near: {{ $record->near_vision_left ?? '--' }}</span>
+                        </div>
+                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 8px; margin-bottom: 2px;">Without Specs</div>
+                        <div class="hr-vision-row">
+                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_left_without ?? '--' }}</span>
+                            <span class="hr-vision-val">Near: {{ $record->near_vision_left_without ?? '--' }}</span>
                         </div>
                     </div>
                 </div>

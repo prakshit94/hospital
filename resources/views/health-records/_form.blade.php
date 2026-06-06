@@ -248,67 +248,167 @@
         </div>
     </div>
 
-    <!-- 4. Vision Examination -->
-    <div class="rounded-[2.5rem] border border-border bg-card p-8 shadow-sm space-y-6">
-        <div class="flex items-center gap-3 border-b border-border/50 pb-4">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
+   <!-- 4. Vision Examination -->
+
+<div class="rounded-[2.5rem] border border-border bg-card p-8 shadow-sm space-y-6">
+    <div class="flex items-center gap-3 border-b border-border/50 pb-4">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-foreground">4. Vision Examination</h3>
+    </div>
+
+<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+    <!-- Right Eye -->
+    <div class="space-y-4 rounded-2xl bg-secondary/10 p-4">
+        <h4 class="font-black text-[10px] uppercase text-primary/60 tracking-widest border-b border-primary/10 pb-2">
+            Right Eye
+        </h4>
+
+        <!-- With Specs -->
+        <div>
+            <h5 class="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
+                With Specs
+            </h5>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Near Vision
+                    </label>
+                    <input type="text"
+                           name="near_vision_right"
+                           value="{{ old('near_vision_right', $record->near_vision_right ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Distant Vision
+                    </label>
+                    <input type="text"
+                           name="distant_vision_right"
+                           value="{{ old('distant_vision_right', $record->distant_vision_right ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
             </div>
-            <h3 class="text-xl font-bold text-foreground">4. Vision Examination</h3>
         </div>
 
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <!-- Right Eye -->
-            <div class="space-y-4 rounded-2xl bg-secondary/10 p-4">
-                <h4 class="font-black text-[10px] uppercase text-primary/60 tracking-widest border-b border-primary/10 pb-2">Right Eye</h4>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Specs</label>
-                        <input type="text" name="right_eye_specs" value="{{ old('right_eye_specs', $record->right_eye_specs ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Near Vision</label>
-                        <input type="text" name="near_vision_right" value="{{ old('near_vision_right', $record->near_vision_right ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Distant Vision</label>
-                        <input type="text" name="distant_vision_right" value="{{ old('distant_vision_right', $record->distant_vision_right ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
+        <!-- Without Specs -->
+        <div>
+            <h5 class="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
+                Without Specs
+            </h5>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Near Vision
+                    </label>
+                    <input type="text"
+                           name="near_vision_right_without"
+                           value="{{ old('near_vision_right_without', $record->near_vision_right_without ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
-            </div>
-            <!-- Left Eye -->
-            <div class="space-y-4 rounded-2xl bg-secondary/10 p-4">
-                <h4 class="font-black text-[10px] uppercase text-primary/60 tracking-widest border-b border-primary/10 pb-2">Left Eye</h4>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Specs</label>
-                        <input type="text" name="left_eye_specs" value="{{ old('left_eye_specs', $record->left_eye_specs ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Near Vision</label>
-                        <input type="text" name="near_vision_left" value="{{ old('near_vision_left', $record->near_vision_left ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-muted-foreground uppercase">Distant Vision</label>
-                        <input type="text" name="distant_vision_left" value="{{ old('distant_vision_left', $record->distant_vision_left ?? '') }}"
-                               class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
-                    </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Distant Vision
+                    </label>
+                    <input type="text"
+                           name="distant_vision_right_without"
+                           value="{{ old('distant_vision_right_without', $record->distant_vision_right_without ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
                 </div>
-            </div>
-            <div class="space-y-2 md:col-span-2">
-                <label class="text-sm font-bold text-foreground/80">{{ $labelCounter++ }}. Colour Vision</label>
-                <input type="text" name="colour_vision" value="{{ old('colour_vision', $record->colour_vision ?? '') }}"
-                       class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
             </div>
         </div>
     </div>
+
+    <!-- Left Eye -->
+    <div class="space-y-4 rounded-2xl bg-secondary/10 p-4">
+        <h4 class="font-black text-[10px] uppercase text-primary/60 tracking-widest border-b border-primary/10 pb-2">
+            Left Eye
+        </h4>
+
+        <!-- With Specs -->
+        <div>
+            <h5 class="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
+                With Specs
+            </h5>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Near Vision
+                    </label>
+                    <input type="text"
+                           name="near_vision_left"
+                           value="{{ old('near_vision_left', $record->near_vision_left ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Distant Vision
+                    </label>
+                    <input type="text"
+                           name="distant_vision_left"
+                           value="{{ old('distant_vision_left', $record->distant_vision_left ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- Without Specs -->
+        <div>
+            <h5 class="mb-2 text-[10px] font-bold uppercase text-muted-foreground">
+                Without Specs
+            </h5>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Near Vision
+                    </label>
+                    <input type="text"
+                           name="near_vision_left_without"
+                           value="{{ old('near_vision_left_without', $record->near_vision_left_without ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase">
+                        Distant Vision
+                    </label>
+                    <input type="text"
+                           name="distant_vision_left_without"
+                           value="{{ old('distant_vision_left_without', $record->distant_vision_left_without ?? '') }}"
+                           class="w-full rounded-lg border-border bg-background py-1.5 px-3 text-xs">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colour Vision -->
+    <div class="space-y-2 md:col-span-2">
+        <label class="text-sm font-bold text-foreground/80">
+            {{ $labelCounter++ }}. Colour Vision
+        </label>
+
+        <input type="text"
+               name="colour_vision"
+               value="{{ old('colour_vision', $record->colour_vision ?? '') }}"
+               class="w-full rounded-xl border-border bg-secondary/30 py-2.5 px-4 text-sm transition-focus focus:bg-background focus:ring-2 focus:ring-primary/20">
+    </div>
+
+</div>
+
+</div>
+
 
     <!-- 5. Local Examination -->
     <div class="rounded-[2.5rem] border border-border bg-card p-8 shadow-sm space-y-6">
