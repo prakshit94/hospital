@@ -416,7 +416,7 @@
     </div>
 
     {{-- 9. Investigations --}}
-    <div class="section">
+    <div class="section" style="page-break-inside: avoid; break-inside: avoid;">
         <div class="section-title">{{ $sectionNum++ }}. Investigations</div>
         <table>
             <tr>
