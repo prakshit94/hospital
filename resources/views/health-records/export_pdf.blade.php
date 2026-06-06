@@ -29,12 +29,15 @@
             <table>
                 <thead>
                     <tr>
-                        <th class="sr-no">SR NO</th>
-                        <th>EMP NO</th>
+                        <th class="sr-no">SR.NO</th>
+                        <th>REG.NO</th>
                         <th>NAME</th>
-                        <th>AGE / SEX</th>
+                        <th>AGE/SEX</th>
                         <th>DEPARTMENT</th>
-                        <th>DESIGNATION</th>
+                        <th>FORM32*33</th>
+                        <th>BLOOD</th>
+                        <th>PFT</th>
+                        <th>REMARK</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,16 +47,23 @@
                             $employee = ($record instanceof \App\Models\Employee) ? $record : $record->employee;
                             if (!$employee) continue;
                             
-                            $age = $employee->dob ? \Carbon\Carbon::parse($employee->dob)->age : 'N/A';
+                            $checkup = ($record instanceof \App\Models\HealthCheckup) ? $record : $employee->checkups->first();
+                            
+                            $age = $employee->dob ? \Carbon\Carbon::parse($employee->dob)->age : '';
+                            $ageStr = $age ? $age . 'Y' : '';
                             $sex = strtoupper(substr($employee->gender ?? '', 0, 1));
+                            $ageSex = $ageStr && $sex ? "$ageStr/$sex" : ($ageStr ?: $sex);
                         @endphp
                         <tr>
                             <td class="sr-no">{{ $index + 1 }}</td>
                             <td class="emp-no">{{ $employee->employee_id }}</td>
                             <td class="name">{{ $employee->full_name }}</td>
-                            <td>{{ $age }} / {{ $sex }}</td>
-                            <td>{{ $employee->department ?? 'N/A' }}</td>
-                            <td>{{ $employee->designation ?? 'N/A' }}</td>
+                            <td>{{ $ageSex }}</td>
+                            <td>{{ $employee->department ?? '-' }}</td>
+                            <td>{{ $checkup->health_status ?? '-' }}</td>
+                            <td>{{ $checkup->blood_group ?? '-' }}</td>
+                            <td>{{ $checkup->pft ?? '-' }}</td>
+                            <td>{{ $checkup->doctor_remarks ?? $checkup->advice ?? '-' }}</td>
                         </tr>
                     @endforeach
                 </tbody>

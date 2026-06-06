@@ -814,7 +814,7 @@ class EmployeeHealthRecordController extends Controller
 
         // Query Employees directly to ensure all active employees are included,
         // even if they haven't had a health checkup yet.
-        $employees = Employee::with(['company'])
+        $employees = Employee::with(['company', 'checkups'])
             ->where('company_id', $company->id)
             ->where('status', 'active')
             ->get();
@@ -856,24 +856,31 @@ class EmployeeHealthRecordController extends Controller
                 // Top Row: Company Name
                 fputcsv($handle, [$companyName]);
                 // Header Row
-                fputcsv($handle, ['SR NO', 'EMP NO', 'NAME', 'AGE/SEX', 'DEPARTMENT']);
+                fputcsv($handle, ['SR.NO', 'REG.NO', 'NAME', 'AGE/SEX', 'DEPARTMENT', 'FORM32*33', 'BLOOD', 'PFT', 'REMARK']);
                 
                 $srNo = 1;
                 foreach ($companyRecords as $record) {
                     // Handle both HealthCheckup and Employee models
                     $employee = ($record instanceof \App\Models\Employee) ? $record : $record->employee;
+                    $checkup = ($record instanceof \App\Models\HealthCheckup) ? $record : $employee->checkups->first();
                     
                     if (!$employee) continue;
 
-                    $age = $employee->dob ? \Carbon\Carbon::parse($employee->dob)->age : 'N/A';
+                    $age = $employee->dob ? \Carbon\Carbon::parse($employee->dob)->age : '';
+                    $ageStr = $age ? $age . 'Y' : '';
                     $sex = strtoupper(substr($employee->gender ?? '', 0, 1));
+                    $ageSex = $ageStr && $sex ? "$ageStr/$sex" : ($ageStr ?: $sex);
                     
                     fputcsv($handle, [
                         $srNo++,
                         $employee->employee_id,
                         $employee->full_name,
-                        "$age/$sex",
-                        $employee->department
+                        $ageSex,
+                        $employee->department,
+                        $checkup->health_status ?? '-',
+                        $checkup->blood_group ?? '-',
+                        $checkup->pft ?? '-',
+                        $checkup->doctor_remarks ?? $checkup->advice ?? '-'
                     ]);
                 }
                 // Spacing between companies
