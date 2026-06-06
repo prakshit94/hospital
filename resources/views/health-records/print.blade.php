@@ -381,8 +381,8 @@
 
     {{-- ══════════════ PAGE 2 CONTENT ══════════════ --}}
 
-    {{-- 7. Family History — FORCES page break --}}
-    <div class="section page-two-start">
+    {{-- 7. Family History --}}
+    <div class="section">
         <div class="section-title">{{ $sectionNum++ }}. Family History</div>
         <table>
             <tr>
