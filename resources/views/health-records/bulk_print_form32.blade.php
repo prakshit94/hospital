@@ -314,7 +314,7 @@
 
                      {{-- ── Symptoms / Vitals / Examination (col 10 — widest) ── --}}
                      <td>
-                        <div>• <span class="label">Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
+                        <div>• <span class="label">Present Complaint:</span> {{ $record->present_complain ?? '-' }}</div>
                         <div>• <span class="label">Height:</span> {{ $record->height ?? '-' }} cm</div>
                         <div>• <span class="label">Weight:</span> {{ $record->weight ?? '-' }} kg</div>
                         <div>• <span class="label">Chest (Before/After):</span> {{ $record->chest_before ?? '-' }} / {{ $record->chest_after ?? '-' }} cm</div>
