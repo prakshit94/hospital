@@ -114,17 +114,7 @@
             font-size: 9px;
         }
 
-        /* ── Watermark ── */
-        .watermark {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 70px;
-            color: rgba(0,0,0,0.02);
-            z-index: -1;
-            white-space: nowrap;
-            pointer-events: none;
-        }
+
 
         /* ── PAGE BREAK — Section 7 onwards go to page 2 ── */
         .page-two-start {
@@ -150,7 +140,7 @@
         };
     @endphp
 
-    <div class="watermark">MEDICAL CERTIFICATE</div>
+
 
     {{-- ══════════════ HEADER ══════════════ --}}
     <div class="header">
