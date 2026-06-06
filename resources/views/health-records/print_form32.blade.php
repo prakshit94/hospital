@@ -50,10 +50,19 @@
             margin: 1px 0;
             font-size: 8.5pt;
          }
+         .info-table {
+            width: 100%;
+            table-layout: fixed;
+         }
          .info-table td {
             border: none;
             padding: 1px 5px;
             font-size: 8pt;
+            width: 50%;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            vertical-align: top;
          }
          .label { font-weight: bold; }
 
@@ -120,8 +129,8 @@
             .header p  { font-size: 6pt !important; margin: 0 !important; }
 
             /* Info table */
-            .info-table { margin-bottom: 2px !important; width: 100% !important; }
-            .info-table td { padding: 0 3px !important; font-size: 6pt !important; }
+            .info-table { margin-bottom: 2px !important; width: 100% !important; table-layout: fixed !important; }
+            .info-table td { padding: 0 3px !important; font-size: 6pt !important; width: 50% !important; word-wrap: break-word !important; word-break: break-word !important; white-space: normal !important; vertical-align: top !important; }
 
             /* ── MAIN TABLE ── */
             .main-table {
