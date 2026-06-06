@@ -156,7 +156,7 @@
     <div class="header">
         <h1>{{ config('enterprise-ui.workspace_name', 'Divit Hospital') }}</h1>
         <p>Occupational Health &amp; Medical Services</p>
-        <p style="font-size:8px;font-weight:normal;color:#555;">Reg No: 12345/OH/2024 | Contact: +91 98765 43210</p>
+        <p style="font-size:8px;font-weight:normal;color:#555;">Reg No: GUJGAN202500158PR | Contact: +91 9081187833</p>
     </div>
 
     <div class="report-title">
