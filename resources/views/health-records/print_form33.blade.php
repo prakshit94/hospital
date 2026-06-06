@@ -102,9 +102,10 @@ body {
     font-size: 13px;
 }
 
+/* Removed border and padding to clear the dotted box */
 .stamp-area {
-    border: 1px dashed #999;
-    padding: 8px;
+    border: none;
+    padding: 0;
     min-height: 60px; /* Sized to consume space but respect the single-page constraint */
     width: 85%;
     font-size: 12px;
@@ -281,6 +282,11 @@ table, tr, td {
                     <td>
                         {{ $record->health_status ?? 'Fit' }}<br>
                         {{ $record->job_restriction ?? '' }}
+                        
+                        {{-- Preserves existing data exactly and prints the 6-month added date cleanly below --}}
+                        @if($record->examination_date)
+                            <br>{{ $record->examination_date->addMonths(6)->format('d-m-Y') }}
+                        @endif
                     </td>
                     <td>
                         {{ $record->present_complain ?? $record->diagnosis ?? '' }}
