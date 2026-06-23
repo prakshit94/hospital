@@ -14,7 +14,10 @@
         </div>
 
         <!-- Form -->
-        <form action="{{ route('health-records.store') }}" method="POST" enctype="multipart/form-data" class="rounded-[2.5rem] border border-border bg-card p-10 shadow-sm">
+        <form action="{{ route('health-records.store') }}" method="POST" enctype="multipart/form-data" 
+              x-data="{ submitting: false }" 
+              @submit="if (submitting) { event.preventDefault(); } else { submitting = true; }" 
+              class="rounded-[2.5rem] border border-border bg-card p-10 shadow-sm">
             @csrf
 
             @if ($errors->any())
@@ -39,8 +42,12 @@
                         class="inline-flex h-12 items-center justify-center rounded-2xl border border-border bg-card px-8 text-sm font-bold text-muted-foreground transition hover:bg-secondary hover:text-foreground">
                     Clear All
                 </button>
-                <button type="submit" class="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-10 text-sm font-bold text-white shadow-[0_15px_30px_-10px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-all hover:scale-[1.02] active:scale-[0.98]">
-                    Save Health Record
+                <button type="submit" 
+                        :disabled="submitting" 
+                        :class="submitting ? 'opacity-50 cursor-not-allowed' : ''"
+                        class="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-10 text-sm font-bold text-white shadow-[0_15px_30px_-10px_color-mix(in_oklab,var(--primary)_50%,transparent)] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <span x-show="!submitting">Save Health Record</span>
+                    <span x-show="submitting" style="display: none;" x-cloak>Saving...</span>
                 </button>
             </div>
         </form>

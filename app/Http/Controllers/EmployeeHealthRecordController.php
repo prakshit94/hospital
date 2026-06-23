@@ -38,7 +38,7 @@ class EmployeeHealthRecordController extends Controller
      */
     public function index(Request $request): View
     {
-        $perPage = max(5, min(100, (int) $request->integer('per_page', 10)));
+        $perPage = max(5, min(1000, (int) $request->integer('per_page', 10)));
         
         // We list checkups, but we can search by employee details
         $query = HealthCheckup::query()

@@ -67,7 +67,7 @@
                 </select>
 
                 <select name="per_page" class="ui-select">
-                    @foreach([5, 10, 25, 50, 100] as $size)
+                    @foreach([5, 10, 25, 50, 100, 1000] as $size)
                         <option value="{{ $size }}" @selected((int) request('per_page', 10) === $size)>{{ $size }} per page</option>
                     @endforeach
                 </select>
