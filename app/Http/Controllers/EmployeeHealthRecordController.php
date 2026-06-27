@@ -871,10 +871,11 @@ class EmployeeHealthRecordController extends Controller
                     $sex = strtoupper(substr($employee->gender ?? '', 0, 1));
                     $ageSex = $ageStr && $sex ? "$ageStr/$sex" : ($ageStr ?: $sex);
                     
+                    $fullDisplayName = trim($employee->full_name . ' ' . ($employee->father_name ?? ''));
                     fputcsv($handle, [
                         $srNo++,
                         $employee->employee_id,
-                        $employee->full_name,
+                        $fullDisplayName,
                         $ageSex,
                         $employee->department,
                         $checkup->health_status ?? '-',
