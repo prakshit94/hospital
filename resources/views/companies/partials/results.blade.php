@@ -87,7 +87,7 @@
                                         <div class="my-1 border-t border-border/50"></div>
                                         <form action="{{ route('companies.destroy', $company->id) }}" method="POST" onsubmit="return confirm('Delete this company?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10">Delete</button>
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-destructive transition duration-300 hover:bg-destructive/10">Delete</button>
                                         </form>
                                     @endif
                                 @else
@@ -98,7 +98,7 @@
                                         </form>
                                         <form action="{{ route('companies.force-delete', $company->id) }}" method="POST" onsubmit="return confirm('CRITICAL: Permanently delete?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10">Purge</button>
+                                            <button type="submit" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-destructive transition duration-300 hover:bg-destructive/10">Purge</button>
                                         </form>
                                     @endif
                                 @endif

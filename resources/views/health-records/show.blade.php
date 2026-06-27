@@ -6,537 +6,51 @@
 
 @section('content')
 
-{{-- ============================================================
-     PREMIUM UI — Health Record Show Page
-     All logic preserved. UI only refactored.
-     ============================================================ --}}
+<div class="page-stack">
 
-<style>
-    /* ── Typography ─────────────────────────────────────────── */
-    .hr-page { font-family: 'DM Sans', sans-serif; }
-
-    /* ── Hero ────────────────────────────────────────────────── */
-    .hr-hero {
-        background: white;
-        border: 1px solid #F0F0F0;
-        border-radius: 20px;
-        padding: 28px 32px;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-    .hr-back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11.5px;
-        font-weight: 600;
-        color: #64748B;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 5px 14px;
-        text-decoration: none;
-        transition: all .15s;
-    }
-    .hr-back-btn:hover { background: #F1F5F9; color: #334155; }
-    .hr-status-chip {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .1em;
-        text-transform: uppercase;
-        background: #EEF2FF;
-        color: #4F46E5;
-        border: 1px solid #C7D2FE;
-        border-radius: 99px;
-        padding: 4px 13px;
-    }
-    .hr-hero-name {
-        font-size: 26px;
-        font-weight: 700;
-        color: #0F172A;
-        letter-spacing: -.4px;
-        margin: 10px 0 6px;
-        line-height: 1.2;
-    }
-    .hr-hero-meta {
-        font-size: 13px;
-        color: #94A3B8;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .hr-meta-sep { width: 3px; height: 3px; border-radius: 50%; background: #CBD5E1; }
-    .hr-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        font-size: 13px;
-        font-weight: 600;
-        border-radius: 11px;
-        padding: 9px 18px;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        border: 1px solid #E2E8F0;
-        background: white;
-        color: #334155;
-    }
-    .hr-btn:hover { background: #F8FAFC; }
-    .hr-btn-primary {
-        background: #4F46E5;
-        border-color: #4F46E5;
-        color: white;
-    }
-    .hr-btn-primary:hover { background: #4338CA; }
-
-    /* ── Vitals Ribbon ───────────────────────────────────────── */
-    .hr-vitals {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 12px;
-    }
-    .hr-vital-card {
-        background: white;
-        border: 1px solid #F0F0F0;
-        border-radius: 16px;
-        padding: 18px 14px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        transition: box-shadow .15s;
-    }
-    .hr-vital-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
-    .hr-vital-lbl {
-        font-size: 9.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .1em;
-        color: #94A3B8;
-    }
-    .hr-vital-val {
-        font-size: 22px;
-        font-weight: 700;
-        color: #0F172A;
-        line-height: 1.1;
-    }
-    .hr-vital-unit { font-size: 10px; color: #94A3B8; font-weight: 500; }
-    .hr-vital-fit  { color: #059669; }
-    .hr-vital-unfit { color: #DC2626; }
-
-    /* ── Layout ──────────────────────────────────────────────── */
-    .hr-main { display: grid; grid-template-columns: 1fr 310px; gap: 20px; align-items: start; }
-    .hr-left  { display: flex; flex-direction: column; gap: 20px; }
-    .hr-right { display: flex; flex-direction: column; gap: 20px; }
-
-    /* ── Card ────────────────────────────────────────────────── */
-    .hr-card {
-        background: white;
-        border: 1px solid #F0F0F0;
-        border-radius: 20px;
-        padding: 22px 26px;
-    }
-    .hr-card-indigo { background: #F5F3FF; border-color: #DDD6FE; }
-    .hr-card-ghost  { background: #FAFAFA; border: 1px dashed #E2E8F0; }
-    .hr-card-navy   { background: #1E1B4B; border-color: #312E81; }
-
-    /* ── Section Header ──────────────────────────────────────── */
-    .hr-sec-kicker {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .1em;
-        color: #94A3B8;
-        margin-bottom: 2px;
-    }
-    .hr-sec-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #0F172A;
-    }
-    .hr-sec-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 18px;
-        gap: 10px;
-    }
-    .hr-sec-link {
-        font-size: 11.5px;
-        font-weight: 600;
-        color: #4F46E5;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-    .hr-sec-link:hover { text-decoration: underline; }
-
-    /* ── Comparison Block ────────────────────────────────────── */
-    .hr-comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .hr-comp-item {
-        background: white;
-        border: 1px solid #EDE9FE;
-        border-radius: 14px;
-        padding: 14px 12px;
-    }
-    .hr-comp-lbl {
-        font-size: 9.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        color: #94A3B8;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-    .hr-comp-row  { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-    .hr-comp-side { text-align: center; flex: 1; }
-    .hr-comp-micro { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #CBD5E1; margin-bottom: 3px; }
-    .hr-comp-micro-curr { color: #4F46E5; }
-    .hr-comp-prev { font-size: 13px; color: #94A3B8; font-weight: 500; }
-    .hr-comp-curr { font-size: 16px; font-weight: 700; color: #4F46E5; }
-
-    /* ── Timeline ────────────────────────────────────────────── */
-    .hr-arrow-timeline {
-        display: flex;
-        gap: 0;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        margin-top: 10px;
-    }
-    .hr-arrow-item {
-        position: relative;
-        padding: 10px 24px 10px 32px;
-        background: #F1F5F9;
-        color: #64748B;
-        font-size: 11.5px;
-        font-weight: 700;
-        text-decoration: none;
-        white-space: nowrap;
-        clip-path: polygon(calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%, 0% 0%);
-        transition: all .15s;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .hr-arrow-item:first-child {
-        padding-left: 20px;
-        clip-path: polygon(calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 0% 50%, 0% 0%);
-        border-radius: 12px 0 0 12px;
-    }
-    .hr-arrow-item:last-child {
-        clip-path: polygon(100% 0%, 100% 50%, 100% 100%, 0% 100%, 12px 50%, 0% 0%);
-        border-radius: 0 12px 12px 0;
-    }
-    .hr-arrow-item.active {
-        background: #4F46E5;
-        color: white;
-        z-index: 10;
-    }
-    .hr-arrow-item:hover:not(.active) {
-        background: #E2E8F0;
-        color: #1E293B;
-    }
-    .hr-arrow-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-    /* ── Detail Grid ─────────────────────────────────────────── */
-    .hr-detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1px;
-        background: #F1F5F9;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .hr-detail-tile { background: white; padding: 11px 14px; }
-    .hr-detail-tile.span2 { grid-column: span 2; }
-    .hr-detail-lbl {
-        font-size: 9.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        color: #94A3B8;
-        margin-bottom: 4px;
-    }
-    .hr-detail-val { font-size: 13px; color: #1E293B; font-weight: 500; line-height: 1.4; }
-
-    /* ── Vision ──────────────────────────────────────────────── */
-    .hr-vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .hr-vision-box {
-        background: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        border-radius: 12px;
-        padding: 14px;
-    }
-    .hr-vision-eye {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        color: #94A3B8;
-        margin-bottom: 8px;
-    }
-    .hr-vision-row { display: flex; justify-content: space-between; }
-    .hr-vision-val { font-size: 12.5px; font-weight: 600; color: #1E293B; }
-
-    /* ── Tags ────────────────────────────────────────────────── */
-    .hr-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .hr-tag {
-        font-size: 11.5px;
-        font-weight: 600;
-        padding: 5px 13px;
-        border-radius: 99px;
-    }
-    .hr-tag-clear { background: #F8FAFC; border: 1px solid #E2E8F0; color: #64748B; }
-    .hr-tag-warn  { background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C; }
-
-    /* ── Lab Grid ────────────────────────────────────────────── */
-    .hr-lab-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .hr-lab-item {
-        background: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        border-radius: 12px;
-        padding: 11px 13px;
-        transition: all .15s;
-    }
-    .hr-lab-item:hover { background: white; border-color: #E2E8F0; }
-    .hr-lab-lbl {
-        font-size: 9px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .09em;
-        color: #94A3B8;
-        margin-bottom: 5px;
-    }
-    .hr-lab-val { font-size: 13.5px; font-weight: 700; color: #0F172A; }
-
-    /* ── Remarks ─────────────────────────────────────────────── */
-    .hr-remarks-box {
-        background: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        border-left: 3px solid #C7D2FE;
-        border-radius: 0 12px 12px 0;
-        padding: 14px 16px;
-        font-size: 13px;
-        color: #475569;
-        font-style: italic;
-        line-height: 1.7;
-        margin-top: 8px;
-    }
-    .hr-restriction-val {
-        font-size: 13px;
-        color: #DC2626;
-        font-weight: 600;
-        margin-top: 4px;
-        padding: 8px 12px;
-        background: #FEF2F2;
-        border-radius: 10px;
-        border: 1px solid #FECACA;
-    }
-
-    /* ── Documents ───────────────────────────────────────────── */
-    .hr-doc-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 11px 0;
-        border-top: 1px solid #F8FAFC;
-    }
-    .hr-doc-item:first-child { border-top: none; padding-top: 0; }
-    .hr-doc-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .hr-doc-name { font-size: 13px; font-weight: 600; color: #1E293B; }
-    .hr-doc-meta { font-size: 10px; color: #94A3B8; margin-top: 2px; font-weight: 500; }
-    .hr-doc-view-btn {
-        font-size: 11.5px;
-        font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 9px;
-        border: 1px solid #E2E8F0;
-        background: white;
-        color: #334155;
-        cursor: pointer;
-        text-decoration: none;
-        white-space: nowrap;
-        transition: all .15s;
-        flex-shrink: 0;
-    }
-    .hr-doc-view-btn:hover { background: #4F46E5; color: white; border-color: #4F46E5; }
-    .hr-doc-del-btn {
-        color: #DC2626 !important;
-        border-color: #FECACA !important;
-    }
-    .hr-doc-del-btn:hover {
-        background: #DC2626 !important;
-        color: white !important;
-        border-color: #DC2626 !important;
-    }
-    .hr-doc-empty { text-align: center; padding: 30px 0; }
-    .hr-doc-empty-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: #F8FAFC;
-        border: 1px solid #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 10px;
-    }
-
-    /* ── Admin Sidebar ───────────────────────────────────────── */
-    .hr-admin-rows {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        background: #F1F5F9;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .hr-admin-item {
-        background: white;
-        padding: 11px 14px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-    }
-    .hr-admin-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94A3B8; }
-    .hr-admin-val { font-size: 12.5px; font-weight: 600; color: #1E293B; text-align: right; }
-    .hr-badge-success {
-        font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-        background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0;
-        border-radius: 99px; padding: 3px 11px;
-    }
-    .hr-badge-danger {
-        font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-        background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;
-        border-radius: 99px; padding: 3px 11px;
-    }
-    .hr-badge-docs {
-        font-size: 11.5px; font-weight: 600;
-        background: #ECFDF5; color: #065F46;
-        border-radius: 99px; padding: 3px 11px;
-    }
-
-    /* ── Activity Log ────────────────────────────────────────── */
-    .hr-activity-list { display: flex; flex-direction: column; gap: 14px; }
-    .hr-activity-item { display: flex; gap: 12px; }
-    .hr-activity-dot-col { display: flex; flex-direction: column; align-items: center; padding-top: 3px; }
-    .hr-activity-dot {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: #4F46E5;
-        box-shadow: 0 0 0 3px #EEF2FF;
-        flex-shrink: 0;
-    }
-    .hr-activity-line { width: 1px; flex: 1; background: #F1F5F9; margin-top: 6px; }
-    .hr-activity-txt { font-size: 12.5px; font-weight: 600; color: #1E293B; line-height: 1.4; }
-    .hr-activity-time { font-size: 10px; color: #94A3B8; margin-top: 3px; }
-
-    /* ── Forms & Quick ───────────────────────────────────────── */
-    .hr-form-btn {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 11px 14px;
-        border-radius: 12px;
-        border: 1px solid #E2E8F0;
-        background: white;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        color: #334155;
-        transition: all .15s;
-    }
-    .hr-form-btn:hover { border-color: #C7D2FE; background: #F5F3FF; color: #4F46E5; }
-    .hr-form-btn-primary {
-        background: #4F46E5;
-        border-color: #4F46E5;
-        color: white;
-    }
-    .hr-form-btn-primary:hover { background: #4338CA; color: white; }
-    .hr-form-divider { height: 1px; background: #F1F5F9; margin: 4px 0; }
-    .hr-quick-lbl {
-        font-size: 10px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: .1em; color: rgba(255,255,255,.4); margin-bottom: 14px;
-    }
-    .hr-quick-btn {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 11px 16px; border-radius: 12px; background: white;
-        color: #4F46E5; font-size: 13px; font-weight: 700;
-        cursor: pointer; text-decoration: none; border: none; transition: background .15s;
-    }
-    .hr-quick-btn:hover { background: #EEF2FF; }
-    .hr-quick-sub {
-        font-size: 11px; color: rgba(255,255,255,.35);
-        margin-top: 10px; text-align: center; line-height: 1.5;
-    }
-
-    /* ── Utility ─────────────────────────────────────────────── */
-    .hr-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .hr-stack { display: flex; flex-direction: column; gap: 20px; }
-</style>
-
-<div class="page-stack hr-page">
-
-    {{-- ── Hero ── --}}
-    <section class="hr-hero">
-        <div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-                <x-ui.button variant="secondary" size="sm" href="{{ route('health-records.index') }}" class="hr-back-btn gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="m15 18-6-6 6-6"/>
-                    </svg>
-                    Back to Directory
-                </x-ui.button>
-                <span class="hr-status-chip">{{ $record->status }} Record</span>
+    {{-- ═══════════════════════ HERO PANEL ═══════════════════════ --}}
+    <section class="hero-panel">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-ui.button variant="secondary" size="sm" href="{{ route('health-records.index') }}" class="gap-2 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+                        Back to Directory
+                    </x-ui.button>
+                    <span class="{{ strtolower($record->status) === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">
+                        {{ $record->status }} Record
+                    </span>
+                </div>
+                <div>
+                    <h1 class="hero-title">{{ $record->full_name }}</h1>
+                    <p class="hero-copy mt-2 flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-foreground">ID: {{ $record->employee->employee_id ?? 'N/A' }}</span>
+                        <span class="size-1.5 rounded-full bg-border"></span>
+                        <span>{{ $record->company_name }}</span>
+                        <span class="size-1.5 rounded-full bg-border"></span>
+                        <span>Exam: {{ $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A' }}</span>
+                    </p>
+                </div>
             </div>
-            <h1 class="hr-hero-name">{{ $record->full_name }}</h1>
-            <p class="hr-hero-meta">
-                <span>ID: {{ $record->employee->employee_id ?? 'N/A' }}</span>
-                <span class="hr-meta-sep"></span>
-                <span>{{ $record->company_name }}</span>
-                <span class="hr-meta-sep"></span>
-                <span>Exam: {{ $record->examination_date ? $record->examination_date->format('d/m/Y') : 'N/A' }}</span>
-            </p>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px">
-            <a href="{{ route('health-records.print', $record->uuid) }}" target="_blank" class="hr-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
-                </svg>
-                Print Report
-            </a>
-            <a href="{{ route('health-records.edit', $record->uuid) }}" class="hr-btn hr-btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
-                </svg>
-                Edit Data
-            </a>
+            
+            <div class="flex shrink-0 flex-wrap gap-3">
+                <x-ui.button variant="secondary" href="{{ route('health-records.print', $record->uuid) }}" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                    Print Report
+                </x-ui.button>
+                <x-ui.button href="{{ route('health-records.edit', $record->uuid) }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    Edit Data
+                </x-ui.button>
+            </div>
         </div>
     </section>
 
-    {{-- ── Vitals Ribbon ── --}}
-    <div class="hr-vitals">
+    {{-- ═══════════════════════ VITALS RIBBON ═══════════════════════ --}}
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
         @php
             $vitals = [
-                ['label' => 'Health Status', 'value' => $record->health_status ?? 'Unknown', 'color' => strtolower($record->health_status) === 'fit' ? 'hr-vital-fit' : 'hr-vital-unfit'],
+                ['label' => 'Health Status', 'value' => $record->health_status ?? 'Unknown', 'color' => strtolower($record->health_status) === 'fit' ? 'text-emerald-600' : 'text-destructive'],
                 ['label' => 'Blood Pressure', 'value' => ($record->bp_systolic ?? '--') . '/' . ($record->bp_diastolic ?? '--'), 'sub' => 'mmHg'],
                 ['label' => 'Pulse Rate',     'value' => $record->heart_rate ?? '--', 'sub' => 'bpm'],
                 ['label' => 'SpO2 Level',     'value' => $record->spo2 ?? '--',       'sub' => '%'],
@@ -544,66 +58,64 @@
             ];
         @endphp
         @foreach($vitals as $vital)
-            <div class="hr-vital-card">
-                <p class="hr-vital-lbl">{{ $vital['label'] }}</p>
-                <div class="hr-vital-val {{ $vital['color'] ?? '' }}">
+            <div class="flex flex-col items-center justify-center gap-1 rounded-2xl border border-border/70 bg-card p-4 text-center shadow-sm transition hover:shadow-md">
+                <p class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{{ $vital['label'] }}</p>
+                <div class="font-heading text-2xl font-black text-foreground {{ $vital['color'] ?? '' }}">
                     {{ $vital['value'] }}
                     @if(isset($vital['sub']))
-                        <span class="hr-vital-unit">{{ $vital['sub'] }}</span>
+                        <span class="text-[11px] font-semibold text-muted-foreground">{{ $vital['sub'] }}</span>
                     @endif
                 </div>
             </div>
         @endforeach
     </div>
 
-    {{-- ── Main Grid ── --}}
-    <section class="hr-main">
-
-        {{-- Left Column --}}
-        <div class="hr-left">
+    {{-- ═══════════════════════ MAIN GRID ═══════════════════════ --}}
+    <div class="grid gap-6 xl:grid-cols-[1fr_320px]">
+        
+        {{-- LEFT COLUMN --}}
+        <div class="space-y-6">
 
             {{-- 1. Checkup History (Arrow Timeline) --}}
-            <div class="hr-card">
-                <div class="hr-sec-header" style="margin-bottom:10px">
-                    <div>
-                        <div class="hr-sec-kicker">Chronological Journey</div>
-                        <div class="hr-sec-title">Checkup History</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Chronological Journey</div>
+                    <h3 class="section-title">Checkup History</h3>
                 </div>
-                <div class="hr-arrow-timeline">
+                <div class="flex gap-0 overflow-x-auto pb-1 no-scrollbar">
                     @php
                         // Merge current and past checkups, sort by date desc
                         $allExams = $history->push($record)->sortBy('examination_date');
                     @endphp
                     @foreach($allExams as $exam)
                         <a href="{{ route('health-records.show', $exam->uuid) }}" 
-                           class="hr-arrow-item {{ $exam->uuid === $record->uuid ? 'active' : '' }}">
-                            <span class="hr-arrow-dot {{ strtolower($exam->health_status) === 'fit' ? 'hr-tl-dot-fit' : 'hr-tl-dot-unfit' }}" style="{{ $exam->uuid === $record->uuid ? 'background:white' : '' }}"></span>
+                           class="group relative flex shrink-0 items-center gap-2 border-y border-r border-border/70 bg-secondary px-5 py-2.5 text-xs font-bold text-muted-foreground transition first:rounded-l-xl first:border-l last:rounded-r-xl hover:bg-border/50 hover:text-foreground {{ $exam->uuid === $record->uuid ? '!bg-primary !border-primary !text-primary-foreground z-10' : '' }}">
+                            <span class="size-2 shrink-0 rounded-full {{ strtolower($exam->health_status) === 'fit' ? 'bg-emerald-500' : 'bg-destructive' }} {{ $exam->uuid === $record->uuid ? '!bg-white shadow-[0_0_0_2px_rgba(255,255,255,0.3)]' : 'shadow-[0_0_0_2px_rgba(255,255,255,0.5)]' }}"></span>
                             {{ $exam->examination_date->format('d M, Y') }}
                         </a>
                     @endforeach
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- 2. Longitudinal Comparison --}}
-            <div class="hr-card hr-card-indigo">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap">
-                    <div style="display:flex;align-items:center;gap:12px">
-                        <div style="width:40px;height:40px;border-radius:12px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <svg xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2">
+            <x-ui.card class="border-indigo-100 bg-indigo-50/50 space-y-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                             </svg>
                         </div>
                         <div>
-                            <div class="hr-sec-title">Longitudinal Health Comparison</div>
-                            <div class="hr-sec-kicker" style="margin-bottom:0">
+                            <h3 class="section-title text-indigo-950">Longitudinal Health Comparison</h3>
+                            <div class="section-kicker !mb-0 text-indigo-600/70">
                                 Current vs. previous — {{ $previousRecord ? $previousRecord->examination_date->format('d/m/Y') : 'NA' }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="hr-comp-grid">
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     @php
                         $comparisonVitals = [
                             ['label' => 'Weight',      'current' => $record->weight,      'prev' => $previousRecord?->weight ?? 'NA',      'unit' => 'kg'],
@@ -613,174 +125,170 @@
                         ];
                     @endphp
                     @foreach($comparisonVitals as $vital)
-                    <div class="hr-comp-item">
-                        <p class="hr-comp-lbl">{{ $vital['label'] }}</p>
-                        <div class="hr-comp-row">
-                            <div class="hr-comp-side">
-                                <p class="hr-comp-micro">Prev</p>
-                                <p class="hr-comp-prev">{{ $vital['prev'] ?? 'NA' }}</p>
-                            </div>
-                            <div style="width:22px;display:flex;align-items:center;justify-content:center">
-                                @php
-                                    $diff = 0;
-                                    if (is_numeric($vital['current']) && is_numeric($vital['prev'])) {
-                                        $diff = $vital['current'] - $vital['prev'];
-                                    }
-                                @endphp
-                                @if($diff > 0)
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="3"><path d="m18 15-6-6-6 6"/></svg>
-                                @elseif($diff < 0)
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
-                                @else
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="3"><path d="M5 12h14"/></svg>
-                                @endif
-                            </div>
-                            <div class="hr-comp-side">
-                                <p class="hr-comp-micro hr-comp-micro-curr">Now</p>
-                                <p class="hr-comp-curr">{{ $vital['current'] ?? '--' }}</p>
+                        <div class="rounded-xl border border-indigo-100 bg-white p-3 shadow-sm">
+                            <p class="mb-2 text-center text-[9px] font-black uppercase tracking-widest text-muted-foreground">{{ $vital['label'] }}</p>
+                            <div class="flex items-center justify-between gap-1">
+                                <div class="flex-1 text-center">
+                                    <p class="mb-0.5 text-[9px] font-black uppercase tracking-widest text-border">Prev</p>
+                                    <p class="text-xs font-semibold text-muted-foreground">{{ $vital['prev'] ?? 'NA' }}</p>
+                                </div>
+                                <div class="flex size-5 shrink-0 items-center justify-center">
+                                    @php
+                                        $diff = 0;
+                                        if (is_numeric($vital['current']) && is_numeric($vital['prev'])) {
+                                            $diff = $vital['current'] - $vital['prev'];
+                                        }
+                                    @endphp
+                                    @if($diff > 0)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m18 15-6-6-6 6"/></svg>
+                                    @elseif($diff < 0)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/></svg>
+                                    @endif
+                                </div>
+                                <div class="flex-1 text-center">
+                                    <p class="mb-0.5 text-[9px] font-black uppercase tracking-widest text-primary">Now</p>
+                                    <p class="text-sm font-bold text-primary">{{ $vital['current'] ?? '--' }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endforeach
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Employee Info & Physical Exam --}}
-            <div class="hr-two-col">
-                <div class="hr-card">
-                    <div class="hr-sec-header">
-                        <div>
-                            <div class="hr-sec-kicker">Section 02</div>
-                            <div class="hr-sec-title">Employee Information</div>
+            <div class="grid gap-6 md:grid-cols-2">
+                <x-ui.card class="space-y-4">
+                    <div>
+                        <div class="section-kicker">Section 02</div>
+                        <h3 class="section-title">Employee Information</h3>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-tile">
+                            <div class="detail-label">Father's Name</div>
+                            <div class="detail-value">{{ $record->father_name ?? 'N/A' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">DOB (Age)</div>
+                            <div class="detail-value">{{ $record->dob ? $record->dob->format('d/m/Y') : 'N/A' }} ({{ $record->dob ? (int)$record->dob->diffInYears(now()) : 'N/A' }}y)</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">{{ $record->department ?? 'N/A' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Joining Date</div>
+                            <div class="detail-value">{{ $record->joining_date ? $record->joining_date->format('d/m/Y') : 'N/A' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Marital Status</div>
+                            <div class="detail-value">{{ $record->marital_status ?? 'N/A' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Husband's Name</div>
+                            <div class="detail-value">{{ $record->husband_name ?? 'N/A' }}</div>
+                        </div>
+                        <div class="detail-tile col-span-full">
+                            <div class="detail-label">Identification Mark</div>
+                            <div class="detail-value">{{ $record->identification_mark ?? 'None' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">H/O Habits</div>
+                            <div class="detail-value">{{ $record->habits ?? 'None' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Dependents</div>
+                            <div class="detail-value">{{ $record->dependent ?? 'None' }}</div>
+                        </div>
+                        <div class="detail-tile col-span-full">
+                            <div class="detail-label">Permanent Address</div>
+                            <div class="detail-value">{{ $record->address ?? 'No address provided.' }}</div>
+                        </div>
+                        <div class="detail-tile col-span-full">
+                            <div class="detail-label">Prev. Occupational History</div>
+                            <div class="detail-value">{{ $record->prev_occ_history ?? 'None reported.' }}</div>
                         </div>
                     </div>
-                    <div class="hr-detail-grid">
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Father's Name</div>
-                            <div class="hr-detail-val">{{ $record->father_name ?? 'N/A' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">DOB (Age)</div>
-                            <div class="hr-detail-val">{{ $record->dob ? $record->dob->format('d/m/Y') : 'N/A' }} ({{ $record->dob ? (int)$record->dob->diffInYears(now()) : 'N/A' }}y)</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Department</div>
-                            <div class="hr-detail-val">{{ $record->department ?? 'N/A' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Joining Date</div>
-                            <div class="hr-detail-val">{{ $record->joining_date ? $record->joining_date->format('d/m/Y') : 'N/A' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Marital Status</div>
-                            <div class="hr-detail-val">{{ $record->marital_status ?? 'N/A' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Husband's Name</div>
-                            <div class="hr-detail-val">{{ $record->husband_name ?? 'N/A' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Identification Mark</div>
-                            <div class="hr-detail-val">{{ $record->identification_mark ?? 'None' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">H/O Habits</div>
-                            <div class="hr-detail-val">{{ $record->habits ?? 'None' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Dependents</div>
-                            <div class="hr-detail-val">{{ $record->dependent ?? 'None' }}</div>
-                        </div>
-                        <div class="hr-detail-tile span2">
-                            <div class="hr-detail-lbl">Permanent Address</div>
-                            <div class="hr-detail-val">{{ $record->address ?? 'No address provided.' }}</div>
-                        </div>
-                        <div class="hr-detail-tile span2">
-                            <div class="hr-detail-lbl">Prev. Occupational History</div>
-                            <div class="hr-detail-val">{{ $record->prev_occ_history ?? 'None reported.' }}</div>
-                        </div>
-                    </div>
-                </div>
+                </x-ui.card>
 
-                <div class="hr-card">
-                    <div class="hr-sec-header">
-                        <div>
-                            <div class="hr-sec-kicker">Section 03</div>
-                            <div class="hr-sec-title">Physical Examination</div>
+                <x-ui.card class="space-y-4">
+                    <div>
+                        <div class="section-kicker">Section 03</div>
+                        <h3 class="section-title">Physical Examination</h3>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-tile">
+                            <div class="detail-label">Temperature</div>
+                            <div class="detail-value">{{ $record->temperature ?? '--' }} °F</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Height / Weight</div>
+                            <div class="detail-value">{{ $record->height ?? '--' }}cm / {{ $record->weight ?? '--' }}kg</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Chest (N/E)</div>
+                            <div class="detail-value">{{ $record->chest_before ?? '--' }} / {{ $record->chest_after ?? '--' }}</div>
+                        </div>
+                        <div class="detail-tile">
+                            <div class="detail-label">Respiration</div>
+                            <div class="detail-value">{{ $record->respiration_rate ?? '--' }}</div>
                         </div>
                     </div>
-                    <div class="hr-detail-grid">
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Temperature</div>
-                            <div class="hr-detail-val">{{ $record->temperature ?? '--' }} °F</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Height / Weight</div>
-                            <div class="hr-detail-val">{{ $record->height ?? '--' }}cm / {{ $record->weight ?? '--' }}kg</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Chest (N/E)</div>
-                            <div class="hr-detail-val">{{ $record->chest_before ?? '--' }} / {{ $record->chest_after ?? '--' }}</div>
-                        </div>
-                        <div class="hr-detail-tile">
-                            <div class="hr-detail-lbl">Respiration</div>
-                            <div class="hr-detail-val">{{ $record->respiration_rate ?? '--' }}</div>
-                        </div>
-                    </div>
-                </div>
+                </x-ui.card>
             </div>
 
             {{-- 4. Vision --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Section 04</div>
-                        <div class="hr-sec-title">Vision Examination</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Section 04</div>
+                    <h3 class="section-title">Vision Examination</h3>
                 </div>
-                <div class="hr-vision-grid">
-                    <div class="hr-vision-box">
-                        <p class="hr-vision-eye">Right Eye</p>
-                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 4px; margin-bottom: 2px;">With Specs</div>
-                        <div class="hr-vision-row">
-                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_right ?? '--' }}</span>
-                            <span class="hr-vision-val">Near: {{ $record->near_vision_right ?? '--' }}</span>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-xl border border-border/50 bg-secondary/30 p-4">
+                        <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Right Eye</p>
+                        
+                        <div class="mt-2 mb-1 text-[10px] font-bold text-muted-foreground/70">With Specs</div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold text-foreground">Distant: {{ $record->distant_vision_right ?? '--' }}</span>
+                            <span class="text-sm font-semibold text-foreground">Near: {{ $record->near_vision_right ?? '--' }}</span>
                         </div>
-                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 8px; margin-bottom: 2px;">Without Specs</div>
-                        <div class="hr-vision-row">
-                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_right_without ?? '--' }}</span>
-                            <span class="hr-vision-val">Near: {{ $record->near_vision_right_without ?? '--' }}</span>
-                        </div>
-                    </div>
-                    <div class="hr-vision-box">
-                        <p class="hr-vision-eye">Left Eye</p>
-                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 4px; margin-bottom: 2px;">With Specs</div>
-                        <div class="hr-vision-row">
-                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_left ?? '--' }}</span>
-                            <span class="hr-vision-val">Near: {{ $record->near_vision_left ?? '--' }}</span>
-                        </div>
-                        <div style="font-size: 10px; font-weight: bold; color: #94A3B8; margin-top: 8px; margin-bottom: 2px;">Without Specs</div>
-                        <div class="hr-vision-row">
-                            <span class="hr-vision-val">Distant: {{ $record->distant_vision_left_without ?? '--' }}</span>
-                            <span class="hr-vision-val">Near: {{ $record->near_vision_left_without ?? '--' }}</span>
+                        
+                        <div class="mt-3 mb-1 text-[10px] font-bold text-muted-foreground/70">Without Specs</div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold text-foreground">Distant: {{ $record->distant_vision_right_without ?? '--' }}</span>
+                            <span class="text-sm font-semibold text-foreground">Near: {{ $record->near_vision_right_without ?? '--' }}</span>
                         </div>
                     </div>
+                    <div class="rounded-xl border border-border/50 bg-secondary/30 p-4">
+                        <p class="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Left Eye</p>
+                        
+                        <div class="mt-2 mb-1 text-[10px] font-bold text-muted-foreground/70">With Specs</div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold text-foreground">Distant: {{ $record->distant_vision_left ?? '--' }}</span>
+                            <span class="text-sm font-semibold text-foreground">Near: {{ $record->near_vision_left ?? '--' }}</span>
+                        </div>
+                        
+                        <div class="mt-3 mb-1 text-[10px] font-bold text-muted-foreground/70">Without Specs</div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold text-foreground">Distant: {{ $record->distant_vision_left_without ?? '--' }}</span>
+                            <span class="text-sm font-semibold text-foreground">Near: {{ $record->near_vision_left_without ?? '--' }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #F8FAFC;padding-top:14px">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8">Colour Vision</span>
-                    <span style="font-size:13.5px;font-weight:700;color:#1E293B">{{ $record->colour_vision ?? 'N/A' }}</span>
+                <div class="flex items-center justify-between border-t border-border/70 pt-4">
+                    <span class="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Colour Vision</span>
+                    <span class="text-sm font-bold text-foreground">{{ $record->colour_vision ?? 'N/A' }}</span>
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- 6. Medical History --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Section 06</div>
-                        <div class="hr-sec-title">Medical History Screening</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Section 06</div>
+                    <h3 class="section-title">Medical History Screening</h3>
                 </div>
-                <div class="hr-tags">
+                <div class="flex flex-wrap gap-2">
                     @foreach([
                         'Hypertension' => $record->hypertension,
                         'Diabetes'     => $record->diabetes,
@@ -791,23 +299,21 @@
                         'Heart Disease'=> $record->heart_disease,
                     ] as $label => $val)
                         @if(strtolower($val) !== 'no' && $val)
-                            <span class="hr-tag hr-tag-warn">{{ $label }}: {{ $val }}</span>
+                            <span class="inline-flex items-center rounded-full border border-destructive/20 bg-destructive/10 px-3 py-1 text-[11.5px] font-bold text-destructive">{{ $label }}: {{ $val }}</span>
                         @else
-                            <span class="hr-tag hr-tag-clear">{{ $label }}: No</span>
+                            <span class="ui-chip">{{ $label }}: No</span>
                         @endif
                     @endforeach
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- 11 & 12. Lab Investigations --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Section 11 &amp; 12</div>
-                        <div class="hr-sec-title">Clinical Investigations &amp; Laboratory</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Section 11 &amp; 12</div>
+                    <h3 class="section-title">Clinical Investigations &amp; Laboratory</h3>
                 </div>
-                <div class="hr-lab-grid">
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     @foreach([
                         'HB'           => $record->hb,
                         'RBC'          => $record->rbc,
@@ -818,198 +324,196 @@
                         'S. Creatinine'=> $record->s_creatinine,
                         'Urine Albumin'=> $record->urine_albumin,
                     ] as $lab => $val)
-                        <div class="hr-lab-item">
-                            <p class="hr-lab-lbl">{{ $lab }}</p>
-                            <p class="hr-lab-val">{{ $val ?? '--' }}</p>
+                        <div class="rounded-xl border border-border/50 bg-secondary/30 p-3 transition hover:border-border hover:bg-card">
+                            <p class="mb-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">{{ $lab }}</p>
+                            <p class="text-sm font-bold text-foreground">{{ $val ?? '--' }}</p>
                         </div>
                     @endforeach
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- 15. Job Restriction & Advice --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Section 15</div>
-                        <div class="hr-sec-title">Job Restriction &amp; Clinical Advice</div>
-                    </div>
-                </div>
-                <div style="margin-bottom:18px">
-                    <div class="hr-detail-lbl">Restrictions</div>
-                    <div class="hr-restriction-val">{{ $record->job_restriction ?? 'No functional restrictions identified.' }}</div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Section 15</div>
+                    <h3 class="section-title">Job Restriction &amp; Clinical Advice</h3>
                 </div>
                 <div>
-                    <div class="hr-detail-lbl">Doctor's Remarks</div>
-                    <div class="hr-remarks-box">{{ $record->doctor_remarks ?? 'No additional remarks.' }}</div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Restrictions</div>
+                    <div class="inline-block rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-semibold text-destructive">
+                        {{ $record->job_restriction ?? 'No functional restrictions identified.' }}
+                    </div>
                 </div>
-            </div>
+                <div class="mt-4">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Doctor's Remarks</div>
+                    <div class="rounded-xl rounded-l-sm border border-border/70 border-l-[3px] border-l-primary/40 bg-secondary/30 p-4 text-sm italic text-muted-foreground">
+                        {{ $record->doctor_remarks ?? 'No additional remarks.' }}
+                    </div>
+                </div>
+            </x-ui.card>
 
             {{-- 17. Documents --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
+            <x-ui.card class="space-y-4">
+                <div class="flex items-start justify-between gap-4 border-b border-border/70 pb-4">
                     <div>
-                        <div class="hr-sec-kicker">Section 17</div>
-                        <div class="hr-sec-title">Documents</div>
+                        <div class="section-kicker">Section 17</div>
+                        <h3 class="section-title">Documents</h3>
                     </div>
-                    <a href="{{ route('health-records.edit', $record->uuid) }}#document_upload" class="hr-sec-link">
+                    <x-ui.button variant="ghost" size="sm" href="{{ route('health-records.edit', $record->uuid) }}#document_upload" class="shrink-0 text-primary">
                         Upload More
-                    </a>
+                    </x-ui.button>
                 </div>
 
                 @if($record->documents->isEmpty())
-                    <div class="hr-doc-empty">
-                        <div class="hr-doc-empty-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;color:#CBD5E1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                            </svg>
+                    <div class="py-8 text-center">
+                        <div class="mx-auto mb-3 flex size-12 items-center justify-center rounded-xl border border-border/70 bg-secondary text-muted-foreground/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         </div>
-                        <p style="font-size:13px;color:#94A3B8;margin-bottom:8px">No documents uploaded yet.</p>
-                        <a href="{{ route('health-records.edit', $record->uuid) }}#document_upload" class="hr-sec-link">
-                            Upload first document →
+                        <p class="mb-2 text-sm text-muted-foreground">No documents uploaded yet.</p>
+                        <a href="{{ route('health-records.edit', $record->uuid) }}#document_upload" class="text-xs font-bold text-primary hover:underline">
+                            Upload first document &rarr;
                         </a>
                     </div>
                 @else
-                    @foreach($record->documents as $doc)
-                        @php
-                            $ext     = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
-                            $isImg   = in_array($ext, ['jpg','jpeg','png','gif','webp']);
-                            $isPdf   = $ext === 'pdf';
-                            $iconColor = $isPdf ? '#EF4444' : ($isImg ? '#3B82F6' : '#14B8A6');
-                        @endphp
-                        <div class="hr-doc-item">
-                            <div style="display:flex;align-items:center;gap:12px;min-width:0">
-                                <div class="hr-doc-icon" style="color:{{ $iconColor }}">
-                                    @if($isPdf)
-                                        <svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                    @elseif($isImg)
-                                        <svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                    @else
-                                        <svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    @endif
+                    <div class="space-y-2">
+                        @foreach($record->documents as $doc)
+                            @php
+                                $ext     = strtolower(pathinfo($doc->original_name, PATHINFO_EXTENSION));
+                                $isImg   = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                                $isPdf   = $ext === 'pdf';
+                                $iconColor = $isPdf ? 'text-destructive bg-destructive/10' : ($isImg ? 'text-blue-600 bg-blue-100' : 'text-primary bg-primary/10');
+                            @endphp
+                            <div class="flex flex-col gap-3 rounded-xl border border-border/50 bg-secondary/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl {{ $iconColor }}">
+                                        @if($isPdf)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        @elseif($isImg)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        @else
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold text-foreground">{{ $doc->original_name }}</p>
+                                        <p class="mt-0.5 text-[10px] font-medium text-muted-foreground">{{ strtoupper($ext) }} &bull; {{ $doc->formatted_size }} &bull; {{ $doc->created_at->format('d/m/Y') }}</p>
+                                    </div>
                                 </div>
-                                <div style="min-width:0">
-                                    <p class="hr-doc-name">{{ $doc->original_name }}</p>
-                                    <p class="hr-doc-meta">{{ strtoupper($ext) }} &bull; {{ $doc->formatted_size }} &bull; {{ $doc->created_at->format('d/m/Y') }}</p>
+                                <div class="flex shrink-0 gap-2">
+                                    <x-ui.button variant="secondary" size="sm" href="{{ Storage::url($doc->path) }}" target="_blank">View</x-ui.button>
+                                    <form action="{{ route('health-records.documents.destroy', $doc->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this document?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-ui.button variant="ghost" size="sm" type="submit" class="!text-destructive hover:!bg-destructive/10">Delete</x-ui.button>
+                                    </form>
                                 </div>
                             </div>
-                            <div style="display:flex;gap:6px">
-                                <a href="{{ Storage::url($doc->path) }}" target="_blank" class="hr-doc-view-btn">View</a>
-                                <form action="{{ route('health-records.documents.destroy', $doc->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this document?');" style="display:inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="hr-doc-view-btn hr-doc-del-btn">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 @endif
-            </div>
+            </x-ui.card>
 
-        </div>{{-- /hr-left --}}
+        </div>{{-- /LEFT COLUMN --}}
 
-        {{-- Right Column --}}
-        <div class="hr-right">
+        {{-- RIGHT COLUMN --}}
+        <div class="space-y-6">
 
             {{-- Administrative --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Meta Data</div>
-                        <div class="hr-sec-title">Administrative</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Meta Data</div>
+                    <h3 class="section-title">Administrative</h3>
                 </div>
-                <div class="hr-admin-rows">
-                    <div class="hr-admin-item">
-                        <span class="hr-admin-lbl">Record Status</span>
-                        <span class="{{ $record->status === 'active' ? 'hr-badge-success' : 'hr-badge-danger' }}">{{ $record->status }}</span>
+                <div class="detail-grid !grid-cols-1">
+                    <div class="detail-tile flex items-center justify-between">
+                        <div class="detail-label !mb-0">Record Status</div>
+                        <div class="{{ $record->status === 'active' ? 'ui-status-success' : 'ui-status-danger' }}">{{ $record->status }}</div>
                     </div>
-                    <div class="hr-admin-item">
-                        <span class="hr-admin-lbl">Mobile</span>
-                        <span class="hr-admin-val">{{ $record->mobile ?? 'N/A' }}</span>
+                    <div class="detail-tile flex items-center justify-between">
+                        <div class="detail-label !mb-0">Mobile</div>
+                        <div class="detail-value text-right">{{ $record->mobile ?? 'N/A' }}</div>
                     </div>
-                    <div class="hr-admin-item">
-                        <span class="hr-admin-lbl">Email</span>
-                        <span class="hr-admin-val" style="font-size:11.5px;max-width:160px;overflow:hidden;text-overflow:ellipsis">{{ $record->email ?? 'N/A' }}</span>
+                    <div class="detail-tile flex items-center justify-between gap-3">
+                        <div class="detail-label !mb-0 shrink-0">Email</div>
+                        <div class="detail-value truncate text-right text-xs">{{ $record->email ?? 'N/A' }}</div>
                     </div>
-                    <div class="hr-admin-item">
-                        <span class="hr-admin-lbl">Examined By</span>
-                        <div style="text-align:right">
-                            <div style="font-size:13px;font-weight:700;color:#1E293B">Dr. {{ $record->doctor_name }}</div>
-                            <div style="font-size:10px;color:#94A3B8;margin-top:2px">{{ $record->doctor_qualification }}</div>
+                    <div class="detail-tile flex items-center justify-between">
+                        <div class="detail-label !mb-0">Examined By</div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-foreground">Dr. {{ $record->doctor_name }}</div>
+                            <div class="mt-0.5 text-[10px] text-muted-foreground">{{ $record->doctor_qualification }}</div>
                         </div>
                     </div>
-                    <div class="hr-admin-item">
-                        <span class="hr-admin-lbl">Documents</span>
+                    <div class="detail-tile flex items-center justify-between">
+                        <div class="detail-label !mb-0">Documents</div>
                         @if($record->documents->isEmpty())
-                            <span style="font-size:12px;color:#94A3B8">None uploaded</span>
+                            <div class="text-xs text-muted-foreground">None uploaded</div>
                         @else
-                            <span class="hr-badge-docs">{{ $record->documents->count() }} {{ Str::plural('file', $record->documents->count()) }}</span>
+                            <div class="ui-chip !bg-emerald-500/10 !text-emerald-600 !border-emerald-500/20">{{ $record->documents->count() }} {{ Str::plural('file', $record->documents->count()) }}</div>
                         @endif
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Activity Log --}}
-            <div class="hr-card">
-                <div class="hr-sec-header">
-                    <div>
-                        <div class="hr-sec-kicker">Audit Trail</div>
-                        <div class="hr-sec-title">Recent Activity</div>
-                    </div>
+            <x-ui.card class="space-y-4">
+                <div>
+                    <div class="section-kicker">Audit Trail</div>
+                    <h3 class="section-title">Recent Activity</h3>
                 </div>
-                <div class="hr-activity-list">
+                <div class="space-y-4">
                     @forelse($activities as $activity)
-                        <div class="hr-activity-item">
-                            <div class="hr-activity-dot-col">
-                                <div class="hr-activity-dot"></div>
-                                @if(!$loop->last)<div class="hr-activity-line"></div>@endif
+                        <div class="flex gap-3">
+                            <div class="flex flex-col items-center pt-1">
+                                <div class="size-2 shrink-0 rounded-full bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_15%,transparent)]"></div>
+                                @if(!$loop->last)<div class="mt-1.5 w-px flex-1 bg-border/70"></div>@endif
                             </div>
-                            <div>
-                                <p class="hr-activity-txt">{{ $activity->description }}</p>
-                                <p class="hr-activity-time">{{ $activity->created_at->diffForHumans() }}</p>
+                            <div class="pb-1">
+                                <p class="text-sm font-semibold text-foreground leading-snug">{{ $activity->description }}</p>
+                                <p class="mt-1 text-[10px] text-muted-foreground">{{ $activity->created_at->diffForHumans() }}</p>
                             </div>
                         </div>
                     @empty
-                        <div style="text-align:center;padding:24px 0">
-                            <p style="font-size:13px;color:#94A3B8;font-style:italic">No events recorded.</p>
+                        <div class="py-6 text-center">
+                            <p class="text-sm italic text-muted-foreground">No events recorded.</p>
                         </div>
                     @endforelse
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Official Forms --}}
-            <div class="hr-card hr-card-ghost">
-                <div class="hr-sec-kicker" style="margin-bottom:14px">Official Forms</div>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                    <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="hr-form-btn">
+            <div class="rounded-2xl border border-dashed border-border/70 bg-secondary/30 p-5">
+                <div class="section-kicker mb-3">Official Forms</div>
+                <div class="flex flex-col gap-2.5">
+                    <a href="{{ route('health-records.print-form32', $record->uuid) }}" target="_blank" class="flex items-center justify-between rounded-xl border border-border/70 bg-card px-4 py-3 text-sm font-semibold text-foreground transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
                         Form 32 (Health Register)
-                        <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;opacity:.4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10M7 17 17 7"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10M7 17 17 7"/></svg>
                     </a>
-                    <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="hr-form-btn">
+                    <a href="{{ route('health-records.print-form33', $record->uuid) }}" target="_blank" class="flex items-center justify-between rounded-xl border border-border/70 bg-card px-4 py-3 text-sm font-semibold text-foreground transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
                         Form 33 (Fitness Cert)
-                        <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;opacity:.4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10M7 17 17 7"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10v10M7 17 17 7"/></svg>
                     </a>
-                    <div class="hr-form-divider"></div>
-                    <a href="{{ route('health-records.print-all', $record->uuid) }}" target="_blank" class="hr-form-btn hr-form-btn-primary">
+                    <div class="my-1 h-px bg-border/70"></div>
+                    <a href="{{ route('health-records.print-all', $record->uuid) }}" target="_blank" class="flex items-center justify-between rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
                         Print Complete Report
-                        <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                     </a>
                 </div>
             </div>
 
             {{-- Fast Workflow --}}
-            <div class="hr-card hr-card-navy">
-                <div class="hr-quick-lbl">Fast Workflow</div>
-                <a href="{{ route('health-records.create') }}?prefill={{ $record->employee?->uuid }}" class="hr-quick-btn">
+            <div class="rounded-2xl border border-[#312E81] bg-[#1E1B4B] p-5">
+                <div class="section-kicker !text-white/40 mb-3">Fast Workflow</div>
+                <a href="{{ route('health-records.create') }}?prefill={{ $record->employee?->uuid }}" class="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold text-primary transition hover:bg-indigo-50">
                     New Examination
-                    <svg xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 </a>
-                <p class="hr-quick-sub">Start a fresh medical record for this employee.</p>
+                <p class="mt-3 text-center text-xs text-white/40 leading-relaxed">Start a fresh medical record for this employee.</p>
             </div>
 
-        </div>{{-- /hr-right --}}
+        </div>{{-- /RIGHT COLUMN --}}
 
-    </section>
+    </div>
 
 </div>
 @endsection

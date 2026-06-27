@@ -101,9 +101,9 @@
             </select>
             <div class="flex items-center gap-2">
                 @if(request()->anyFilled(['search']) || request('status') === 'deleted')
-                    <a href="{{ route('companies.index') }}" class="ui-button-secondary h-11 px-4 rounded-xl flex items-center justify-center">
+                    <x-ui.button variant="ghost" href="{{ route('companies.index') }}">
                         Clear
-                    </a>
+                    </x-ui.button>
                 @endif
             </div>
         </form>
